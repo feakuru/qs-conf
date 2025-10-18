@@ -7,7 +7,7 @@ Rectangle {
     color: "transparent"
     border.width: 1
     border.color: AppConstants.indicatorBorderColor
-    property real preferredWidth: cpuIndicator.cpuData.length * 4
+    property real preferredWidth: cpuIndicator.cpuData.length * 8
 
     property var cpuData: []
 
@@ -47,7 +47,12 @@ Rectangle {
 
             stdout: StdioCollector {
                 onStreamFinished: {
-                    cpuPercentIndicator.text = `🔲 ${this.text}%`;
+                    if (cpuIndicator.cpuData.length > 16) {
+                        cpuPercentIndicator.text = `🔲 ${this.text.trim()}%`;
+                    }
+                    else {
+                        cpuPercentIndicator.text = `${this.text.trim()}%`;
+                    }
                 }
             }
         }
