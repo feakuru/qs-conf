@@ -121,37 +121,7 @@ Scope {
                                 Layout.margins: 10
                                 Layout.minimumWidth: 32
                                 Layout.minimumHeight: 32
-
-                                FolderListModel {
-                                    id: svgIcons
-                                    folder: "file:///usr/share/icons/hicolor/48x48/apps"
-                                    nameFilters: [modelData.appIcon + ".svg"]
-                                }
-
-                                FolderListModel {
-                                    id: pngIcons
-                                    folder: "file:///usr/share/icons/hicolor/48x48/apps"
-                                    nameFilters: [modelData.appIcon + ".png"]
-                                }
-
-                                FolderListModel {
-                                    id: fallbackIcons
-                                    folder: "file:///usr/share/icons/hicolor/48x48/apps"
-                                    nameFilters: [modelData.appIcon + ".*"]
-                                }
-
-                                source: {
-                                    if (svgIcons.count > 0) {
-                                        return svgIcons.get(0, 'filePath');
-                                    } else if (pngIcons.count > 0) {
-                                        return pngIcons.get(0, 'filePath');
-                                    } else if (fallbackIcons.count > 0) {
-                                        return fallbackIcons.get(0, 'filePath');
-                                    } else {
-                                        console.warn(`No icon found for ${modelData.appIcon}`);
-                                        return "image-missing";
-                                    }
-                                }
+                                source: `image://icon/${modelData.appIcon}`
                                 sourceSize.width: this.width
                                 sourceSize.height: this.height
                                 mipmap: true
