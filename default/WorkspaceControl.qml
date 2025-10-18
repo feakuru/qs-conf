@@ -6,12 +6,23 @@ import Quickshell.Hyprland
 Rectangle {
     color: "transparent"
 
+    property real preferredWidth: {
+        let result = 0;
+        for (let ws of Hyprland.workspaces.values) {
+            result += 54;
+            for (let tl of ws.toplevels.values) {
+                result += 24;
+            }
+        }
+        result
+    }
+
     RowLayout {
         spacing: 5
         Repeater {
             model: Hyprland.workspaces
             delegate: Rectangle {
-                Layout.minimumWidth: childrenRect.width
+                Layout.preferredWidth: this.childrenRect.width
                 Layout.preferredHeight: 32
                 Layout.margins: 5
                 border.width: 3
@@ -33,6 +44,7 @@ Rectangle {
                             width: wsIdText.width + 22
                             height: wsIdText.height
                             color: "transparent"
+
                             StyledText {
                                 id: wsIdText
                                 text: `${modelData.id}`
@@ -40,7 +52,7 @@ Rectangle {
                         }
 
                         Repeater {
-                            model: [...new Set(modelData.toplevels.values.map(item => item.wayland.appId))]
+                            model: [...new Set(modelData.toplevels.values.filter(item => item.wayland != null).map(item => item.wayland.appId))]
                             delegate: Image {
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: 22

@@ -22,7 +22,8 @@ PanelWindow {
 
         WorkspaceControl {
             Layout.fillHeight: true
-            Layout.preferredWidth: childrenRect.width
+            Layout.preferredWidth: preferredWidth
+            Layout.leftMargin: 5
         }
 
         CpuIndicator {
