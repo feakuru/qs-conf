@@ -34,8 +34,7 @@ Rectangle {
         visible: false
 
         implicitWidth: dropdownToggle.menuWidth
-        implicitHeight:             (dropdownMenuBody.children.length - 1) * 42
-        
+        implicitHeight: (dropdownMenuBody.children.length - 1) * 42
 
         color: AppConstants.bgColor
 
