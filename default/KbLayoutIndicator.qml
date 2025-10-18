@@ -1,13 +1,29 @@
 import QtQuick
 import Quickshell.Io
+import Quickshell.Hyprland
 
 Rectangle {
-    color: "transparent"
+    color: kbLayoutMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
     border.width: 1
     border.color: AppConstants.indicatorBorderColor
+    property real preferredWidth: kbLayoutIndicator.width + 20
+
+    Process {
+        id: toggleKeyboardProcess
+        command: ["hyprctl", "switchxkblayout", "current", "next"]
+    }
 
     StyledText {
         id: kbLayoutIndicator
+    }
+
+    MouseArea {
+        id: kbLayoutMouseArea
+        anchors.fill: parent
+        hoverEnabled: true
+        onClicked: mouseEvent => {
+            toggleKeyboardProcess.running = true;
+        }
     }
 
     Process {

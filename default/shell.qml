@@ -64,7 +64,7 @@ PanelWindow {
 
         KbLayoutIndicator {
             Layout.fillHeight: true
-            Layout.preferredWidth: childrenRect.width + 20
+            Layout.preferredWidth: preferredWidth
         }
 
         DateClock {

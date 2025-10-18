@@ -9,7 +9,7 @@ Rectangle {
     property real preferredWidth: {
         let result = 0;
         for (let ws of Hyprland.workspaces.values) {
-            result += 54;
+            result += 50;
             for (let tl of ws.toplevels.values) {
                 result += 24;
             }
@@ -18,7 +18,7 @@ Rectangle {
     }
 
     RowLayout {
-        spacing: 5
+        spacing: 0
         Repeater {
             model: Hyprland.workspaces
             delegate: Rectangle {
