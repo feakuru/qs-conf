@@ -7,7 +7,8 @@ Rectangle {
     color: "transparent"
     border.width: 1
     border.color: AppConstants.indicatorBorderColor
-    property real preferredWidth: cpuIndicator.cpuData.length * 8
+    property real barWidth: cpuIndicator.cpuData.length > 16 ? 4 : 8
+    property real preferredWidth: cpuIndicator.cpuData.length * barWidth
 
     property var cpuData: []
 
@@ -29,7 +30,7 @@ Rectangle {
         Repeater {
             model: cpuIndicator.cpuData
             Rectangle {
-                width: 4
+                width: cpuIndicator.barWidth
                 height: (modelData / 100) * 42
                 color: AppConstants.indicatorBarColor
                 anchors.bottom: parent.bottom
