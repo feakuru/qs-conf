@@ -32,20 +32,18 @@ Rectangle {
         running: true
 
         stdout: StdioCollector {
+            function flagEmojiFromCountryCode(code) {
+                if (!code || code.length !== 2)
+                    return code;
+                code = code.toUpperCase();
+                return String.fromCodePoint(...[...code].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
+            }
+
             onStreamFinished: {
                 var [layouts, layoutIdx] = this.text.trim().split(' ');
                 layoutIdx = parseInt(layoutIdx);
                 layouts = layouts.split(',');
-                switch (layouts[layoutIdx]) {
-                case 'ru':
-                    kbLayoutIndicator.text = '🇷🇺';
-                    break;
-                case 'us':
-                    kbLayoutIndicator.text = '🇺🇸';
-                    break;
-                default:
-                    kbLayoutIndicator.text = layouts[layoutIdx];
-                }
+                kbLayoutIndicator.text = flagEmojiFromCountryCode(layouts[layoutIdx]);
             }
         }
     }
