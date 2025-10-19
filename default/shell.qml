@@ -48,7 +48,7 @@ PanelWindow {
         }
 
         NetworkIndicator {
-            Layout.preferredWidth: childrenRect.width + 30
+            Layout.preferredWidth: preferredWidth
             Layout.fillHeight: true
         }
 
