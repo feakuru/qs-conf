@@ -39,7 +39,7 @@ Rectangle {
         focusable: true
         visible: false
         margins {
-            right: parseInt(Screen.desktopAvailableWidth - dropdownToggle.x - dropdownToggle.menuWidth)
+            right: parseInt(Screen.desktopAvailableWidth - dropdownToggle.x - (dropdownToggle.menuWidth / 2) - (dropdownToggle.width / 2))
         }
 
         implicitHeight: dropdownMenuBody.childrenRect.height
