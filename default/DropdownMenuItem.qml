@@ -9,7 +9,7 @@ Rectangle {
     property var action: () => {}
     property alias text: dropdownItemText.text
 
-    color: dropdownItemMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
+    color: dropdownItemMouseArea.containsMouse ? AppConstants.focusedSolidBgColor : "transparent"
     border.width: 1
     StyledText {
         id: dropdownItemText

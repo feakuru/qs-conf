@@ -6,16 +6,22 @@ Rectangle {
     id: dropdownToggle
     color: dropdownToggleMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
     border.width: 1
+    border.color: AppConstants.indicatorBorderColor
     default property alias children: dropdownMenuBody.children
+    property alias menuWidth: dropdownMenuWindow.implicitWidth
     property alias menuAnchors: dropdownMenuWindow.anchors
-    property alias menuMargins: dropdownMenuWindow.margins
-    required property string toggleText
-    required property color toggleTextColor
-    required property real menuWidth
+    property alias toggleText: dropdownToggleText.text
+    property alias toggleTextFont: dropdownToggleText.font
+    property alias toggleTextColor: dropdownToggleText.color
+    property alias toggleTextHorizontalAlignment: dropdownToggleText.horizontalAlignment
+    property real preferredWidth: dropdownToggleText.text.split("\n")[0].length * 0.7 * dropdownToggleText.font.pixelSize + 12
+    menuAnchors.right: true
 
     StyledText {
-        color: dropdownToggle.toggleTextColor
-        text: dropdownToggle.toggleText
+        id: dropdownToggleText
+        anchors.centerIn: null
+        anchors.fill: parent
+        anchors.margins: 7
     }
 
     MouseArea {
@@ -32,11 +38,13 @@ Rectangle {
         id: dropdownMenuWindow
         focusable: true
         visible: false
+        margins {
+            right: parseInt(Screen.desktopAvailableWidth - dropdownToggle.x - dropdownToggle.menuWidth)
+        }
 
-        implicitWidth: dropdownToggle.menuWidth
-        implicitHeight: (dropdownMenuBody.children.length - 1) * 42
+        implicitHeight: dropdownMenuBody.childrenRect.height
 
-        color: AppConstants.bgColor
+        color: AppConstants.solidBgColor
 
         MouseArea {
             id: dropdownMenuWindowArea

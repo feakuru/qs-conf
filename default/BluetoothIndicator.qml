@@ -5,11 +5,6 @@ import Quickshell.Bluetooth
 import Quickshell.Hyprland
 
 DropdownMenu {
-    id: btIndicator
-    border.color: AppConstants.indicatorBorderColor
-
-    property real preferredWidth: toggleText.length * 20 + 12
-
     toggleText: {
         let result = 'ᛒ';
         let connectedDevices = Bluetooth.defaultAdapter.devices.values.filter(device => device.state == BluetoothDeviceState.Connected);
@@ -21,9 +16,7 @@ DropdownMenu {
     toggleTextColor: Bluetooth.defaultAdapter.enabled ? AppConstants.indicatorOnColor : AppConstants.indicatorOffColor
 
     menuWidth: 300
-    menuAnchors.right: true
     menuAnchors.top: true
-    menuMargins.right: Screen.desktopAvailableWidth - btIndicator.x - menuWidth
 
     DropdownMenuItem {
         text: `ᛒ turn ${Bluetooth.defaultAdapter.name} ${Bluetooth.defaultAdapter.enabled ? 'off' : 'on'}`
