@@ -1,6 +1,8 @@
 import QtQuick
+import Qt5Compat.GraphicalEffects
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Widgets
 
 Rectangle {
     id: dropdownToggle
@@ -14,14 +16,53 @@ Rectangle {
     property alias toggleTextFont: dropdownToggleText.font
     property alias toggleTextColor: dropdownToggleText.color
     property alias toggleTextHorizontalAlignment: dropdownToggleText.horizontalAlignment
-    property real preferredWidth: dropdownToggleText.text.split("\n")[0].length * 0.7 * dropdownToggleText.font.pixelSize + 12
+    property alias toggleIconSource: dropdownToggleIcon.source
+    property alias toggleIconColor: recoloredIcon.color
+    property real preferredWidth: dropdownToggleText.text.split("\n")[0].length * 0.8 * dropdownToggleText.font.pixelSize + (dropdownToggleIcon.source != "" ? dropdownToggleIcon.width : 0)
     menuAnchors.right: true
 
-    StyledText {
-        id: dropdownToggleText
-        anchors.centerIn: null
-        anchors.fill: parent
-        anchors.margins: 7
+    RowLayout {
+        anchors {
+            top: parent.top
+            bottom: parent.bottom
+        }
+        spacing: 0
+        Rectangle {
+            color: "transparent"
+            Layout.fillHeight: true
+            Layout.preferredWidth: dropdownToggleIcon.width
+            IconImage {
+                id: dropdownToggleIcon
+                anchors.centerIn: parent
+                visible: source != ""
+                width: 32
+                height: 32
+            }
+            ColorOverlay {
+                id: recoloredIcon
+                anchors.fill: dropdownToggleIcon
+                source: dropdownToggleIcon
+                color: "white"
+            }
+            DropShadow {
+                anchors.fill: recoloredIcon
+                source: recoloredIcon
+                horizontalOffset: 2
+                verticalOffset: 2
+                radius: 8.0
+                color: Qt.rgba(0.1, 0.1, 0.1, 1)
+            }
+        }
+        Rectangle {
+            color: "transparent"
+            visible: dropdownToggleText.text.length > 0
+            Layout.fillHeight: true
+            Layout.preferredWidth: dropdownToggleText.width
+            Layout.rightMargin: 8
+            StyledText {
+                id: dropdownToggleText
+            }
+        }
     }
 
     MouseArea {
