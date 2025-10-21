@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Services.SystemTray
+import Quickshell.Widgets
 
 Rectangle {
     color: "transparent"
@@ -18,19 +19,19 @@ Rectangle {
                 Layout.preferredWidth: 30
                 Layout.preferredHeight: 30
                 radius: 7
-                color: "transparent"
+                color: iconMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
 
-                Image {
+                IconImage {
                     anchors.centerIn: parent
                     anchors.fill: parent
                     anchors.margins: 5
                     source: modelData.icon
-                    sourceSize.width: this.width
-                    sourceSize.height: this.height
                     mipmap: true
                 }
 
                 MouseArea {
+                    id: iconMouseArea
+                    hoverEnabled: true
                     anchors.fill: parent
                     onClicked: clickEvent => {
                         let globalCoords = mapToGlobal(clickEvent.x, clickEvent.y);
