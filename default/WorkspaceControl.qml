@@ -52,12 +52,12 @@ Rectangle {
                         }
 
                         Repeater {
-                            model: [...new Set(modelData.toplevels.values.filter(item => item.wayland != null).map(item => item.wayland.appId))]
+                            model: [...new Set(modelData.toplevels.values.filter(item => item.wayland != null).map(item => item.wayland.appId.toLowerCase()))]
                             delegate: Image {
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: 22
                                 height: 22
-                                source: `image://icon/${modelData}`
+                                source: `image://icon/${modelData.toLowerCase()}`
                                 mipmap: true
                             }
                         }
