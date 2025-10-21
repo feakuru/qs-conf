@@ -5,17 +5,18 @@ import Quickshell.Bluetooth
 import Quickshell.Hyprland
 
 DropdownMenu {
-    toggleIconColor: "#0082FC"
+    toggleIconColor: AppConstants.bluetoothColor
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/brands/bluetooth.svg")
     toggleText: {
         let result = '';
         let connectedDevices = Bluetooth.defaultAdapter.devices.values.filter(device => device.state == BluetoothDeviceState.Connected);
         if (connectedDevices.length > 0) {
-            result += ` ${connectedDevices.length}`;
+            result += `[${connectedDevices.length}]`;
         }
         result;
     }
-    toggleTextColor: Bluetooth.defaultAdapter.enabled ? AppConstants.indicatorOnColor : AppConstants.indicatorOffColor
+    toggleTextFont.pixelSize: 16
+    toggleTextColor: Bluetooth.defaultAdapter.enabled ? AppConstants.bluetoothColor : AppConstants.indicatorOffColor
 
     menuWidth: 300
     menuAnchors.top: true

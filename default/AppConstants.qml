@@ -14,6 +14,7 @@ Singleton {
     property color indicatorBarColor: Qt.rgba(0.5, 0.5, 1, 0.8)
     property color indicatorOnColor: "lightblue"
     property color indicatorOffColor: "gray"
+    property color bluetoothColor: "#0082FC"
 
     property string defaultFont: "FiraCode Nerd Font"
 }
