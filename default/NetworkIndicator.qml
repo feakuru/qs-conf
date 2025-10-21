@@ -34,7 +34,10 @@ DropdownMenu {
     }
 
     DropdownMenuItem {
-        text: `Active device: ${netIndicator.defaultDevice}`
+        StyledText {
+            font.pixelSize: 18
+            text: `Active device: ${netIndicator.defaultDevice}`
+        }
 
         Process {
             id: defaultDeviceProc
@@ -88,7 +91,10 @@ DropdownMenu {
     }
 
     DropdownMenuItem {
-        text: `Wifi: ${!netIndicator.wifiAvailable ? 'n/a' : netIndicator.wifiEnabled ? 'on' : 'off'}`
+        StyledText {
+            font.pixelSize: 18
+            text: `Wifi: ${!netIndicator.wifiAvailable ? 'n/a' : netIndicator.wifiEnabled ? 'on' : 'off'}`
+        }
         action: () => {
             wifiToggleProcess.running = true;
         }

@@ -22,36 +22,42 @@ DropdownMenu {
     menuAnchors.top: true
 
     DropdownMenuItem {
-        text: `ᛒ turn ${Bluetooth.defaultAdapter.name} ${Bluetooth.defaultAdapter.enabled ? 'off' : 'on'}`
         action: () => {
             Bluetooth.defaultAdapter.enabled = !Bluetooth.defaultAdapter.enabled;
+        }
+        StyledText {
+            font.pixelSize: 18
+            text: `ᛒ turn ${Bluetooth.defaultAdapter.name} ${Bluetooth.defaultAdapter.enabled ? 'off' : 'on'}`
         }
     }
 
     Repeater {
         model: Bluetooth.defaultAdapter.devices
         delegate: DropdownMenuItem {
-            text: {
-                let result = modelData.name;
-                if (modelData.batteryAvailable) {
-                    result += ` [${modelData.battery * 100}%]`;
-                }
-                switch (modelData.state) {
-                case BluetoothDeviceState.Connecting:
-                case BluetoothDeviceState.Disconnecting:
-                    result += ' [...]';
-                    break;
-                case BluetoothDeviceState.Connected:
-                    result += ' [+]';
-                    break;
-                }
-                result;
-            }
             action: () => {
                 if (modelData.connected) {
                     modelData.disconnect();
                 } else {
                     modelData.connect();
+                }
+            }
+            StyledText {
+                font.pixelSize: 18
+                text: {
+                    let result = modelData.name;
+                    if (modelData.batteryAvailable) {
+                        result += ` [${modelData.battery * 100}%]`;
+                    }
+                    switch (modelData.state) {
+                    case BluetoothDeviceState.Connecting:
+                    case BluetoothDeviceState.Disconnecting:
+                        result += ' [...]';
+                        break;
+                    case BluetoothDeviceState.Connected:
+                        result += ' [+]';
+                        break;
+                    }
+                    result;
                 }
             }
         }

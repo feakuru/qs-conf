@@ -3,17 +3,12 @@ import QtQuick.Layouts
 
 Rectangle {
     id: dropdownItem
-    Layout.preferredHeight: 42
+    Layout.minimumHeight: 42
     Layout.fillWidth: true
-    property var action: () => {}
-    property alias text: dropdownItemText.text
-
     color: dropdownItemMouseArea.containsMouse ? AppConstants.focusedSolidBgColor : "transparent"
     border.width: 1
-    StyledText {
-        id: dropdownItemText
-        font.pixelSize: 18
-    }
+    property var action: () => {}
+
     MouseArea {
         id: dropdownItemMouseArea
         anchors.fill: parent

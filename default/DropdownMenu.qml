@@ -19,13 +19,13 @@ Rectangle {
     property alias toggleIconSource: dropdownToggleIcon.source
     property alias toggleIconColor: recoloredIcon.color
     property real preferredWidth: {
-        dropdownToggleText.text.split("\n")[0].length * 0.7 * dropdownToggleText.font.pixelSize + (dropdownToggleIcon.source != "" ? (dropdownToggleIcon.width + 16) : 0)
+        dropdownToggleText.text.split("\n")[0].length * 0.7 * dropdownToggleText.font.pixelSize + (dropdownToggleIcon.source != "" ? (dropdownToggleIcon.width + 16) : 0);
     }
     menuAnchors.right: true
 
     RowLayout {
         spacing: 0
-        anchors.fill: parent 
+        anchors.fill: parent
         Rectangle {
             color: "transparent"
             Layout.fillHeight: true
@@ -79,7 +79,10 @@ Rectangle {
         focusable: true
         visible: false
         margins {
-            right: parseInt(Screen.desktopAvailableWidth - dropdownToggle.x - (dropdownToggle.menuWidth / 2) - (dropdownToggle.width / 2))
+            right: {
+                let centerOfToggle = Screen.desktopAvailableWidth - dropdownToggle.x - (dropdownToggle.width / 2);
+                parseInt(Math.max(centerOfToggle - (dropdownToggle.menuWidth / 2), 10))
+            }
         }
 
         implicitHeight: dropdownMenuBody.childrenRect.height
