@@ -17,11 +17,11 @@ Rectangle {
             stdout: StdioCollector {
                 onStreamFinished: {
                     let [leftVolume, rightVolume] = this.text.split(' ');
-                    let result = "🔊 ";
+                    let result = "🔊";
                     if (parseFloat(leftVolume) == parseFloat(rightVolume)) {
                         result += leftVolume;
                     } else {
-                        result = leftVolume + " " + result + rightVolume;
+                        result = leftVolume + result + rightVolume;
                     }
                     volumeIndicator.text = result;
                 }

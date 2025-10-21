@@ -4,7 +4,12 @@ import Quickshell.Hyprland
 Rectangle {
     id: outerRect
     color: "transparent"
-    anchors.fill: parent
+    anchors.top: parent.top
+    anchors.bottom: parent.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.leftMargin: 300
+    anchors.rightMargin: 300
 
     StyledText {
         id: windowTitle

@@ -53,11 +53,6 @@ Scope {
                 Layout.fillHeight: true
                 Layout.preferredWidth: preferredWidth
             }
-
-            PowerIndicator {
-                Layout.preferredWidth: childrenRect.width + 20
-                Layout.fillHeight: true
-            }
         }
         ToplevelTitle {}
     }
@@ -100,12 +95,15 @@ Scope {
                 Layout.preferredWidth: childrenRect.width + 20
             }
 
+            PowerIndicator {
+                Layout.preferredWidth: preferredWidth
+                Layout.fillHeight: true
+            }
 
             DateClock {
                 Layout.preferredWidth: childrenRect.width + 20
                 Layout.fillHeight: true
             }
-
         }
     }
 
