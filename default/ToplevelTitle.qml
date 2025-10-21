@@ -2,11 +2,24 @@ import QtQuick
 import Quickshell.Hyprland
 
 Rectangle {
+    id: outerRect
     color: "transparent"
     anchors.fill: parent
 
     StyledText {
         id: windowTitle
-        text: (Hyprland.activeToplevel != null && Hyprland.activeToplevel.workspace.id == Hyprland.focusedWorkspace.id) ? (Hyprland.activeToplevel.title.slice(0, 50) + (Hyprland.activeToplevel.title.length > 50 ? '...' : '')) : ''
+        text: {
+            let topLevel = Hyprland.activeToplevel;
+            if (topLevel == null || topLevel.workspace.id != Hyprland.focusedWorkspace.id) {
+                return "";
+            }
+
+            let maxTitleLength = outerRect.width / this.font.pixelSize;
+            let fullTitle = topLevel.title;
+            if (fullTitle.length > maxTitleLength) {
+                return fullTitle.slice(0, maxTitleLength) + '...';
+            }
+            return fullTitle;
+        }
     }
 }
