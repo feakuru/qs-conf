@@ -18,23 +18,23 @@ Rectangle {
     property alias toggleTextHorizontalAlignment: dropdownToggleText.horizontalAlignment
     property alias toggleIconSource: dropdownToggleIcon.source
     property alias toggleIconColor: recoloredIcon.color
-    property real preferredWidth: dropdownToggleText.text.split("\n")[0].length * 0.8 * dropdownToggleText.font.pixelSize + (dropdownToggleIcon.source != "" ? dropdownToggleIcon.width : 0)
+    property real preferredWidth: {
+        dropdownToggleText.text.split("\n")[0].length * 0.7 * dropdownToggleText.font.pixelSize + (dropdownToggleIcon.source != "" ? (dropdownToggleIcon.width + 16) : 0)
+    }
     menuAnchors.right: true
 
     RowLayout {
-        anchors {
-            top: parent.top
-            bottom: parent.bottom
-        }
         spacing: 0
+        anchors.fill: parent 
         Rectangle {
             color: "transparent"
             Layout.fillHeight: true
             Layout.preferredWidth: dropdownToggleIcon.width
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+            visible: dropdownToggleIcon.source != ""
             IconImage {
                 id: dropdownToggleIcon
                 anchors.centerIn: parent
-                visible: source != ""
                 width: 32
                 height: 32
             }
@@ -57,8 +57,7 @@ Rectangle {
             color: "transparent"
             visible: dropdownToggleText.text.length > 0
             Layout.fillHeight: true
-            Layout.preferredWidth: dropdownToggleText.width
-            Layout.rightMargin: 8
+            Layout.preferredWidth: dropdownToggleText.width + 12
             StyledText {
                 id: dropdownToggleText
             }
