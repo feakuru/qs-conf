@@ -3,13 +3,13 @@ import Quickshell.Hyprland
 
 Rectangle {
     id: outerRect
-    color: "transparent"
+    color: "black"
     anchors.top: parent.top
     anchors.bottom: parent.bottom
     anchors.left: parent.left
     anchors.right: parent.right
-    anchors.leftMargin: 300
-    anchors.rightMargin: 300
+    anchors.leftMargin: parent.width * 0.2
+    anchors.rightMargin: parent.width * 0.2
 
     StyledText {
         id: windowTitle
