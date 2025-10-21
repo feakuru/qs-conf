@@ -5,8 +5,10 @@ import Quickshell.Services.SystemTray
 import Quickshell.Widgets
 
 Rectangle {
+    id: trayPanel
     color: "transparent"
     property int preferredWidth: SystemTray.items.values.length * 40
+    required property var trayMenuDisplayParent
 
     RowLayout {
         anchors.centerIn: parent
@@ -35,7 +37,7 @@ Rectangle {
                     anchors.fill: parent
                     onClicked: clickEvent => {
                         let globalCoords = mapToGlobal(clickEvent.x, clickEvent.y);
-                        modelData.display(mainPanelWindow, globalCoords.x, globalCoords.y);
+                        modelData.display(trayPanel.trayMenuDisplayParent, globalCoords.x, globalCoords.y);
                     }
                     onDoubleClicked: clickEvent => {
                         modelData.activate();
