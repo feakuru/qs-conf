@@ -74,6 +74,10 @@ Scope {
             spacing: 0
             anchors.fill: parent
 
+            ProgramPicker {
+                Layout.preferredWidth: preferredWidth
+                Layout.fillHeight: true
+            }
             CpuIndicator {
                 Layout.preferredWidth: preferredWidth
                 Layout.fillHeight: true
