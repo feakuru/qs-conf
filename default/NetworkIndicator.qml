@@ -33,108 +33,101 @@ DropdownMenu {
         `${txSpeedDisplay} ${txUnit} ⬆️\n${rxSpeedDisplay} ${rxUnit} ⬇️`;
     }
 
-    DropdownMenuItem {
-        StyledText {
-            font.pixelSize: 18
-            text: `Active device: ${netIndicator.defaultDevice}`
-        }
+    Process {
+        id: defaultDeviceProc
+        command: ["nmcli", "-t", "connection", "show", "--active"]
+        running: true
 
-        Process {
-            id: defaultDeviceProc
-            command: ["nmcli", "-t", "connection", "show", "--active"]
-            running: true
-
-            stdout: StdioCollector {
-                onStreamFinished: {
-                    for (let line of this.text.trim().split("\n")) {
-                        let [name, uuid, devType, device] = line.split(':');
-                        if (devType.endsWith("ethernet")) {
-                            netIndicator.defaultDevice = device;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        Process {
-            id: netSpeedProc
-            command: ["bash", "-c", `sar -n DEV 1 1 | grep ${netIndicator.defaultDevice} | awk '{print $5 " " $6}' | tail -n1`]
-            running: true
-
-            stdout: StdioCollector {
-                onStreamFinished: {
-                    let [rxSpeed, txSpeed] = this.text.trim().split(" ");
-                    netIndicator.rxSpeed = parseFloat(rxSpeed);
-                    netIndicator.txSpeed = parseFloat(txSpeed);
-                }
-            }
-        }
-
-        Timer {
-            interval: 1200
-            running: true
-            repeat: true
-            onTriggered: function () {
-                netSpeedProc.running = true;
-            }
-        }
-
-        Timer {
-            interval: 2000
-            running: true
-            repeat: true
-            onTriggered: function () {
-                defaultDeviceProc.running = true;
-            }
-        }
-    }
-
-    DropdownMenuItem {
-        StyledText {
-            font.pixelSize: 18
-            text: `Wifi: ${!netIndicator.wifiAvailable ? 'n/a' : netIndicator.wifiEnabled ? 'on' : 'off'}`
-        }
-        action: () => {
-            wifiToggleProcess.running = true;
-        }
-        Process {
-            id: wifiToggleProcess
-            command: ["nmcli", "radio", "wifi", netIndicator.wifiEnabled ? "off" : "on"]
-        }
-
-        Process {
-            id: wifiStatusProc
-            command: ["nmcli", "radio", "wifi"]
-            running: true
-
-            stdout: StdioCollector {
-                onStreamFinished: {
-                    switch (this.text.trim()) {
-                    case "disabled":
-                        netIndicator.wifiAvailable = true;
-                        netIndicator.wifiEnabled = false;
-                        break;
-                    case "enabled":
-                        netIndicator.wifiAvailable = true;
-                        netIndicator.wifiEnabled = true;
-                        break;
-                    default:
-                        netIndicator.wifiAvailable = false;
-                        netIndicator.wifiEnabled = false;
+        stdout: StdioCollector {
+            onStreamFinished: {
+                for (let line of this.text.trim().split("\n")) {
+                    let [name, uuid, devType, device] = line.split(':');
+                    if (devType.endsWith("ethernet")) {
+                        netIndicator.defaultDevice = device;
                         break;
                     }
                 }
             }
         }
+    }
 
-        Timer {
-            interval: 200
-            running: true
-            repeat: true
-            onTriggered: function () {
-                wifiStatusProc.running = true;
+    Process {
+        id: netSpeedProc
+        command: ["bash", "-c", `sar -n DEV 1 1 | grep ${netIndicator.defaultDevice} | awk '{print $5 " " $6}' | tail -n1`]
+        running: true
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let [rxSpeed, txSpeed] = this.text.trim().split(" ");
+                netIndicator.rxSpeed = parseFloat(rxSpeed);
+                netIndicator.txSpeed = parseFloat(txSpeed);
             }
         }
     }
+
+    Process {
+        id: wifiStatusProc
+        command: ["nmcli", "radio", "wifi"]
+        running: true
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                switch (this.text.trim()) {
+                case "disabled":
+                    netIndicator.wifiAvailable = true;
+                    netIndicator.wifiEnabled = false;
+                    break;
+                case "enabled":
+                    netIndicator.wifiAvailable = true;
+                    netIndicator.wifiEnabled = true;
+                    break;
+                default:
+                    netIndicator.wifiAvailable = false;
+                    netIndicator.wifiEnabled = false;
+                    break;
+                }
+            }
+        }
+    }
+
+    Timer {
+        interval: 1200
+        running: true
+        repeat: true
+        onTriggered: function () {
+            netSpeedProc.running = true;
+        }
+    }
+
+    Timer {
+        interval: 2000
+        running: true
+        repeat: true
+        onTriggered: function () {
+            defaultDeviceProc.running = true;
+            wifiStatusProc.running = true;
+        }
+    }
+
+    menuContent: [
+        DropdownMenuItem {
+            StyledText {
+                font.pixelSize: 18
+                text: `Active device: ${netIndicator.defaultDevice}`
+            }
+        },
+        DropdownMenuItem {
+            StyledText {
+                font.pixelSize: 18
+                text: `Wifi: ${!netIndicator.wifiAvailable ? 'n/a' : netIndicator.wifiEnabled ? 'on' : 'off'}`
+            }
+            action: () => {
+                wifiToggleProcess.running = true;
+            }
+            Process {
+                id: wifiToggleProcess
+                command: ["nmcli", "radio", "wifi", netIndicator.wifiEnabled ? "off" : "on"]
+            }
+        }
+    ]
 }

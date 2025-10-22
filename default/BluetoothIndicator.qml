@@ -5,7 +5,7 @@ import Quickshell.Bluetooth
 import Quickshell.Hyprland
 
 DropdownMenu {
-    toggleIconColor: AppConstants.bluetoothColor
+    toggleIconColor: Bluetooth.defaultAdapter.enabled ? AppConstants.bluetoothColor : AppConstants.indicatorOffColor
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/brands/bluetooth.svg")
     toggleText: {
         let result = '';
@@ -21,45 +21,46 @@ DropdownMenu {
     menuWidth: 300
     menuAnchors.top: true
 
-    DropdownMenuItem {
-        action: () => {
-            Bluetooth.defaultAdapter.enabled = !Bluetooth.defaultAdapter.enabled;
-        }
-        StyledText {
-            font.pixelSize: 18
-            text: `ᛒ turn ${Bluetooth.defaultAdapter.name} ${Bluetooth.defaultAdapter.enabled ? 'off' : 'on'}`
-        }
-    }
-
-    Repeater {
-        model: Bluetooth.defaultAdapter.devices
-        delegate: DropdownMenuItem {
+    menuContent: [
+        DropdownMenuItem {
             action: () => {
-                if (modelData.connected) {
-                    modelData.disconnect();
-                } else {
-                    modelData.connect();
-                }
+                Bluetooth.defaultAdapter.enabled = !Bluetooth.defaultAdapter.enabled;
             }
             StyledText {
                 font.pixelSize: 18
-                text: {
-                    let result = modelData.name;
-                    if (modelData.batteryAvailable) {
-                        result += ` [${modelData.battery * 100}%]`;
+                text: `ᛒ turn ${Bluetooth.defaultAdapter.name} ${Bluetooth.defaultAdapter.enabled ? 'off' : 'on'}`
+            }
+        },
+        Repeater {
+            model: Bluetooth.defaultAdapter.devices
+            delegate: DropdownMenuItem {
+                action: () => {
+                    if (modelData.connected) {
+                        modelData.disconnect();
+                    } else {
+                        modelData.connect();
                     }
-                    switch (modelData.state) {
-                    case BluetoothDeviceState.Connecting:
-                    case BluetoothDeviceState.Disconnecting:
-                        result += ' [...]';
-                        break;
-                    case BluetoothDeviceState.Connected:
-                        result += ' [+]';
-                        break;
+                }
+                StyledText {
+                    font.pixelSize: 18
+                    text: {
+                        let result = modelData.name;
+                        if (modelData.batteryAvailable) {
+                            result += ` [${modelData.battery * 100}%]`;
+                        }
+                        switch (modelData.state) {
+                        case BluetoothDeviceState.Connecting:
+                        case BluetoothDeviceState.Disconnecting:
+                            result += ' [...]';
+                            break;
+                        case BluetoothDeviceState.Connected:
+                            result += ' [+]';
+                            break;
+                        }
+                        result;
                     }
-                    result;
                 }
             }
         }
-    }
+    ]
 }

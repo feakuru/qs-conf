@@ -1,17 +1,19 @@
 import QtQuick
-import Qt5Compat.GraphicalEffects
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
+import Qt5Compat.GraphicalEffects
 
 Rectangle {
     id: dropdownToggle
     color: dropdownToggleMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
     border.width: 1
     border.color: AppConstants.indicatorBorderColor
-    default property alias children: dropdownMenuBody.children
+
     property alias menuWidth: dropdownMenuWindow.implicitWidth
     property alias menuAnchors: dropdownMenuWindow.anchors
+    property alias menuColumns: dropdownMenuBody.columns
+    property alias menuRows: dropdownMenuBody.rows
     property alias toggleText: dropdownToggleText.text
     property alias toggleTextFont: dropdownToggleText.font
     property alias toggleTextColor: dropdownToggleText.color
@@ -21,6 +23,13 @@ Rectangle {
     property real preferredWidth: {
         dropdownToggleText.text.split("\n")[0].length * 0.7 * dropdownToggleText.font.pixelSize + (dropdownToggleIcon.source != "" ? (dropdownToggleIcon.width + 16) : 0);
     }
+    property list<Item> menuContent
+    property bool disableDisappearanceOnNoFocus: false
+
+    function toggleMenuVisibility() {
+        dropdownMenuWindow.visible = !dropdownMenuWindow.visible;
+    }
+
     menuAnchors.right: true
 
     RowLayout {
@@ -70,7 +79,7 @@ Rectangle {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         hoverEnabled: true
         onClicked: mouseEvent => {
-            dropdownMenuWindow.visible = !dropdownMenuWindow.visible;
+            dropdownToggle.toggleMenuVisibility();
         }
     }
 
@@ -81,7 +90,9 @@ Rectangle {
         margins {
             right: {
                 let centerOfToggle = Screen.desktopAvailableWidth - dropdownToggle.x - (dropdownToggle.width / 2);
-                parseInt(Math.max(centerOfToggle - (dropdownToggle.menuWidth / 2), 10))
+                let targetPosition = centerOfToggle - (dropdownToggle.menuWidth / 2);
+                let rightmostPosition = Screen.desktopAvailableWidth - dropdownToggle.menuWidth;
+                parseInt(Math.min(rightmostPosition, Math.max(targetPosition, 10)));
             }
         }
 
@@ -89,12 +100,21 @@ Rectangle {
 
         color: AppConstants.solidBgColor
 
+        Component.onCompleted: {
+            for (let c of dropdownToggle.menuContent) {
+                c.parent = dropdownMenuBody;
+            }
+        }
+
         MouseArea {
             id: dropdownMenuWindowArea
             anchors.fill: parent
             propagateComposedEvents: true
             hoverEnabled: true
             onEntered: {
+                if (dropdownToggle.disableDisappearanceOnNoFocus) {
+                    return;
+                }
                 dropdownMenuWindow.visible = Qt.binding(() => {
                     if (dropdownMenuWindowArea.containsMouse) {
                         return true;
@@ -103,10 +123,12 @@ Rectangle {
                     return false;
                 });
             }
-            ColumnLayout {
+            GridLayout {
                 id: dropdownMenuBody
                 anchors.fill: parent
-                spacing: 0
+                columnSpacing: 0
+                rowSpacing: 0
+                columns: 1
             }
         }
     }
