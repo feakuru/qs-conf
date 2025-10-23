@@ -15,6 +15,14 @@ DropdownMenu {
     disableDisappearanceOnNoFocus: true
 
     property string currentCategory: ""
+    property list<var> displayedEntries: {
+        let model = new Array(...DesktopEntries.applications.values);
+        if (searchField.text.length > 0) {
+            model = model.filter(val => val.name.toLowerCase().includes(searchField.text));
+        }
+        model = model.slice(0, 100).sort((lhs, rhs) => lhs.name.localeCompare(rhs.name));
+        return model
+    }
 
     IpcHandler {
         target: "programPicker"
@@ -28,13 +36,7 @@ DropdownMenu {
 
     menuContent: [
         Repeater {
-            model: {
-                let model = DesktopEntries.applications.values;
-                if (searchField.text.length > 0) {
-                    return model.filter(val => val.name.toLowerCase().includes(searchField.text));
-                }
-                return model.slice(0, 100);
-            }
+            model: programPicker.displayedEntries
             delegate: DropdownMenuItem {
                 action: () => {
                     programPicker.toggleMenuVisibility();
@@ -42,7 +44,7 @@ DropdownMenu {
                 }
                 StyledText {
                     font.pixelSize: 16
-                    text: modelData.name
+                    text: modelData.name.slice(0, 24) + (modelData.name.length > 24 ? "..." : "")
                 }
             }
         },
@@ -50,6 +52,7 @@ DropdownMenu {
             Layout.columnSpan: 4
             Keys.onEscapePressed: {
                 programPicker.toggleMenuVisibility();
+                searchField.text = "";
             }
             TextField {
                 id: searchField
@@ -58,6 +61,13 @@ DropdownMenu {
                 font.pixelSize: 18
                 font.family: "FiraCode Nerd Font"
                 placeholderText: "hello"
+                onAccepted: {
+                    if (programPicker.displayedEntries.length > 0) {
+                        programPicker.displayedEntries[programPicker.displayedEntries.length - 1].execute();
+                        programPicker.toggleMenuVisibility();
+                        searchField.text = "";
+                    }
+                }
             }
         }
     ]
