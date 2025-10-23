@@ -5,7 +5,7 @@ import QtQuick
 Singleton {
     property color bgColor: Qt.rgba(0.3, 0.3, 0.3, 0.5)
     property color solidBgColor: Qt.rgba(0.2, 0.2, 0.2, 0.9)
-    property color focusedBgColor: Qt.rgba(0.3, 0.3, 0.3, 0.7)
+    property color focusedBgColor: Qt.rgba(0.4, 0.4, 0.4, 0.9)
     property color focusedSolidBgColor: Qt.rgba(0.3, 0.3, 0.4, 0.9)
     property color styledTextColor: "white"
     property color styledTextOutlineColor: Qt.rgba(0.2, 0.2, 0.2, 0.7)

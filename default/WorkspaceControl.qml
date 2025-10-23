@@ -27,7 +27,7 @@ Rectangle {
                 Layout.margins: 5
                 border.width: 3
                 border.color: AppConstants.accentColor
-                color: modelData.focused ? AppConstants.accentColor : wsMouseArea.containsMouse ? AppConstants.bgColor : "transparent"
+                color: modelData.focused ? AppConstants.accentColor : wsMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
                 radius: 7
 
                 MouseArea {
