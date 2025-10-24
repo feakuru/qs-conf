@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
+import Quickshell.Widgets
 
 DropdownMenu {
     id: programPicker
@@ -63,6 +64,7 @@ DropdownMenu {
         Repeater {
             model: programPicker.displayedEntries
             delegate: DropdownMenuItem {
+                id: programMenuItem
                 Layout.margins: 1
                 border.width: {
                     index == programPicker.focusedIdx ? 3 : 1;
@@ -78,11 +80,34 @@ DropdownMenu {
                         modelData.execute();
                     }
                 }
-                StyledText {
-                    font.pixelSize: 16
-                    text: {
-                        let name = typeof modelData == "string" ? `> ${modelData}` : modelData.name;
-                        name.slice(0, 24) + (name.length > 24 ? "..." : "");
+                RowLayout {
+                    anchors.fill: parent
+                    Rectangle {
+                        color: "transparent"
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: 48
+                        visible: {
+                            Boolean(modelData.icon) && modelData.icon.length > 0 && (programIcon.status == Image.Ready);
+                        }
+                        IconImage {
+                            id: programIcon
+                            width: 32
+                            height: 32
+                            anchors.centerIn: parent
+                            source: Quickshell.iconPath(modelData.icon, true)
+                        }
+                    }
+                    Rectangle {
+                        color: "transparent"
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        StyledText {
+                            font.pixelSize: 16
+                            text: {
+                                let name = typeof modelData == "string" ? `> ${modelData}` : modelData.name;
+                                name.slice(0, 22) + (name.length > 22 ? "..." : "");
+                            }
+                        }
                     }
                 }
             }
@@ -118,7 +143,7 @@ DropdownMenu {
                 }
                 Keys.onUpPressed: event => {
                     if (programPicker.focusedIdx < 0) {
-                        let deltaToLeftInLastRow = programPicker.displayedEntries.length % 4
+                        let deltaToLeftInLastRow = programPicker.displayedEntries.length % 4;
                         programPicker.focusedIdx = Math.max(programPicker.displayedEntries.length - deltaToLeftInLastRow, 0);
                     } else {
                         programPicker.focusedIdx = Math.max(programPicker.focusedIdx - 4, 0);

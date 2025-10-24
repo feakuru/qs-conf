@@ -120,7 +120,7 @@ Scope {
                                 Layout.margins: 10
                                 Layout.minimumWidth: 32
                                 Layout.minimumHeight: 32
-                                source: `image://icon/${modelData.appIcon}`
+                                source: Quickshell.iconPath(modelData.appIcon, "application-x-executable")
                                 sourceSize.width: this.width
                                 sourceSize.height: this.height
                                 mipmap: true

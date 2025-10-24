@@ -57,7 +57,7 @@ Rectangle {
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: 22
                                 height: 22
-                                source: `image://icon/${modelData.toLowerCase()}`
+                                source: Quickshell.iconPath(modelData.toLowerCase(), "application-x-executable")
                                 mipmap: true
                             }
                         }
