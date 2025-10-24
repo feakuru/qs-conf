@@ -14,13 +14,14 @@ DropdownMenu {
     menuColumns: 4
     disableDisappearanceOnNoFocus: true
 
+    property int focusedIdx: -1
     property string currentCategory: ""
     property list<var> displayedEntries: {
         let model = new Array(...DesktopEntries.applications.values);
         if (searchField.text.length > 0) {
             model = model.filter(val => val.name.toLowerCase().includes(searchField.text));
         } else if (currentCategory.length > 0) {
-            model = model.filter(entry => entry.categories.includes(currentCategory)).sort((lhs, rhs) => lhs.name.localeCompare(rhs.name)).slice(0, 100)
+            model = model.filter(entry => entry.categories.includes(currentCategory)).sort((lhs, rhs) => lhs.name.localeCompare(rhs.name)).slice(0, 100);
         } else {
             let categories = new Set();
             for (let entryCategories of model.map(entry => entry.categories)) {
@@ -28,9 +29,9 @@ DropdownMenu {
                     categories.add(category);
                 }
             }
-            model = [...categories].sort();
+            model = [...categories].sort().concat(model.filter(entry => entry.categories.length <= 0));
         }
-        return model
+        return model;
     }
 
     IpcHandler {
@@ -39,6 +40,7 @@ DropdownMenu {
         function toggle(): void {
             searchField.text = "";
             programPicker.currentCategory = "";
+            programPicker.focusedIdx = -1;
             programPicker.toggleMenuVisibility();
             searchField.forceActiveFocus(Qt.ShortcutFocusReason);
         }
@@ -62,7 +64,12 @@ DropdownMenu {
             model: programPicker.displayedEntries
             delegate: DropdownMenuItem {
                 Layout.margins: 1
-                border.width: 1
+                border.width: {
+                    index == programPicker.focusedIdx ? 3 : 1;
+                }
+                border.color: {
+                    index == programPicker.focusedIdx ? AppConstants.indicatorOnColor : AppConstants.indicatorOffColor;
+                }
                 action: () => {
                     if (typeof modelData == "string") {
                         programPicker.currentCategory = modelData;
@@ -74,8 +81,8 @@ DropdownMenu {
                 StyledText {
                     font.pixelSize: 16
                     text: {
-                        let name = typeof modelData == "string" ? `> ${modelData}` : modelData.name
-                        name.slice(0, 24) + (name.length > 24 ? "..." : "")
+                        let name = typeof modelData == "string" ? `> ${modelData}` : modelData.name;
+                        name.slice(0, 24) + (name.length > 24 ? "..." : "");
                     }
                 }
             }
@@ -85,6 +92,7 @@ DropdownMenu {
             Keys.onEscapePressed: {
                 programPicker.toggleMenuVisibility();
                 searchField.text = "";
+                programPicker.focusedIdx = -1;
             }
             TextField {
                 id: searchField
@@ -93,12 +101,52 @@ DropdownMenu {
                 font.pixelSize: 18
                 font.family: "FiraCode Nerd Font"
                 placeholderText: "Search programs or choose category"
+                onTextChanged: {
+                    programPicker.focusedIdx = -1;
+                }
                 onAccepted: {
-                    if (text.length > 0 && programPicker.displayedEntries.length > 0) {
-                        programPicker.displayedEntries[programPicker.displayedEntries.length - 1].execute();
-                        programPicker.toggleMenuVisibility();
-                        searchField.text = "";
+                    if (programPicker.focusedIdx >= 0 && programPicker.focusedIdx < programPicker.displayedEntries.length) {
+                        let entry = programPicker.displayedEntries[programPicker.focusedIdx];
+                        if (typeof entry == "string") {
+                            programPicker.currentCategory = entry;
+                        } else {
+                            entry.execute();
+                            programPicker.toggleMenuVisibility();
+                            searchField.text = "";
+                        }
                     }
+                }
+                Keys.onUpPressed: event => {
+                    if (programPicker.focusedIdx < 0) {
+                        programPicker.focusedIdx = Math.max(programPicker.displayedEntries.length - 4, 0);
+                    } else {
+                        programPicker.focusedIdx = Math.max(programPicker.focusedIdx - 4, 0);
+                    }
+                    event.accepted = true;
+                }
+                Keys.onDownPressed: event => {
+                    if (programPicker.focusedIdx < 0) {
+                        programPicker.focusedIdx = 3;
+                    } else {
+                        programPicker.focusedIdx = Math.min(programPicker.focusedIdx + 4, programPicker.displayedEntries.length - 1);
+                    }
+                    event.accepted = true;
+                }
+                Keys.onLeftPressed: event => {
+                    if (programPicker.focusedIdx < 0) {
+                        programPicker.focusedIdx = programPicker.displayedEntries.length - 1;
+                    } else {
+                        programPicker.focusedIdx = Math.max(programPicker.focusedIdx - 1, 0);
+                    }
+                    event.accepted = true;
+                }
+                Keys.onRightPressed: event => {
+                    if (programPicker.focusedIdx < 0) {
+                        programPicker.focusedIdx = 0;
+                    } else {
+                        programPicker.focusedIdx = Math.min(programPicker.focusedIdx + 1, programPicker.displayedEntries.length - 1);
+                    }
+                    event.accepted = true;
                 }
             }
         }
