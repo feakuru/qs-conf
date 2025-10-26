@@ -7,7 +7,7 @@ Rectangle {
     border.color: AppConstants.indicatorBorderColor
 
     StyledText {
-        text: Qt.formatDateTime(systemClock.date, "dd.MM.yyyy | hh:mm:ss")
+        text: Qt.formatDateTime(systemClock.date, "dd MMM hh:mm:ss")
 
         SystemClock {
             id: systemClock
