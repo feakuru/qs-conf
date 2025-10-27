@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Hyprland
+import Quickshell.Wayland
 
 Rectangle {
     id: outerRect
@@ -15,7 +16,17 @@ Rectangle {
         id: windowTitle
         text: {
             let topLevel = Hyprland.activeToplevel;
-            if (topLevel == null || topLevel.workspace.id != Hyprland.focusedWorkspace.id) {
+            let waylandToplevel = ToplevelManager.activeToplevel; // because hyprland may not report the window as closed
+
+            if (
+                topLevel == null
+                || waylandToplevel == null
+                || (
+                    Hyprland.focusedWorkspace != null
+                    && topLevel.workspace != null
+                    && topLevel.workspace.id != Hyprland.focusedWorkspace.id
+                )
+            ) {
                 return "";
             }
 
