@@ -32,7 +32,17 @@ DropdownMenu {
             }
         },
         Repeater {
-            model: Bluetooth.defaultAdapter.devices
+            model: [...Bluetooth.defaultAdapter.devices.values].sort(
+                (lhs, rhs) => {
+                    if (lhs.state == BluetoothDeviceState.Connected) {
+                        if (rhs.state != BluetoothDeviceState.Connected) {
+                            return -1;
+                        }
+                        return 0;
+                    }
+                    return 1;
+                }
+            )
             delegate: DropdownMenuItem {
                 action: () => {
                     if (modelData.connected) {
