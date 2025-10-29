@@ -18,16 +18,18 @@ Rectangle {
             delegate: Rectangle {
                 border.width: 1
                 border.color: AppConstants.indicatorBorderColor
-                Layout.preferredWidth: 30
-                Layout.preferredHeight: 30
-                radius: 7
+                Layout.preferredWidth: 36
+                Layout.preferredHeight: 36
+                radius: 5
                 color: iconMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
 
                 IconImage {
                     anchors.centerIn: parent
                     anchors.fill: parent
                     anchors.margins: 5
-                    source: modelData.icon
+                    source: {
+                        modelData.icon
+                    }
                     mipmap: true
                 }
 
