@@ -54,7 +54,6 @@ Scope {
                 Layout.preferredWidth: preferredWidth
             }
         }
-        ToplevelTitle {}
     }
 
     PanelWindow {

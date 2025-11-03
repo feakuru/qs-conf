@@ -155,6 +155,7 @@ Scope {
                                 anchors.centerIn: null
                                 font.pixelSize: 20
                                 text: modelData.body
+                                wrapMode: Text.WordWrap
                             }
                         }
                         RowLayout {
