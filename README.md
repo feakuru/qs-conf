@@ -7,4 +7,4 @@ This is my personal config for Quickshell. It includes a top bar and a bottom ba
 - `sar`
 - `nmcli`
 - `pactl`
-- `python` with `psutil` installed
+- `uv` with a Python 3.12 or greater available
