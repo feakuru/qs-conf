@@ -24,11 +24,13 @@ Rectangle {
     }
     Process {
         id: ramProcess
-        command: ["python", "-c", "import psutil; print(int(psutil.virtual_memory().percent), end='')"]
+        command: ["python", Qt.resolvedUrl("scripts/ram_usage.py").toString().replace(/^file:\/{2}/, ""),]
         running: true
 
         stdout: StdioCollector {
-            onStreamFinished: ramIndicator.percentValue = parseInt(this.text)
+            onStreamFinished: {
+                ramIndicator.percentValue = parseInt(this.text);
+            }
         }
     }
     Timer {

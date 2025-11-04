@@ -14,7 +14,7 @@ Rectangle {
 
     Process {
         id: cpuProcess
-        command: ["python", "-c", "import psutil; print(' '.join(str(int(val)) for val in psutil.cpu_percent(percpu=True, interval=0.1)))"]
+        command: ["python", Qt.resolvedUrl("scripts/cpu_per_core_load.py").toString().replace(/^file:\/{2}/, ""),]
         running: true
 
         stdout: StdioCollector {
@@ -43,15 +43,14 @@ Rectangle {
         font.pixelSize: 18
         Process {
             id: cpuPercentProcess
-            command: ["python", "-c", "import psutil; print(f'{int(psutil.cpu_percent(interval=0.1)): 2d}', end='')"]
+            command: ["python", Qt.resolvedUrl("scripts/cpu_load.py").toString().replace(/^file:\/{2}/, ""),]
             running: true
 
             stdout: StdioCollector {
                 onStreamFinished: {
                     if (cpuIndicator.cpuData.length > 16) {
                         cpuPercentIndicator.text = `🔲 ${this.text.trim()}%`;
-                    }
-                    else {
+                    } else {
                         cpuPercentIndicator.text = `${this.text.trim()}%`;
                     }
                 }
