@@ -12,9 +12,9 @@ Rectangle {
 
     property var cpuData: []
 
-    Process {
+    ScriptProcess {
         id: cpuProcess
-        command: ["python", Qt.resolvedUrl("scripts/cpu_per_core_load.py").toString().replace(/^file:\/{2}/, ""),]
+        scriptName: "cpu_per_core_load"
         running: true
 
         stdout: StdioCollector {
@@ -41,9 +41,10 @@ Rectangle {
         id: cpuPercentIndicator
         anchors.fill: parent
         font.pixelSize: 18
-        Process {
+
+        ScriptProcess {
             id: cpuPercentProcess
-            command: ["python", Qt.resolvedUrl("scripts/cpu_load.py").toString().replace(/^file:\/{2}/, ""),]
+            scriptName: "cpu_load"
             running: true
 
             stdout: StdioCollector {

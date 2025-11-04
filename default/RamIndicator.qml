@@ -22,9 +22,9 @@ Rectangle {
         text: `🧠 ${ramIndicator.percentValue}%`
         font.pixelSize: 18
     }
-    Process {
+    ScriptProcess {
         id: ramProcess
-        command: ["python", Qt.resolvedUrl("scripts/ram_usage.py").toString().replace(/^file:\/{2}/, ""),]
+        scriptName: "ram_usage"
         running: true
 
         stdout: StdioCollector {
