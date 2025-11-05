@@ -14,7 +14,7 @@ Rectangle {
                 result += 24;
             }
         }
-        result
+        result;
     }
 
     RowLayout {
@@ -68,6 +68,30 @@ Rectangle {
                             height: 10
                         }
                     }
+                }
+            }
+        }
+
+        Rectangle {
+            Layout.preferredWidth: 26
+            Layout.preferredHeight: 26
+            Layout.margins: 2
+            border.width: 3
+            border.color: AppConstants.accentColor
+            color: addWsMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
+            radius: 9
+
+            StyledText {
+                font.pixelSize: 16
+                text: "+"
+            }
+
+            MouseArea {
+                id: addWsMouseArea
+                anchors.fill: parent
+                hoverEnabled: true
+                onClicked: {
+                    Hyprland.dispatch("workspace emptyn");
                 }
             }
         }
