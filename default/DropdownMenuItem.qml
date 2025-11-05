@@ -7,7 +7,7 @@ Rectangle {
     Layout.fillWidth: true
     color: dropdownItemMouseArea.containsMouse ? AppConstants.focusedSolidBgColor : "transparent"
     border.width: 1
-    radius: 3
+    radius: 0
     property var action: () => {}
 
     MouseArea {
