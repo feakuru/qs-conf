@@ -33,9 +33,7 @@ Rectangle {
 
     RowLayout {
         spacing: 0
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
+        anchors.centerIn: parent
         Rectangle {
             color: "transparent"
             Layout.fillHeight: true
