@@ -20,9 +20,8 @@ Rectangle {
     property alias toggleTextHorizontalAlignment: dropdownToggleText.horizontalAlignment
     property alias toggleIconSource: dropdownToggleIcon.source
     property alias toggleIconColor: recoloredIcon.color
-    property real preferredWidth: {
-        dropdownToggleText.text.split("\n")[0].length * 0.7 * dropdownToggleText.font.pixelSize + (dropdownToggleIcon.source != "" ? (dropdownToggleIcon.width + 16) : 0);
-    }
+    property alias toggleMouseAreaContainsMouse: dropdownToggleMouseArea.containsMouse
+    property real preferredWidth: dropdownToggleText.width + (dropdownToggleIcon.visible ? dropdownToggleIcon.width : 0) + 20
     property list<Item> menuContent
     property bool disableDisappearanceOnNoFocus: false
 
@@ -34,7 +33,9 @@ Rectangle {
 
     RowLayout {
         spacing: 0
-        anchors.fill: parent
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
         Rectangle {
             color: "transparent"
             Layout.fillHeight: true
