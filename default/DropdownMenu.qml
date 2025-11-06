@@ -19,7 +19,7 @@ Rectangle {
     property alias toggleTextColor: dropdownToggleText.color
     property alias toggleTextHorizontalAlignment: dropdownToggleText.horizontalAlignment
     property alias toggleIconSource: dropdownToggleIcon.source
-    property alias toggleIconColor: recoloredIcon.color
+    property alias toggleIconColor: dropdownToggleIcon.iconColor
     property alias toggleMouseAreaContainsMouse: dropdownToggleMouseArea.containsMouse
     property real preferredWidth: dropdownToggleText.width + (dropdownToggleIcon.visible ? dropdownToggleIcon.width : 0) + 20
     property list<Item> menuContent
@@ -34,32 +34,14 @@ Rectangle {
     RowLayout {
         spacing: 0
         anchors.centerIn: parent
-        Rectangle {
-            color: "transparent"
+        RecoloredIcon {
+            id: dropdownToggleIcon
             Layout.fillHeight: true
-            Layout.preferredWidth: dropdownToggleIcon.width
+            Layout.preferredWidth: preferredWidth
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-            visible: dropdownToggleIcon.source != ""
-            IconImage {
-                id: dropdownToggleIcon
-                anchors.centerIn: parent
-                width: 32
-                height: 32
-            }
-            ColorOverlay {
-                id: recoloredIcon
-                anchors.fill: dropdownToggleIcon
-                source: dropdownToggleIcon
-                color: "white"
-            }
-            DropShadow {
-                anchors.fill: recoloredIcon
-                source: recoloredIcon
-                horizontalOffset: 2
-                verticalOffset: 2
-                radius: 8.0
-                color: Qt.rgba(0.1, 0.1, 0.1, 1)
-            }
+            visible: source != ""
+            iconWidth: 32
+            iconHeight: 32
         }
         Rectangle {
             color: "transparent"
