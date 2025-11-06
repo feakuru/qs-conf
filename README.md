@@ -8,3 +8,4 @@ This is my personal config for Quickshell. It includes a top bar and a bottom ba
 - `nmcli`
 - `pactl`
 - `uv` with a Python 3.12 or greater available
+- `xdg-terminal-exec` (available only as a separate AUR on Arch at the time of writing)

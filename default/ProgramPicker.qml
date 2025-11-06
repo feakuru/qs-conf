@@ -77,7 +77,14 @@ DropdownMenu {
                         programPicker.currentCategory = modelData;
                     } else {
                         programPicker.toggleMenuVisibility();
-                        modelData.execute();
+                        if (modelData.runInTerminal) {
+                            Quickshell.execDetached({
+                                command: ["xdg-terminal-exec", modelData.command],
+                                workingDirectory: modelData.workingDirectory
+                            });
+                        } else {
+                            modelData.execute();
+                        }
                     }
                 }
                 RowLayout {
@@ -135,7 +142,14 @@ DropdownMenu {
                         if (typeof entry == "string") {
                             programPicker.currentCategory = entry;
                         } else {
-                            entry.execute();
+                            if (entry.runInTerminal) {
+                                Quickshell.execDetached({
+                                    command: ["xdg-terminal-exec", entry.command],
+                                    workingDirectory: entry.workingDirectory
+                                });
+                            } else {
+                                entry.execute();
+                            }
                             programPicker.toggleMenuVisibility();
                             searchField.text = "";
                         }
