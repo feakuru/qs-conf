@@ -6,8 +6,8 @@ DropdownMenu {
     id: netIndicator
     toggleTextHorizontalAlignment: Text.AlignRight
     toggleTextFont.pixelSize: 16
-    menuWidth: 300
-    menuAnchors.top: true
+    menuWidth: 450
+    menuAnchors.bottom: true
     property var txSpeed: 0.0
     property var rxSpeed: 0.0
     property string defaultDevice: "enp"

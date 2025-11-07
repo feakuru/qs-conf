@@ -70,7 +70,7 @@ DropdownMenu {
     }
 
     menuWidth: 400
-    menuAnchors.bottom: true
+    menuAnchors.top: true
 
     menuContent: [
         GridLayout {
@@ -235,73 +235,6 @@ DropdownMenu {
                         StyledText {
                             text: "brighter"
                             font.pixelSize: 14
-                        }
-                    }
-                }
-            }
-            DropdownMenuItem {
-                Layout.columnSpan: 1
-                action: () => {
-                    Quickshell.execDetached({command: ["pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%"]});
-                }
-                RowLayout {
-                    anchors.fill: parent
-                    Rectangle {
-                        color: "transparent"
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        StyledText {
-                            font.pixelSize: 14
-                            text: "quiet"
-                        }
-                    }
-                    RecoloredIcon {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: preferredWidth
-                        Layout.leftMargin: 10
-                        iconWidth: 26
-                        iconHeight: 26
-                        source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/volume-low.svg`)
-                        iconColor: "lightgray"
-                    }
-                }
-            }
-            DropdownMenuItem {
-                Layout.columnSpan: 1
-                action: () => {
-                    Quickshell.execDetached({command: ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"]});
-                }
-                RecoloredIcon {
-                    anchors.fill: parent
-                    iconWidth: 26
-                    iconHeight: 26
-                    source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/volume-xmark.svg`)
-                    iconColor: "lightgray"
-                }
-            }
-            DropdownMenuItem {
-                Layout.columnSpan: 1
-                action: () => {
-                    Quickshell.execDetached({command: ["pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%"]});
-                }
-                RowLayout {
-                    anchors.fill: parent
-                    RecoloredIcon {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: preferredWidth
-                        Layout.leftMargin: 10
-                        iconWidth: 26
-                        iconHeight: 26
-                        source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/volume-high.svg`)
-                        iconColor: "lightgray"
-                    }
-                    Rectangle {
-                        color: "transparent"
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        StyledText {
-                            font.pixelSize: 14
-                            text: "loud"
                         }
                     }
                 }
