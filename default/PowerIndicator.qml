@@ -150,7 +150,7 @@ DropdownMenu {
                 Layout.columnSpan: 1
                 action: () => {
                     Quickshell.execDetached({
-                        command: ["brightnessctl", "set", "10%-"]
+                        command: ["brightnessctl", "set", "5%-"]
                     });
                 }
                 RowLayout {
@@ -188,7 +188,7 @@ DropdownMenu {
                 Layout.columnSpan: 1
                 action: () => {
                     Quickshell.execDetached({
-                        command: ["brightnessctl", "set", "10%+"]
+                        command: ["brightnessctl", "set", "5%+"]
                     });
                 }
                 RowLayout {
