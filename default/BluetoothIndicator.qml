@@ -16,7 +16,6 @@ DropdownMenu {
         result;
     }
     toggleTextFont.pixelSize: 16
-    toggleTextColor: Bluetooth.defaultAdapter.enabled ? AppConstants.bluetoothColor : AppConstants.indicatorOffColor
 
     menuWidth: 300
     menuAnchors.top: true
