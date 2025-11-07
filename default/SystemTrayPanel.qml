@@ -12,21 +12,23 @@ Rectangle {
 
     RowLayout {
         anchors.centerIn: parent
-        spacing: 5
+        anchors.fill: parent
+        spacing: 0
+
         Repeater {
             model: SystemTray.items
             delegate: Rectangle {
                 border.width: 1
                 border.color: AppConstants.indicatorBorderColor
-                Layout.preferredWidth: 36
-                Layout.preferredHeight: 36
-                radius: 5
+                Layout.preferredWidth: 40
+                Layout.fillHeight: true
                 color: iconMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
 
                 IconImage {
                     anchors.centerIn: parent
-                    anchors.fill: parent
                     anchors.margins: 5
+                    width: 24
+                    height: 24
                     source: {
                         modelData.icon
                     }
