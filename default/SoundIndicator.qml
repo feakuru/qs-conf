@@ -28,14 +28,14 @@ DropdownMenu {
 
     toggleText: {
         if (leftVolume == rightVolume) {
-            return `${leftVolume}%`
+            return `${leftVolume}%`;
         } else {
-            return `L${leftVolume} R${rightVolume}`
+            return `L${leftVolume} R${rightVolume}`;
         }
     }
 
-    menuWidth: 400
-    menuAnchors.bottom: true
+    menuWidth: 200
+    menuAnchors.top: true
     menuContent: [
         GridLayout {
             columns: 3
@@ -44,37 +44,27 @@ DropdownMenu {
             DropdownMenuItem {
                 Layout.columnSpan: 1
                 action: () => {
-                    Quickshell.execDetached({command: ["pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%"]});
+                    Quickshell.execDetached({
+                        command: ["pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%"]
+                    });
                 }
-                RowLayout {
-                    anchors.fill: parent
-                    Rectangle {
-                        color: "transparent"
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        StyledText {
-                            font.pixelSize: 14
-                            text: "quiet"
-                        }
-                    }
-                    RecoloredIcon {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: preferredWidth
-                        Layout.leftMargin: 10
-                        iconWidth: 26
-                        iconHeight: 26
-                        source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/volume-low.svg`)
-                        iconColor: "lightgray"
-                    }
+                RecoloredIcon {
+                    anchors.centerIn: parent
+                    iconWidth: 26
+                    iconHeight: 26
+                    source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/volume-low.svg`)
+                    iconColor: "lightgray"
                 }
             }
             DropdownMenuItem {
                 Layout.columnSpan: 1
                 action: () => {
-                    Quickshell.execDetached({command: ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"]});
+                    Quickshell.execDetached({
+                        command: ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"]
+                    });
                 }
                 RecoloredIcon {
-                    anchors.fill: parent
+                    anchors.centerIn: parent
                     iconWidth: 26
                     iconHeight: 26
                     source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/volume-xmark.svg`)
@@ -84,28 +74,16 @@ DropdownMenu {
             DropdownMenuItem {
                 Layout.columnSpan: 1
                 action: () => {
-                    Quickshell.execDetached({command: ["pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%"]});
+                    Quickshell.execDetached({
+                        command: ["pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%"]
+                    });
                 }
-                RowLayout {
-                    anchors.fill: parent
-                    RecoloredIcon {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: preferredWidth
-                        Layout.leftMargin: 10
-                        iconWidth: 26
-                        iconHeight: 26
-                        source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/volume-high.svg`)
-                        iconColor: "lightgray"
-                    }
-                    Rectangle {
-                        color: "transparent"
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        StyledText {
-                            font.pixelSize: 14
-                            text: "loud"
-                        }
-                    }
+                RecoloredIcon {
+                    anchors.centerIn: parent
+                    iconWidth: 26
+                    iconHeight: 26
+                    source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/volume-high.svg`)
+                    iconColor: "lightgray"
                 }
             }
         }

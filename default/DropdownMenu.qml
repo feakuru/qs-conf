@@ -33,12 +33,17 @@ Rectangle {
 
     RowLayout {
         spacing: 0
-        anchors.centerIn: parent
+        anchors.fill: parent
+        Rectangle {
+            color: "transparent"
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+        }
         RecoloredIcon {
             id: dropdownToggleIcon
             Layout.fillHeight: true
             Layout.preferredWidth: preferredWidth
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+            Layout.rightMargin: dropdownToggleText.text.length > 0 ? 7 : 0
             visible: source != ""
             iconWidth: 32
             iconHeight: 32
@@ -47,10 +52,15 @@ Rectangle {
             color: "transparent"
             visible: dropdownToggleText.text.length > 0
             Layout.fillHeight: true
-            Layout.preferredWidth: dropdownToggleText.width + 12
+            Layout.preferredWidth: dropdownToggleText.width
             StyledText {
                 id: dropdownToggleText
             }
+        }
+        Rectangle {
+            color: "transparent"
+            Layout.fillWidth: true
+            Layout.fillHeight: true
         }
     }
 

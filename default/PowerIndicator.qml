@@ -69,39 +69,32 @@ DropdownMenu {
         result;
     }
 
-    menuWidth: 400
+    menuWidth: 200
     menuAnchors.top: true
 
     menuContent: [
         GridLayout {
-            columns: 3
+            columns: 2
             columnSpacing: 0
             rowSpacing: 0
 
             DropdownMenuItem {
                 Layout.columnSpan: 1
                 action: () => {
-                    Quickshell.execDetached({command: ["shutdown", "now"]});
+                    Quickshell.execDetached({
+                        command: ["shutdown", "now"]
+                    });
                 }
                 RowLayout {
                     anchors.fill: parent
                     RecoloredIcon {
                         Layout.fillHeight: true
                         Layout.preferredWidth: preferredWidth
-                        Layout.leftMargin: 10
+                        Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
                         iconWidth: 26
                         iconHeight: 26
                         source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/power-off.svg`)
                         iconColor: "lightgray"
-                    }
-                    Rectangle {
-                        color: "transparent"
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        StyledText {
-                            font.pixelSize: 14
-                            text: "shutdown"
-                        }
                     }
                 }
             }
@@ -115,20 +108,11 @@ DropdownMenu {
                     RecoloredIcon {
                         Layout.fillHeight: true
                         Layout.preferredWidth: preferredWidth
-                        Layout.leftMargin: 10
+                        Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
                         iconWidth: 26
                         iconHeight: 26
                         source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/right-from-bracket.svg`)
                         iconColor: "lightgray"
-                    }
-                    Rectangle {
-                        color: "transparent"
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        StyledText {
-                            font.pixelSize: 14
-                            text: "logout"
-                        }
                     }
                 }
             }
@@ -136,34 +120,38 @@ DropdownMenu {
                 Layout.columnSpan: 1
                 action: () => {
                     Hyprland.dispatch("switchxkblayout all 0");
-                    Quickshell.execDetached({command: ["hyprlock"]});
+                    Quickshell.execDetached({
+                        command: ["hyprlock"]
+                    });
                 }
                 RowLayout {
                     anchors.fill: parent
                     RecoloredIcon {
                         Layout.fillHeight: true
                         Layout.preferredWidth: preferredWidth
-                        Layout.leftMargin: 10
+                        Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
                         iconWidth: 26
                         iconHeight: 26
                         source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/lock.svg`)
                         iconColor: "lightgray"
-                    }
-                    Rectangle {
-                        color: "transparent"
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        StyledText {
-                            font.pixelSize: 14
-                            text: "lock"
-                        }
                     }
                 }
             }
             DropdownMenuItem {
                 Layout.columnSpan: 1
                 action: () => {
-                    Quickshell.execDetached({command: ["brightnessctl", "set", "10%-"]});
+                    console.log("there will be an autorotate control here");
+                }
+                StyledText {
+                    text: ""
+                }
+            }
+            DropdownMenuItem {
+                Layout.columnSpan: 1
+                action: () => {
+                    Quickshell.execDetached({
+                        command: ["brightnessctl", "set", "10%-"]
+                    });
                 }
                 RowLayout {
                     anchors.fill: parent
@@ -172,10 +160,6 @@ DropdownMenu {
                         color: "transparent"
                         Layout.fillHeight: true
                         Layout.fillWidth: true
-                        StyledText {
-                            text: "dimmer"
-                            font.pixelSize: 14
-                        }
                     }
                     RecoloredIcon {
                         Layout.fillHeight: true
@@ -193,25 +177,28 @@ DropdownMenu {
                         source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/sun.svg`)
                         iconColor: "lightgray"
                     }
+                    Rectangle {
+                        color: "transparent"
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                    }
                 }
             }
             DropdownMenuItem {
                 Layout.columnSpan: 1
                 action: () => {
-                    console.log("there will be an autorotate control here");
-                }
-                StyledText {
-                    text: ""
-                }
-            }
-            DropdownMenuItem {
-                Layout.columnSpan: 1
-                action: () => {
-                    Quickshell.execDetached({command: ["brightnessctl", "set", "10%+"]});
+                    Quickshell.execDetached({
+                        command: ["brightnessctl", "set", "10%+"]
+                    });
                 }
                 RowLayout {
                     anchors.fill: parent
                     spacing: 0
+                    Rectangle {
+                        color: "transparent"
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                    }
                     RecoloredIcon {
                         Layout.fillHeight: true
                         Layout.preferredWidth: preferredWidth
@@ -232,10 +219,6 @@ DropdownMenu {
                         color: "transparent"
                         Layout.fillHeight: true
                         Layout.fillWidth: true
-                        StyledText {
-                            text: "brighter"
-                            font.pixelSize: 14
-                        }
                     }
                 }
             }

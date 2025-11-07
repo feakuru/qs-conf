@@ -39,8 +39,12 @@ Scope {
                 trayMenuDisplayParent: topPanelWindow
             }
 
-
             BluetoothIndicator {
+                Layout.fillHeight: true
+                Layout.preferredWidth: preferredWidth
+            }
+
+            SoundIndicator {
                 Layout.fillHeight: true
                 Layout.preferredWidth: preferredWidth
             }
@@ -78,7 +82,14 @@ Scope {
                 Layout.preferredWidth: preferredWidth
                 Layout.fillHeight: true
             }
-            CpuIndicator {
+
+            Rectangle {
+                color: "transparent"
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+
+            NetworkIndicator {
                 Layout.preferredWidth: preferredWidth
                 Layout.fillHeight: true
             }
@@ -88,20 +99,9 @@ Scope {
                 Layout.fillHeight: true
             }
 
-            NetworkIndicator {
+            CpuIndicator {
                 Layout.preferredWidth: preferredWidth
                 Layout.fillHeight: true
-            }
-
-            Rectangle {
-                color: "transparent"
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-            }
-
-            SoundIndicator {
-                Layout.fillHeight: true
-                Layout.preferredWidth: preferredWidth
             }
 
             DateClock {
