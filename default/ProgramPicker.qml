@@ -112,7 +112,7 @@ DropdownMenu {
                             font.pixelSize: 16
                             text: {
                                 let name = typeof modelData == "string" ? `> ${modelData}` : modelData.name;
-                                name.slice(0, 22) + (name.length > 22 ? "..." : "");
+                                name.slice(0, 22) + (name.length > 22 ? "…" : "");
                             }
                         }
                     }

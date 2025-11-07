@@ -60,7 +60,7 @@ DropdownMenu {
                             switch (modelData.state) {
                             case BluetoothDeviceState.Connecting:
                             case BluetoothDeviceState.Disconnecting:
-                                result += ' [...]';
+                                result += ' […]';
                                 break;
                             case BluetoothDeviceState.Connected:
                                 result += ' [+]';
@@ -91,7 +91,7 @@ DropdownMenu {
                 font.pixelSize: 18
                 text: {
                     if (Bluetooth.defaultAdapter.discovering) {
-                        return "[discovering...]";
+                        return "[discovering…]";
                     } else {
                         return "[discover devices]";
                     }
@@ -121,7 +121,7 @@ DropdownMenu {
                     text: {
                         let result = modelData.name;
                         if (modelData.pairing) {
-                            result += ' [...]';
+                            result += ' […]';
                         }
                         result;
                     }

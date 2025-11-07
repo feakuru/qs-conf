@@ -33,7 +33,7 @@ Rectangle {
             let maxTitleLength = outerRect.width / this.font.pixelSize;
             let fullTitle = topLevel.title;
             if (fullTitle.length > maxTitleLength) {
-                return fullTitle.slice(0, maxTitleLength) + '...';
+                return fullTitle.slice(0, maxTitleLength) + '…';
             }
             return fullTitle;
         }
