@@ -28,7 +28,9 @@ DropdownMenu {
 
     toggleTextFont.pixelSize: 18
     toggleText: {
-        if (leftVolume == rightVolume) {
+        if (isMuted) {
+            return '';
+        } else if (leftVolume == rightVolume) {
             return `${leftVolume}%`;
         } else {
             return `L${leftVolume} R${rightVolume}`;
