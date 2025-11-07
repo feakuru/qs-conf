@@ -43,7 +43,6 @@ Rectangle {
             id: dropdownToggleIcon
             Layout.fillHeight: true
             Layout.preferredWidth: preferredWidth
-            Layout.rightMargin: dropdownToggleText.text.length > 0 ? 7 : 0
             visible: source != ""
             iconWidth: 32
             iconHeight: 32

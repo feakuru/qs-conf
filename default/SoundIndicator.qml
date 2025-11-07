@@ -26,6 +26,7 @@ DropdownMenu {
     property real leftVolume: 0
     property real rightVolume: 0
 
+    toggleTextFont.pixelSize: 18
     toggleText: {
         if (leftVolume == rightVolume) {
             return `${leftVolume}%`;
