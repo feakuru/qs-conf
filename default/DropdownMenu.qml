@@ -24,6 +24,7 @@ Rectangle {
     property real preferredWidth: dropdownToggleText.width + (dropdownToggleIcon.visible ? dropdownToggleIcon.width : 0) + 20
     property list<Item> menuContent
     property bool disableDisappearanceOnNoFocus: false
+    property alias menuVisible: dropdownMenuWindow.visible
 
     function toggleMenuVisibility() {
         dropdownMenuWindow.visible = !dropdownMenuWindow.visible;

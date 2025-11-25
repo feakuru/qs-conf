@@ -1,12 +1,14 @@
 import QtQuick
+import QtQuick.Controls
+import QtQuick.Dialogs
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Services.UPower
 import Quickshell.Widgets
 
-// toggleMouseAreaContainsMouse
 DropdownMenu {
+    id: powerIndicator
     toggleIconColor: {
         if (!UPower.displayDevice.isLaptopBattery) {
             return AppConstants.styledTextColor;
@@ -72,156 +74,208 @@ DropdownMenu {
     menuWidth: 200
     menuAnchors.top: true
 
-    menuContent: [
-        GridLayout {
-            columns: 2
-            columnSpacing: 0
-            rowSpacing: 0
+    property bool showShutdownDialog: false
 
-            DropdownMenuItem {
-                Layout.columnSpan: 1
-                action: () => {
-                    Quickshell.execDetached({
-                        command: ["shutdown", "now"]
-                    });
+    onMenuVisibleChanged: () => {
+        showShutdownDialog = false;
+    }
+
+    menuContent: [
+        Loader {
+            readonly property Component baseMenu: GridLayout {
+                width: 200
+                columns: 2
+                columnSpacing: 0
+                rowSpacing: 0
+
+                DropdownMenuItem {
+                    Layout.columnSpan: 1
+                    action: () => {
+                        powerIndicator.showShutdownDialog = true;
+                    }
+
+                    RowLayout {
+                        anchors.fill: parent
+                        RecoloredIcon {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: preferredWidth
+                            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+                            iconWidth: 26
+                            iconHeight: 26
+                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/power-off.svg`)
+                            iconColor: "lightgray"
+                        }
+                    }
                 }
-                RowLayout {
-                    anchors.fill: parent
-                    RecoloredIcon {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: preferredWidth
-                        Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-                        iconWidth: 26
-                        iconHeight: 26
-                        source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/power-off.svg`)
-                        iconColor: "lightgray"
+                DropdownMenuItem {
+                    Layout.columnSpan: 1
+                    action: () => {
+                        Hyprland.dispatch("exit");
+                    }
+                    RowLayout {
+                        anchors.fill: parent
+                        RecoloredIcon {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: preferredWidth
+                            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+                            iconWidth: 26
+                            iconHeight: 26
+                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/right-from-bracket.svg`)
+                            iconColor: "lightgray"
+                        }
+                    }
+                }
+                DropdownMenuItem {
+                    Layout.columnSpan: 1
+                    action: () => {
+                        Hyprland.dispatch("switchxkblayout all 0");
+                        Quickshell.execDetached({
+                            command: ["hyprlock"]
+                        });
+                    }
+                    RowLayout {
+                        anchors.fill: parent
+                        RecoloredIcon {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: preferredWidth
+                            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+                            iconWidth: 26
+                            iconHeight: 26
+                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/lock.svg`)
+                            iconColor: "lightgray"
+                        }
+                    }
+                }
+                DropdownMenuItem {
+                    Layout.columnSpan: 1
+                    action: () => {
+                        console.log("there will be an autorotate control here");
+                    }
+                    StyledText {
+                        text: ""
+                    }
+                }
+                DropdownMenuItem {
+                    Layout.columnSpan: 1
+                    action: () => {
+                        Quickshell.execDetached({
+                            command: ["brightnessctl", "set", "5%-"]
+                        });
+                    }
+                    RowLayout {
+                        anchors.fill: parent
+                        spacing: 0
+                        Rectangle {
+                            color: "transparent"
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                        }
+                        RecoloredIcon {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: preferredWidth
+                            iconWidth: 26
+                            iconHeight: 26
+                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/square-minus.svg`)
+                            iconColor: "lightgray"
+                        }
+                        RecoloredIcon {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: preferredWidth
+                            iconWidth: 26
+                            iconHeight: 26
+                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/sun.svg`)
+                            iconColor: "lightgray"
+                        }
+                        Rectangle {
+                            color: "transparent"
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                        }
+                    }
+                }
+                DropdownMenuItem {
+                    Layout.columnSpan: 1
+                    action: () => {
+                        Quickshell.execDetached({
+                            command: ["brightnessctl", "set", "5%+"]
+                        });
+                    }
+                    RowLayout {
+                        anchors.fill: parent
+                        spacing: 0
+                        Rectangle {
+                            color: "transparent"
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                        }
+                        RecoloredIcon {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: preferredWidth
+                            iconWidth: 26
+                            iconHeight: 26
+                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/sun.svg`)
+                            iconColor: "lightgray"
+                        }
+                        RecoloredIcon {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: preferredWidth
+                            iconWidth: 26
+                            iconHeight: 26
+                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/square-plus.svg`)
+                            iconColor: "lightgray"
+                        }
+                        Rectangle {
+                            color: "transparent"
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                        }
                     }
                 }
             }
-            DropdownMenuItem {
-                Layout.columnSpan: 1
-                action: () => {
-                    Hyprland.dispatch("exit");
+            readonly property Component shutdownMenu: GridLayout {
+                width: 200
+                columns: 2
+                DropdownMenuItem {
+                    Layout.columnSpan: 1
+                    action: () => {
+                        Quickshell.execDetached({
+                            command: ["shutdown", "now"]
+                        });
+                    }
+                    RowLayout {
+                        anchors.fill: parent
+                        RecoloredIcon {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: preferredWidth
+                            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+                            iconWidth: 26
+                            iconHeight: 26
+                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/power-off.svg`)
+                            iconColor: "red"
+                        }
+                    }
                 }
-                RowLayout {
-                    anchors.fill: parent
-                    RecoloredIcon {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: preferredWidth
-                        Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-                        iconWidth: 26
-                        iconHeight: 26
-                        source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/right-from-bracket.svg`)
-                        iconColor: "lightgray"
+                DropdownMenuItem {
+                    Layout.columnSpan: 1
+                    action: () => {
+                        powerIndicator.showShutdownDialog = false;
+                    }
+                    RowLayout {
+                        anchors.fill: parent
+                        RecoloredIcon {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: preferredWidth
+                            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+                            iconWidth: 26
+                            iconHeight: 26
+                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/cancel.svg`)
+                            iconColor: "lightgray"
+                        }
                     }
                 }
             }
-            DropdownMenuItem {
-                Layout.columnSpan: 1
-                action: () => {
-                    Hyprland.dispatch("switchxkblayout all 0");
-                    Quickshell.execDetached({
-                        command: ["hyprlock"]
-                    });
-                }
-                RowLayout {
-                    anchors.fill: parent
-                    RecoloredIcon {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: preferredWidth
-                        Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-                        iconWidth: 26
-                        iconHeight: 26
-                        source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/lock.svg`)
-                        iconColor: "lightgray"
-                    }
-                }
-            }
-            DropdownMenuItem {
-                Layout.columnSpan: 1
-                action: () => {
-                    console.log("there will be an autorotate control here");
-                }
-                StyledText {
-                    text: ""
-                }
-            }
-            DropdownMenuItem {
-                Layout.columnSpan: 1
-                action: () => {
-                    Quickshell.execDetached({
-                        command: ["brightnessctl", "set", "5%-"]
-                    });
-                }
-                RowLayout {
-                    anchors.fill: parent
-                    spacing: 0
-                    Rectangle {
-                        color: "transparent"
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                    }
-                    RecoloredIcon {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: preferredWidth
-                        iconWidth: 26
-                        iconHeight: 26
-                        source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/square-minus.svg`)
-                        iconColor: "lightgray"
-                    }
-                    RecoloredIcon {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: preferredWidth
-                        iconWidth: 26
-                        iconHeight: 26
-                        source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/sun.svg`)
-                        iconColor: "lightgray"
-                    }
-                    Rectangle {
-                        color: "transparent"
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                    }
-                }
-            }
-            DropdownMenuItem {
-                Layout.columnSpan: 1
-                action: () => {
-                    Quickshell.execDetached({
-                        command: ["brightnessctl", "set", "5%+"]
-                    });
-                }
-                RowLayout {
-                    anchors.fill: parent
-                    spacing: 0
-                    Rectangle {
-                        color: "transparent"
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                    }
-                    RecoloredIcon {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: preferredWidth
-                        iconWidth: 26
-                        iconHeight: 26
-                        source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/sun.svg`)
-                        iconColor: "lightgray"
-                    }
-                    RecoloredIcon {
-                        Layout.fillHeight: true
-                        Layout.preferredWidth: preferredWidth
-                        iconWidth: 26
-                        iconHeight: 26
-                        source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/square-plus.svg`)
-                        iconColor: "lightgray"
-                    }
-                    Rectangle {
-                        color: "transparent"
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                    }
-                }
-            }
+
+            sourceComponent: powerIndicator.showShutdownDialog ? shutdownMenu : baseMenu
         }
     ]
 }

@@ -1,3 +1,4 @@
 import psutil
 
-print(int(psutil.virtual_memory().percent))
+if __name__ == "__main__":
+    print(int(psutil.virtual_memory().percent))

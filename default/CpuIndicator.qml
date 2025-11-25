@@ -2,15 +2,41 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
-Rectangle {
+DropdownMenu {
     id: cpuIndicator
-    color: "transparent"
-    border.width: 1
-    border.color: AppConstants.indicatorBorderColor
     property real barWidth: cpuIndicator.cpuData.length > 16 ? 4 : 8
     property real preferredWidth: cpuIndicator.cpuData.length * barWidth
 
     property var cpuData: []
+
+    toggleTextFont.pixelSize: 18
+    toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/microchip.svg")
+    toggleIconColor: "white"
+
+    Row {
+        anchors.fill: parent
+        spacing: 0
+        z: -1
+        Repeater {
+            model: cpuIndicator.cpuData
+            Rectangle {
+                width: cpuIndicator.barWidth
+                height: (modelData / 100) * 42
+                color: AppConstants.indicatorBarColor
+                anchors.bottom: parent.bottom
+            }
+        }
+    }
+
+    menuWidth: 300
+    menuAnchors.bottom: true
+    menuContent: [
+        DropdownMenuItem {
+            StyledText {
+                text: "under construction"
+            }
+        }
+    ]
 
     ScriptProcess {
         id: cpuProcess
@@ -24,37 +50,14 @@ Rectangle {
         }
     }
 
-    Row {
-        anchors.fill: parent
-        spacing: 0
-        Repeater {
-            model: cpuIndicator.cpuData
-            Rectangle {
-                width: cpuIndicator.barWidth
-                height: (modelData / 100) * 42
-                color: AppConstants.indicatorBarColor
-                anchors.bottom: parent.bottom
-            }
-        }
-    }
-    StyledText {
-        id: cpuPercentIndicator
-        anchors.fill: parent
-        font.pixelSize: 18
+    ScriptProcess {
+        id: cpuPercentProcess
+        scriptName: "cpu_load"
+        running: true
 
-        ScriptProcess {
-            id: cpuPercentProcess
-            scriptName: "cpu_load"
-            running: true
-
-            stdout: StdioCollector {
-                onStreamFinished: {
-                    if (cpuIndicator.cpuData.length > 16) {
-                        cpuPercentIndicator.text = `🔲 ${this.text.trim()}%`;
-                    } else {
-                        cpuPercentIndicator.text = `${this.text.trim()}%`;
-                    }
-                }
+        stdout: StdioCollector {
+            onStreamFinished: {
+                cpuIndicator.toggleText = `${this.text.trim()}%`;
             }
         }
     }

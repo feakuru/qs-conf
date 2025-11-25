@@ -13,3 +13,6 @@ dependencies = [
 dev = [
     "mypy>=1.18.2",
 ]
+
+[tool.mypy]
+follow_untyped_imports = true

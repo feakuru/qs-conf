@@ -2,14 +2,16 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-Rectangle {
-    color: "transparent"
-    border.width: 1
-    border.color: AppConstants.indicatorBorderColor
-    property real preferredWidth: indicatorText.width + 30
+DropdownMenu {
+    toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/memory.svg")
+    toggleIconColor: "white"
+
+    toggleTextFont.pixelSize: 18
+    toggleText: `${ramIndicator.percentValue}%`
 
     Rectangle {
         id: ramIndicator
+        z: -1
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
@@ -17,11 +19,17 @@ Rectangle {
         property var percentValue: 0
         height: (percentValue / 100) * 42
     }
-    StyledText {
-        id: indicatorText
-        text: `🧠 ${ramIndicator.percentValue}%`
-        font.pixelSize: 18
-    }
+
+    menuWidth: 300
+    menuAnchors.bottom: true
+    menuContent: [
+        DropdownMenuItem {
+            StyledText {
+                text: "under construction"
+            }
+        }
+    ]
+
     ScriptProcess {
         id: ramProcess
         scriptName: "ram_usage"
@@ -33,6 +41,7 @@ Rectangle {
             }
         }
     }
+
     Timer {
         interval: 300
         running: true
