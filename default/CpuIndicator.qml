@@ -4,7 +4,7 @@ import QtQuick
 
 DropdownMenu {
     id: cpuIndicator
-    property real barWidth: cpuIndicator.cpuData.length > 16 ? 4 : 8
+    property real barWidth: cpuIndicator.cpuData.length > 16 ? 4 : 10
     property real preferredWidth: cpuIndicator.cpuData.length * barWidth
 
     property var cpuData: []
