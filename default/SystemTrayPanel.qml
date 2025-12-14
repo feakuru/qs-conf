@@ -37,16 +37,21 @@ Rectangle {
 
                 MouseArea {
                     id: iconMouseArea
+                    acceptedButtons: Qt.AllButtons
                     hoverEnabled: true
                     anchors.fill: parent
                     onClicked: clickEvent => {
+                        if (!modelData.hasMenu) {
+                            modelData.activate();
+                            return
+                        }
                         let globalCoords = mapToGlobal(clickEvent.x, clickEvent.y);
                         modelData.display(trayPanel.trayMenuDisplayParent, globalCoords.x, globalCoords.y);
                     }
                     onDoubleClicked: clickEvent => {
-                        modelData.activate();
+                        modelData.secondaryActivate();
                     }
-                    onWheel: wheelEvent => modelData.scroll(wheelEvent.angleDelta.y)
+                    onWheel: wheelEvent => modelData.scroll(wheelEvent.angleDelta.y, wheelEvent.angleDelta.x)
                 }
             }
         }
