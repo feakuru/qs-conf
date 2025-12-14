@@ -157,7 +157,7 @@ DropdownMenu {
                 }
                 Keys.onUpPressed: event => {
                     if (programPicker.focusedIdx < 0) {
-                        let deltaToLeftInLastRow = programPicker.displayedEntries.length % 4;
+                        let deltaToLeftInLastRow = programPicker.displayedEntries.length % 4 || 4;
                         programPicker.focusedIdx = Math.max(programPicker.displayedEntries.length - deltaToLeftInLastRow, 0);
                     } else {
                         programPicker.focusedIdx = Math.max(programPicker.focusedIdx - 4, 0);
