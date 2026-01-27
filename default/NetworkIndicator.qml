@@ -42,7 +42,7 @@ DropdownMenu {
             onStreamFinished: {
                 for (let line of this.text.trim().split("\n")) {
                     let [name, uuid, devType, device] = line.split(':');
-                    if (devType.endsWith("ethernet")) {
+                    if (devType.endsWith("ethernet") || devType.endsWith("wireless")) {
                         netIndicator.defaultDevice = device;
                         break;
                     }
