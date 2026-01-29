@@ -6,6 +6,7 @@ import QtQuick.Layouts
 Scope {
     PanelWindow {
         id: topPanelWindow
+        screen: Quickshell.screens.find(s => s.name == "DP-1") || Quickshell.screens[0]
 
         anchors {
             top: true
@@ -63,6 +64,7 @@ Scope {
 
     PanelWindow {
         id: bottomPanelWindow
+        screen: Quickshell.screens.find(s => s.name == "DP-1") || Quickshell.screens[0]
 
         anchors {
             bottom: true

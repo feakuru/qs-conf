@@ -18,10 +18,10 @@ DropdownMenu {
             return Qt.rgba(0.9, 0.2, 0.2, 0.9);
         } else if (percentage <= 0.3) {
             return Qt.rgba(0.9, 0.9, 0.2, 0.9);
-        } else if (percentage <= 0.6) {
-            return Qt.rgba(0.7, 0.7, 0.2, 0.9);
-        } else if (percentage <= 0.9) {
-            return Qt.rgba(0.2, 0.7, 0.2, 0.9);
+        // } else if (percentage <= 0.6) {
+        //     return Qt.rgba(0.7, 0.7, 0.2, 0.9);
+        // } else if (percentage <= 0.9) {
+        //     return Qt.rgba(0.2, 0.7, 0.2, 0.9);
         } else {
             return "white";
         }
@@ -61,7 +61,10 @@ DropdownMenu {
                     let minutes = Math.floor((device.timeToEmpty % 3600) / 60);
                     result += ` [${hours}h${minutes}m]`;
                 } else {
-                    result += ` [${Math.floor(device.timeToEmpty / 60)}m]`;
+                    let minutes = Math.floor(device.timeToEmpty / 60);
+                    if (minutes > 0) {
+                        result += ` [${minutes}m]`;
+                    }
                 }
             }
             if (device.healthSupported) {
