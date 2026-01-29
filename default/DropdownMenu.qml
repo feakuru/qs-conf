@@ -81,9 +81,10 @@ Rectangle {
         visible: false
         margins {
             right: {
-                let centerOfToggle = Screen.desktopAvailableWidth - dropdownToggle.x - (dropdownToggle.width / 2);
+                let foundScreen = Quickshell.screens.find(s => s.name == "DP-1") || Quickshell.screens[0];
+                let centerOfToggle = foundScreen.width - dropdownToggle.x - (dropdownToggle.width / 2);
                 let targetPosition = centerOfToggle - (dropdownToggle.menuWidth / 2);
-                let rightmostPosition = Screen.desktopAvailableWidth - dropdownToggle.menuWidth;
+                let rightmostPosition = foundScreen.width - dropdownToggle.menuWidth;
                 parseInt(Math.min(rightmostPosition, Math.max(targetPosition, 10)));
             }
         }
