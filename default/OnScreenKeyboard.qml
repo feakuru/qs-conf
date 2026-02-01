@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 
@@ -27,6 +28,29 @@ Rectangle {
         }
     }
 
+    property var oskLeftModel: []
+    property var oskRightModel: []
+    property var defaultLeftModel: [
+        {"text": "Esc", "key": 1}, {"text": "1", "key": 2}, {"text": "2", "key": 3}, {"text": "3", "key": 4}, {"text": "4", "key": 5}, {"text": "5", "key": 6},
+        {"text": "", "key": null}, {"text": "q", "key": 16}, {"text": "w", "key": 17}, {"text": "e", "key": 18}, {"text": "r", "key": 19}, {"text": "t", "key": 20},
+        {"text": "Esc", "key": 1}, {"text": "a", "key": 30}, {"text": "s", "key": 31}, {"text": "d", "key": 32}, {"text": "f", "key": 33}, {"text": "g", "key": 34},
+        {"text": "", "key": null}, {"text": "z", "key": 44}, {"text": "x", "key": 45}, {"text": "c", "key": 46}, {"text": "v", "key": 47}, {"text": "b", "key": 48},
+        null, null, null, null, {"text": "↵", "key": null}, {"text": "⌘", "key": null}
+    ]
+    property var defaultRightModel: [
+        {"text": "6", "key": 7}, {"text": "7", "key": 8}, {"text": "8", "key": 9}, {"text": "9", "key": 10}, {"text": "0", "key": 11}, {"text": "", "key": null},
+        {"text": "y", "key": 21}, {"text": "u", "key": 22}, {"text": "i", "key": 23}, {"text": "o", "key": 24}, {"text": "p", "key": 25}, {"text": "", "key": null},
+        {"text": "h", "key": 35}, {"text": "j", "key": 36}, {"text": "k", "key": 37}, {"text": "l", "key": 38}, {"text": ";", "key": 39}, {"text": "", "key": null},
+        {"text": "n", "key": 49}, {"text": "m", "key": 50}, {"text": ",", "key": 51}, {"text": ".", "key": 52}, {"text": "/", "key": 53}, {"text": "", "key": null},
+        {"text": "⌫", "key": null}, {"text": "␣", "key": null}, null, null, null, null
+    ]
+
+    Component.onCompleted: {
+        if (oskLeftModel.length === 0) oskLeftModel = defaultLeftModel;
+        if (oskRightModel.length === 0) oskRightModel = defaultRightModel;
+        if (typeof oskConfigProcess !== 'undefined') oskConfigProcess.running = true;
+    }
+
     PanelWindow {
         id: oskLeft
         color: "transparent"
@@ -47,27 +71,27 @@ Rectangle {
             id: oskLeftBody
             columns: 6
             Repeater {
-                model: {
-                    var KeyDef = function KeyDef(text, key) {
-                        this.text = text;
-                        this.key = key;
-                    };
-                    [new KeyDef("Esc", 1), new KeyDef("1", 2), new KeyDef("2", 3), new KeyDef("3", 4), new KeyDef("4", 5), new KeyDef("5", 6), new KeyDef(""), new KeyDef("q", 16), new KeyDef("w", 17), new KeyDef("e", 18), new KeyDef("r", 19), new KeyDef("t", 20), new KeyDef("Esc", 1), new KeyDef("a", 30), new KeyDef("s", 31), new KeyDef("d", 32), new KeyDef("f", 33), new KeyDef("g", 34), new KeyDef(""), new KeyDef("z", 44), new KeyDef("x", 45), new KeyDef("c", 46), new KeyDef("v", 47), new KeyDef("b", 48),];
-                }
+                model: oskLeftModel
                 delegate: Rectangle {
-                    color: AppConstants.solidBgColor
+                    // allow model entries to be null (meaning no button)
+                    property bool hasButton: modelData !== null && typeof modelData === "object"
+                    color: hasButton ? AppConstants.solidBgColor : "transparent"
                     radius: 3
-                    border.width: 2
+                    border.width: hasButton ? 2 : 0
                     Layout.preferredWidth: 64
                     Layout.preferredHeight: 64
+
                     StyledText {
-                        text: modelData.text
+                        visible: hasButton && modelData.text !== undefined
+                        text: hasButton ? modelData.text : ""
                     }
+
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
+                        enabled: hasButton && modelData.key !== null && modelData.key !== undefined
                         onClicked: () => {
-                            if (!modelData.key) {
+                            if (!enabled) {
                                 console.log("no key");
                                 return;
                             }
@@ -75,28 +99,6 @@ Rectangle {
                             Quickshell.execDetached(["ydotool", "key", `${modelData.key}:1`, `${modelData.key}:0`]);
                         }
                     }
-                }
-            }
-            Rectangle {
-                Layout.columnSpan: 4
-                color: "transparent"
-            }
-            Rectangle {
-                Layout.preferredHeight: 64
-                Layout.preferredWidth: 64
-                color: AppConstants.solidBgColor
-                border.width: 2
-                StyledText {
-                    text: "↵"
-                }
-            }
-            Rectangle {
-                Layout.preferredHeight: 64
-                Layout.preferredWidth: 64
-                color: AppConstants.solidBgColor
-                border.width: 2
-                StyledText {
-                    text: "⌘"
                 }
             }
         }
@@ -122,55 +124,71 @@ Rectangle {
             id: oskRightBody
             columns: 6
             Repeater {
-                model: {
-                    var KeyDef = function KeyDef(text, key) {
-                        this.text = text;
-                        this.key = key;
-                    };
-                    [new KeyDef("6", 7), new KeyDef("7", 8), new KeyDef("8", 9), new KeyDef("9", 10), new KeyDef("0", 11), new KeyDef(""), new KeyDef("y", 21), new KeyDef("u", 22), new KeyDef("i", 23), new KeyDef("o", 24), new KeyDef("p", 25), new KeyDef(""), new KeyDef("h", 35), new KeyDef("j", 36), new KeyDef("k", 37), new KeyDef("l", 38), new KeyDef(";", 39), new KeyDef(""), new KeyDef("n", 49), new KeyDef("m", 50), new KeyDef(",", 51), new KeyDef(".", 52), new KeyDef("/", 53), new KeyDef("")];
-                }
+                model: oskRightModel
                 delegate: Rectangle {
-                    color: AppConstants.solidBgColor
+                    property bool hasButton: modelData !== null && typeof modelData === "object"
+                    color: hasButton ? AppConstants.solidBgColor : "transparent"
                     radius: 3
-                    border.width: 2
+                    border.width: hasButton ? 2 : 0
                     Layout.preferredWidth: 64
                     Layout.preferredHeight: 64
+                    opacity: hasButton ? 1 : 0
+                    enabled: hasButton
+
                     StyledText {
-                        text: modelData.text
+                        visible: hasButton && modelData.text !== undefined
+                        text: hasButton ? modelData.text : ""
                     }
+
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
+                        enabled: hasButton && modelData.key !== null && modelData.key !== undefined
+                        acceptedButtons: hasButton ? Qt.AllButtons : Qt.NoButton
                         onClicked: (event) => {
-                            event.accepted = true;
-                            if (!modelData.key) {
+                            if (!enabled) {
                                 console.log("no key");
                                 return;
                             }
+                            event.accepted = true;
                             console.log("clicked", JSON.stringify(modelData));
                             Quickshell.execDetached(["ydotool", "key", `${modelData.key}:1`, `${modelData.key}:0`]);
                         }
                     }
                 }
             }
-            Rectangle {
-                Layout.preferredHeight: 64
-                Layout.preferredWidth: 64
-                color: AppConstants.solidBgColor
-                border.width: 2
-                StyledText {
-                    text: "⌫"
-                }
-            }
-            Rectangle {
-                Layout.preferredHeight: 64
-                Layout.preferredWidth: 64
-                color: AppConstants.solidBgColor
-                border.width: 2
-                StyledText {
-                    text: "␣"
+        }
+    }
+
+    ScriptProcess {
+        id: oskConfigProcess
+        scriptName: "osk_layout"
+        running: false
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                var out = this.text.trim();
+                if (out.length === 0) return;
+                try {
+                    var parsed = JSON.parse(out);
+                    if (parsed.left && parsed.left instanceof Array && parsed.left.length > 0) {
+                        oskLeftModel = parsed.left;
+                    }
+                    if (parsed.right && parsed.right instanceof Array && parsed.right.length > 0) {
+                        oskRightModel = parsed.right;
+                    }
+                } catch (e) {
+                    console.log("Failed to parse osk_layout output:", e);
                 }
             }
         }
+    }
+
+    Timer {
+        id: oskReloadTimer
+        interval: 5000
+        running: true
+        repeat: true
+        onTriggered: function () { oskConfigProcess.running = true; }
     }
 }

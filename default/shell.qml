@@ -119,5 +119,5 @@ Scope {
         }
     }
 
-    NotificationPanel {}
+    // NotificationPanel {}
 }

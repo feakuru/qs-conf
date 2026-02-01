@@ -1,11 +1,13 @@
 import dataclasses
 import json
+import argparse
 import evdev
+import sys
 
 
 class EnhancedJSONEncoder(json.JSONEncoder):
     def default(self, o):
-        if dataclasses.is_dataclass(o):
+        if dataclasses.is_dataclass(o) and not isinstance(o, type):
             return dataclasses.asdict(o)
         return super().default(o)
 
@@ -23,20 +25,20 @@ class K:
     def __post_init__(self):
         if self.label and not self.key_pressed:
             self.key_pressed = self.label.upper()
-        if self.key_pressed:
-            self.keycode_pressed = evdev.ecodes.ecodes[f"KEY_{self.key_pressed}"]
-        else:
-            self.keycode_pressed = None
-        if self.key_held:
-            self.keycode_held = evdev.ecodes.ecodes[f"KEY_{self.key_held}"]
-        else:
-            self.keycode_held = None
+
+        def lookup_key(name: str | None):
+            if not name:
+                return None
+            return evdev.ecodes.ecodes[f"KEY_{name}"]
+
+        self.keycode_pressed = lookup_key(self.key_pressed)
+        self.keycode_held = lookup_key(self.key_held)
 
 
 @dataclasses.dataclass
 class Layer:
-    left: list[list[K | None]]
-    right: list[list[K | None]]
+    left: list[list[K | None] | None]
+    right: list[list[K | None] | None]
 
 
 LAYOUT = {
@@ -70,7 +72,161 @@ LAYOUT = {
             [K("⌫", "BACKSPACE"), K("␣", "SPACE"), None, None, None, None],
         ],
     ),
+    "symnum": Layer(
+        left=[
+            [
+                None,
+                K("F1", "F1"),
+                K("F2", "F2"),
+                K("F3", "F3"),
+                K("F4", "F4"),
+                K("F5", "F5"),
+            ],
+            [
+                None,
+                None,
+                K("`", "GRAVE"),
+                K("'", "APOSTROPHE"),
+                K("[", "LEFTBRACE"),
+                K("]", "RIGHTBRACE"),
+            ],
+            [
+                None,
+                None,
+                K("-", "MINUS", key_held="LEFTALT"),
+                K("=", "EQUAL", key_held="LEFTCTRL"),
+                K(";", "SEMICOLON", key_held="LEFTSHIFT"),
+                K(":", "SEMICOLON"),
+            ],
+            [
+                None,
+                None,
+                K("_", "MINUS"),
+                K("+", "EQUAL"),
+                K("\\", "BACKSLASH"),
+                K("/", "SLASH"),
+            ],
+            None,
+        ],
+        right=[
+            [
+                K("F6", "F6"),
+                K("F7", "F7"),
+                K("F8", "F8"),
+                K("F9", "F9"),
+                K("F10", "F10"),
+                None,
+            ],
+            [
+                K("7", "7"),
+                K("8", "8"),
+                K("9", "9"),
+                K("F11", "F11"),
+                K("F12", "F12"),
+                None,
+            ],
+            [
+                K("4", "4"),
+                K("5", "5", key_held="RIGHTSHIFT"),
+                K("6", "6", key_held="RIGHTCTRL"),
+                K(",", "COMMA", key_held="RIGHTALT"),
+                None,
+                None,
+            ],
+            [
+                None,
+                K("1", "1"),
+                K("2", "2"),
+                K("3", "3"),
+                K(".", "DOT"),
+                None,
+            ],
+            None,
+        ],
+    ),
+    "sysnav": Layer(
+        left=[
+            [None, None, None, None, None, K("BRI+", "BRIGHTNESSUP")],
+            [
+                None,
+                None,
+                K("MUTE", "MUTE"),
+                K("VOL-", "VOLUME_DOWN"),
+                K("VOL+", "VOLUME_UP"),
+                K("BRI-", "BRIGHTNESSDOWN"),
+            ],
+            [
+                None,
+                None,
+                K("LAlt", "LEFTALT"),
+                K("LCtrl", "LEFTCTRL"),
+                K("LShift", "LEFTSHIFT"),
+                K("CapsW", "CAPSLOCK"),
+            ],
+            [
+                None,
+                K("PgUp", "PAGE_UP"),
+                K("PgDn", "PAGE_DOWN"),
+                K("Ctrl+C", "C"),
+                K("Ctrl+V", "V"),
+                K("CAPS", "CAPSLOCK"),
+            ],
+            None,
+        ],
+        right=[
+            None,
+            [
+                K("PgUp", "PAGE_UP"),
+                K("PgDn", "PAGE_DOWN"),
+                K("Home", "HOME"),
+                K("End", "END"),
+                K("PrtSc", "PRINT"),
+                None,
+            ],
+            [
+                K("Left", "LEFT"),
+                K("Down", "DOWN"),
+                K("Up", "UP"),
+                K("Right", "RIGHT"),
+                None,
+                None,
+            ],
+            [
+                None,
+                None,
+                K("Tab", "TAB"),
+                K("Bspc", "BACKSPACE"),
+                K("Del", "DELETE"),
+                None,
+            ],
+            None,
+        ],
+    ),
 }
 
 if __name__ == "__main__":
-    print(json.dumps(LAYOUT, cls=EnhancedJSONEncoder))
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("layer", nargs="?", default="main", help="layer name to output")
+    args = parser.parse_args()
+    layer_name = args.layer
+
+    def _merge_side(selected_side, main_side):
+        if len(main_side) != len(selected_side):
+            raise ValueError("Incompatible layer heights")
+        merged = []
+        for i in range(len(main_side)):
+            s = selected_side[i] if selected_side and i < len(selected_side) else None
+            if s is None:
+                m = main_side[i] if main_side and i < len(main_side) else None
+                merged.append(m)
+            else:
+                merged.append(s)
+        return merged
+
+    merged_layer = Layer(
+        left=_merge_side(LAYOUT[layer_name].left, LAYOUT["main"].left),
+        right=_merge_side(LAYOUT[layer_name].right, LAYOUT["main"].right),
+    )
+
+    print(json.dumps(merged_layer, cls=EnhancedJSONEncoder))
