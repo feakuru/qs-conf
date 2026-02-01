@@ -3,14 +3,12 @@ import QtQuick.Layouts
 import Quickshell
 
 ColumnLayout {
-    id: root
+    id: keyGrid
     property var model: []
-    property bool longPressEnabled: false
     spacing: 6
 
-    // model is expected to be a list of rows (each row is an array or null)
     Repeater {
-        model: root.model
+        model: keyGrid.model
         delegate: RowLayout {
             spacing: 6
 
@@ -64,12 +62,10 @@ ColumnLayout {
                         id: btnTouchArea
                         anchors.fill: parent
 
-                        // long-press behaviour (mirror of original left-hand logic)
-                        property var primaryKeyCode: (cell && (cell.keycode_pressed !== undefined ? cell.keycode_pressed : (cell.key_pressed !== undefined ? cell.key_pressed : (cell.key !== undefined ? cell.key : null))))
-                        property var heldKeyCodeProp: (cell && (cell.keycode_held !== undefined ? cell.keycode_held : (cell.key_held !== undefined ? cell.key_held : null)))
+                        property var primaryKeyCode: (cell && cell.keycode_pressed) ? cell.keycode_pressed : null
+                        property var heldKeyCodeProp: (cell && cell.keycode_held) ? cell.keycode_held : null
                         property bool hasPrimaryKey: primaryKeyCode !== null && primaryKeyCode !== undefined
 
-                        // state for press/hold logic (per-area; typically one touch per key)
                         property bool longHeld: false
                         property int heldKeyCode: -1
                         property int activePointId: -1
@@ -83,8 +79,8 @@ ColumnLayout {
                                 btnTouchArea.longHeld = true
                                 var codeHeld = btnTouchArea.heldKeyCodeProp
                                 if (codeHeld !== null && codeHeld !== undefined) {
-                                    btnTouchArea.heldKeyCode = codeHeld
-                                    Quickshell.execDetached(["ydotool", "key", `${btnTouchArea.heldKeyCode}:1`])
+                                    btnTouchArea.heldKeyCode = codeHeld;
+                                    Quickshell.execDetached(["ydotool", "key", `${btnTouchArea.heldKeyCode}:1`]);
                                 }
                             }
                         }
@@ -92,61 +88,50 @@ ColumnLayout {
                         onPressed: function(points) {
                             if (!hasButton) return;
                             if (!points || points.length === 0) return;
-                            // take the first new contact for this key
-                            var p = points[0]
-                            p.accepted = true
-                            // only set active point if none set yet
+                            var p = points[0];
+                            p.accepted = true;
+
                             if (btnTouchArea.activePointId === -1) {
-                                btnTouchArea.longHeld = false
-                                btnTouchArea.heldKeyCode = -1
-                                btnTouchArea.activePointId = p.pointId
-                                if (root.longPressEnabled) {
-                                    holdTimer.start()
-                                }
+                                btnTouchArea.longHeld = false;
+                                btnTouchArea.heldKeyCode = -1;
+                                btnTouchArea.activePointId = p.pointId;
+                                holdTimer.start();
                             }
                         }
 
                         onReleased: function(points) {
                             if (!hasButton) return;
                             if (!points || points.length === 0) return;
-                            // find the released point that matches our activePointId (if set)
-                            var match = null
+
+                            var match = null;
                             for (var i = 0; i < points.length; ++i) {
-                                var rp = points[i]
+                                var rp = points[i];
                                 if (btnTouchArea.activePointId === -1 || rp.pointId === btnTouchArea.activePointId) {
-                                    match = rp
-                                    break
+                                    match = rp;
+                                    break;
                                 }
                             }
                             if (!match) return;
+
                             console.log("released triggered", match.pointId)
-                            if (root.longPressEnabled) {
-                                holdTimer.stop()
-                                if (btnTouchArea.longHeld) {
-                                    if (btnTouchArea.heldKeyCode !== -1) {
-                                        Quickshell.execDetached(["ydotool", "key", `${btnTouchArea.heldKeyCode}:0`])
-                                    }
-                                    btnTouchArea.longHeld = false
-                                    btnTouchArea.heldKeyCode = -1
-                                } else {
-                                    var code = btnTouchArea.primaryKeyCode
-                                    if (code !== null && code !== undefined) {
-                                        Quickshell.execDetached(["ydotool", "key", `${code}:1`, `${code}:0`])
-                                    }
+                            holdTimer.stop()
+                            if (btnTouchArea.longHeld) {
+                                if (btnTouchArea.heldKeyCode !== -1) {
+                                    Quickshell.execDetached(["ydotool", "key", `${btnTouchArea.heldKeyCode}:0`]);
                                 }
+                                btnTouchArea.longHeld = false;
+                                btnTouchArea.heldKeyCode = -1;
                             } else {
-                                // simple click behaviour: use the resolved primary key code
-                                var code = btnTouchArea.primaryKeyCode
+                                var code = btnTouchArea.primaryKeyCode;
                                 if (code !== null && code !== undefined) {
-                                    Quickshell.execDetached(["ydotool", "key", `${code}:1`, `${code}:0`])
+                                    Quickshell.execDetached(["ydotool", "key", `${code}:1`, `${code}:0`]);
                                 }
                             }
-                            btnTouchArea.activePointId = -1
+                            btnTouchArea.activePointId = -1;
                         }
 
                         onCanceled: function(points) {
-                            // treat cancellations similar to releases; use same points list
-                            onReleased(points)
+                            onReleased(points);
                         }
                     }
                 }

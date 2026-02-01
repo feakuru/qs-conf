@@ -51,11 +51,9 @@ Rectangle {
         implicitWidth: oskLeftBody.width
         implicitHeight: oskLeftBody.height
 
-        // Key grid for left side (supports long-press behaviour)
         KeyGrid {
             id: oskLeftBody
             model: oskLeftModel
-            longPressEnabled: true
         }
     }
 
@@ -75,11 +73,9 @@ Rectangle {
         implicitWidth: oskRightBody.width
         implicitHeight: oskRightBody.height
 
-        // Key grid for right side (simple click behaviour)
         KeyGrid {
             id: oskRightBody
             model: oskRightModel
-            longPressEnabled: true
         }
     }
 
