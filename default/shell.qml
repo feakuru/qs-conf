@@ -50,6 +50,12 @@ Scope {
                 Layout.preferredWidth: preferredWidth
             }
 
+            OnScreenKeyboard {
+                Layout.fillHeight: true
+                Layout.preferredWidth: preferredWidth
+
+            }
+
             KbLayoutIndicator {
                 Layout.fillHeight: true
                 Layout.preferredWidth: preferredWidth
