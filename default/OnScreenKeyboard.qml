@@ -18,6 +18,15 @@ Rectangle {
         iconColor: "lightgray"
     }
 
+    IpcHandler {
+        target: "osk"
+
+        function toggle(): void {
+            oskLeft.visible = !oskLeft.visible;
+            oskRight.visible = !oskRight.visible;
+        }
+    }
+
     MouseArea {
         id: oskToggleMouseArea
         anchors.fill: parent
