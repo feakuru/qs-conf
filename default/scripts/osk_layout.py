@@ -2,7 +2,6 @@ import dataclasses
 import json
 import argparse
 import evdev
-import sys
 
 
 class EnhancedJSONEncoder(json.JSONEncoder):
@@ -18,7 +17,7 @@ class K:
     key_pressed: str | None = None
     key_held: str | None = None
     layer_toggle: int | None = None
-    layer_switch: int | None = None
+    layer_switch: str | None = None
     keycode_pressed: int | None = dataclasses.field(init=False)
     keycode_held: int | None = dataclasses.field(init=False)
 
@@ -55,7 +54,14 @@ LAYOUT = {
                 K("g"),
             ],
             [K(""), K("z"), K("x"), K("c"), K("v"), K("b")],
-            [None, None, None, None, K("↵", "ENTER"), K("⌘", "LEFTMETA")],
+            [
+                None,
+                None,
+                None,
+                None,
+                K("↵", "ENTER", layer_switch="symnum"),
+                K("⌘", "LEFTMETA"),
+            ],
         ],
         right=[
             [K("6"), K("7"), K("8"), K("9"), K("0"), K("")],
@@ -69,7 +75,14 @@ LAYOUT = {
                 K(""),
             ],
             [K("n"), K("m"), K(",", "COMMA"), K(".", "DOT"), K("/", "SLASH"), K("")],
-            [K("⌫", "BACKSPACE"), K("␣", "SPACE"), None, None, None, None],
+            [
+                K("⌫", "BACKSPACE"),
+                K("␣", "SPACE", layer_switch="sysnav"),
+                None,
+                None,
+                None,
+                None,
+            ],
         ],
     ),
     "symnum": Layer(
@@ -197,7 +210,6 @@ LAYOUT = {
 }
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     parser.add_argument("layer", nargs="?", default="main", help="layer name to output")
     args = parser.parse_args()
