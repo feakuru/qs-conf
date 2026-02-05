@@ -15,6 +15,7 @@ import logging
 from pathlib import Path
 
 import zmq
+import threading
 
 logging.basicConfig(
     level=logging.INFO, format="osk-daemon | %(levelname)s: %(message)s"
@@ -42,6 +43,7 @@ class OSKDaemon:
         self.ctx = zmq.Context()
         self.sock = self.ctx.socket(zmq.PULL)
         self.held = {}  # code -> count
+        self._timers = {}  # code -> threading.Timer
         # set up file logging so the server's activity can be tailed
         self.log_path = default_log_path()
         try:
@@ -59,8 +61,55 @@ class OSKDaemon:
 
     def _emit_ydotool(self, args: list[str]):
         cmd = ["ydotool", *args]
-        logging.info(f"[executing] {" ".join(cmd)}")
+        logging.info(f"[executing] {' '.join(cmd)}")
         subprocess.run(cmd)
+
+    def _schedule_auto_release(self, code: str, delay: float = 5.0):
+        # Cancel and reschedule an auto-release timer for this code
+        try:
+            if code in self._timers:
+                t = self._timers.pop(code)
+                try:
+                    t.cancel()
+                except Exception:
+                    pass
+            t = threading.Timer(delay, self._auto_release, args=(code,))
+            t.daemon = True
+            self._timers[code] = t
+            t.start()
+            logging.info("scheduled auto-release for %s in %.1fs", code, delay)
+        except Exception:
+            logging.exception("failed to schedule auto-release for %s", code)
+
+    def _cancel_auto_release(self, code: str):
+        try:
+            t = self._timers.pop(code, None)
+            if t:
+                try:
+                    t.cancel()
+                except Exception:
+                    pass
+        except Exception:
+            logging.exception("failed to cancel auto-release for %s", code)
+
+    def _auto_release(self, code: str):
+        # Timer callback: if key still held, forcibly release it and clear count
+        try:
+            cnt = self.held.get(code, 0)
+            if cnt > 0:
+                logging.info("auto-release: releasing %s (count=%s)", code, cnt)
+                try:
+                    self._emit_ydotool(["key", f"{code}:0"])
+                except Exception:
+                    logging.exception("failed to emit auto-release for %s", code)
+                # clear held count
+                self.held.pop(code, None)
+        finally:
+            # ensure timer entry cleaned
+            try:
+                self._timers.pop(code, None)
+            except Exception:
+                pass
 
     def bind(self):
         # Remove stale ipc file if present
@@ -134,6 +183,13 @@ class OSKDaemon:
                         logging.info("long_start press %s", code)
                         self._emit_ydotool(["key", f"{code}:1"])
                     self.held[code] = cnt + 1
+                    # schedule auto-release in case we never see a long_end
+                    try:
+                        self._schedule_auto_release(code, delay=5.0)
+                    except Exception:
+                        logging.exception(
+                            "failed to schedule auto-release for %s", code
+                        )
 
                 elif evt in ("long_end", "cancel") and code is not None:
                     cnt = self.held.get(code, 0)
@@ -143,6 +199,11 @@ class OSKDaemon:
                         if cnt == 0:
                             logging.info("long_end release %s", code)
                             self._emit_ydotool(["key", f"{code}:0"])
+                    # cancel any pending auto-release for this code
+                    try:
+                        self._cancel_auto_release(code)
+                    except Exception:
+                        logging.exception("failed to cancel auto-release for %s", code)
 
                 elif evt == "short_press" and code is not None:
                     logging.info("short_press %s", code)
