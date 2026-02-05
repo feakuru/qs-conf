@@ -33,6 +33,7 @@ Rectangle {
 
     Component.onCompleted: {
         if (typeof oskConfigProcess !== 'undefined') oskConfigProcess.running = true;
+        if (typeof oskInputProcess !== 'undefined') oskInputProcess.running = true;
     }
 
     PanelWindow {
@@ -103,11 +104,17 @@ Rectangle {
         }
     }
 
+    ScriptProcess {
+        id: oskInputProcess
+        scriptName: "osk_zmq_daemon"
+        running: false
+    }
+
     Timer {
         id: oskReloadTimer
         interval: 5000
         running: true
         repeat: true
-        onTriggered: function () { oskConfigProcess.running = true; }
+        onTriggered: function () { oskConfigProcess.running = true }
     }
 }

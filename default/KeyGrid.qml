@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Io
 
 ColumnLayout {
     id: keyGrid
@@ -75,12 +76,21 @@ ColumnLayout {
                             interval: 200
                             repeat: false
                             onTriggered: {
-                                console.log("timer triggered")
                                 btnTouchArea.longHeld = true
                                 var codeHeld = btnTouchArea.heldKeyCodeProp
                                 if (codeHeld !== null && codeHeld !== undefined) {
                                     btnTouchArea.heldKeyCode = codeHeld;
-                                    Quickshell.execDetached(["ydotool", "key", `${btnTouchArea.heldKeyCode}:1`]);
+                                    Quickshell.execDetached({
+                                        command: [
+                                            "sh",
+                                            "-c",
+                                            "uv run python " + 
+                                            Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "")
+                                            + " --event long_start --code "
+                                            + String(btnTouchArea.heldKeyCode)
+                                        ],
+                                        workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
+                                    });
                                 }
                             }
                         }
@@ -113,18 +123,37 @@ ColumnLayout {
                             }
                             if (!match) return;
 
-                            console.log("released triggered", match.pointId)
                             holdTimer.stop()
                             if (btnTouchArea.longHeld) {
                                 if (btnTouchArea.heldKeyCode !== -1) {
-                                    Quickshell.execDetached(["ydotool", "key", `${btnTouchArea.heldKeyCode}:0`]);
+                                    Quickshell.execDetached({
+                                        command: [
+                                            "sh",
+                                            "-c",
+                                            "uv run python " + 
+                                            Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "")
+                                            + " --event long_end --code "
+                                            + String(btnTouchArea.heldKeyCode)
+                                        ],
+                                        workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
+                                    });
                                 }
                                 btnTouchArea.longHeld = false;
                                 btnTouchArea.heldKeyCode = -1;
                             } else {
                                 var code = btnTouchArea.primaryKeyCode;
                                 if (code !== null && code !== undefined) {
-                                    Quickshell.execDetached(["ydotool", "key", `${code}:1`, `${code}:0`]);
+                                    Quickshell.execDetached({
+                                        command: [
+                                            "sh",
+                                            "-c",
+                                            "uv run python " + 
+                                            Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "")
+                                            + " --event short_press --code "
+                                            + String(code)
+                                        ],
+                                        workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
+                                    });
                                 }
                             }
                             btnTouchArea.activePointId = -1;
