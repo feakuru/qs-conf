@@ -8,6 +8,8 @@ ColumnLayout {
     property var model: []
     spacing: 6
 
+    signal layerSwitched(layerName: string)
+
     Repeater {
         model: keyGrid.model
         delegate: RowLayout {
@@ -44,7 +46,17 @@ ColumnLayout {
                         }
 
                         Text {
-                            property string heldText: (cell && cell.key_held) ? cell.key_held : ""
+                            property string heldText: {
+                                if (cell) {
+                                    if (cell.key_held) {
+                                        return cell.key_held;
+                                    } else if (cell.layer_switch) {
+                                        return cell.layer_switch;
+                                    }
+                                }
+                                if (cell && cell.key_held) {}
+                                (cell && cell.key_held) ? cell.key_held : ""
+                            }
                             Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
                             visible: heldText !== "" && hasButton
                             text: heldText.replace(/^RIGHT/, '').replace(/^LEFT/, '')
@@ -65,6 +77,7 @@ ColumnLayout {
 
                         property var primaryKeyCode: (cell && cell.keycode_pressed) ? cell.keycode_pressed : null
                         property var heldKeyCodeProp: (cell && cell.keycode_held) ? cell.keycode_held : null
+                        property var layerSwitch: (cell && cell.layer_switch) ? cell.layer_switch : null
                         property bool hasPrimaryKey: primaryKeyCode !== null && primaryKeyCode !== undefined
 
                         property bool longHeld: false
@@ -91,6 +104,8 @@ ColumnLayout {
                                         ],
                                         workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
                                     });
+                                } else if (btnTouchArea.layerSwitch) {
+                                    keyGrid.layerSwitched(btnTouchArea.layerSwitch);
                                 }
                             }
                         }
@@ -137,6 +152,8 @@ ColumnLayout {
                                         ],
                                         workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
                                     });
+                                } else if (btnTouchArea.layerSwitch) {
+                                    keyGrid.layerSwitched("main");
                                 }
                                 btnTouchArea.longHeld = false;
                                 btnTouchArea.heldKeyCode = -1;

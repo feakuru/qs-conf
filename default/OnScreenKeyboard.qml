@@ -58,6 +58,7 @@ Rectangle {
             right: 10
             top: parseInt(screen.height / 2)
         }
+        property string layerName: "main"
 
         implicitHeight: Math.max(oskLeftBody.height, oskRightBody.height)
 
@@ -71,6 +72,10 @@ Rectangle {
             KeyGrid {
                 id: oskLeftBody
                 model: oskLeftModel
+                onLayerSwitched: layerName => {
+                    oskWindow.layerName = layerName;
+                    console.log(layerName);
+                }
             }
         }
 
@@ -84,6 +89,9 @@ Rectangle {
             KeyGrid {
                 id: oskRightBody
                 model: oskRightModel
+                onLayerSwitched: layerName => {
+                    oskWindow.layerName = layerName;
+                }
             }
         }
 
@@ -100,6 +108,7 @@ Rectangle {
     ScriptProcess {
         id: oskConfigProcess
         scriptName: "osk_layout"
+        scriptArgs: [oskWindow.layerName]
         running: false
 
         stdout: StdioCollector {
@@ -121,15 +130,15 @@ Rectangle {
         }
     }
 
-    ScriptProcess {
-        id: oskInputProcess
-        scriptName: "osk_zmq_daemon"
-        running: false
-    }
+    // ScriptProcess {
+    //     id: oskInputProcess
+    //     scriptName: "osk_zmq_daemon"
+    //     running: false
+    // }
 
     Timer {
         id: oskReloadTimer
-        interval: 5000
+        interval: 100
         running: true
         repeat: true
         onTriggered: function () { oskConfigProcess.running = true }

@@ -65,7 +65,7 @@ LAYOUT = {
         ],
         right=[
             [K("6"), K("7"), K("8"), K("9"), K("0"), K("")],
-            [K("y"), K("u"), K("i"), K("o"), K("p"), K("")],
+            [K("y"), K("u"), K("i"), K("o"), K("p"), K("⌫", "BACKSPACE")],
             [
                 K("h"),
                 K("j", key_held="RIGHTSHIFT"),
@@ -119,7 +119,14 @@ LAYOUT = {
                 K("\\", "BACKSLASH"),
                 K("/", "SLASH"),
             ],
-            None,
+            [
+                None,
+                None,
+                None,
+                None,
+                K("↵", "ENTER", layer_switch="main"),
+                K("⌘", "LEFTMETA"),
+            ],
         ],
         right=[
             [
@@ -147,14 +154,21 @@ LAYOUT = {
                 None,
             ],
             [
-                None,
                 K("1", "1"),
                 K("2", "2"),
                 K("3", "3"),
                 K(".", "DOT"),
                 None,
+                None,
             ],
-            None,
+            [
+                K("⌫", "BACKSPACE"),
+                K("␣", "SPACE", layer_switch="sysnav"),
+                None,
+                None,
+                None,
+                None,
+            ],
         ],
     ),
     "sysnav": Layer(
@@ -171,12 +185,20 @@ LAYOUT = {
             [
                 None,
                 None,
-                K("LAlt", "LEFTALT"),
-                K("LCtrl", "LEFTCTRL"),
-                K("LShift", "LEFTSHIFT"),
+                K("", "LEFTALT", key_held="LEFTALT"),
+                K("", "LEFTCTRL", key_held="LEFTCTRL"),
+                K("", "LEFTSHIFT", key_held="LEFTSHIFT"),
                 None,
             ],
-            None,
+            [None, None, None, None, None, K("CapsL", "CAPSLOCK")],
+            [
+                None,
+                None,
+                None,
+                None,
+                K("↵", "ENTER", layer_switch="symnum"),
+                K("⌘", "LEFTMETA"),
+            ],
         ],
         right=[
             None,
@@ -197,14 +219,21 @@ LAYOUT = {
                 None,
             ],
             [
-                None,
-                None,
                 K("Tab", "TAB"),
                 K("Bspc", "BACKSPACE"),
                 K("Del", "DELETE"),
                 None,
+                None,
+                None,
             ],
-            None,
+            [
+                K("⌫", "BACKSPACE"),
+                K("␣", "SPACE", layer_switch="main"),
+                None,
+                None,
+                None,
+                None,
+            ],
         ],
     ),
 }

@@ -1,9 +1,10 @@
 import Quickshell.Io
 
 Process {
-    command: ["uv", "run", Qt.resolvedUrl(`scripts/${scriptName}.py`).toString().replace(/^file:\/{2}/, ""),]
+    command: ["uv", "run", Qt.resolvedUrl(`scripts/${scriptName}.py`).toString().replace(/^file:\/{2}/, "")].concat(scriptArgs)
     workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
     required property string scriptName
+    property var scriptArgs: []
 
     stderr: StdioCollector {
         onStreamFinished: {
