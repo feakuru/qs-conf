@@ -74,7 +74,7 @@ Rectangle {
                 model: oskLeftModel
                 onLayerSwitched: layerName => {
                     oskWindow.layerName = layerName;
-                    console.log(layerName);
+                    oskConfigProcess.running = true;
                 }
             }
         }
@@ -91,6 +91,7 @@ Rectangle {
                 model: oskRightModel
                 onLayerSwitched: layerName => {
                     oskWindow.layerName = layerName;
+                    oskConfigProcess.running = true;
                 }
             }
         }
@@ -138,7 +139,7 @@ Rectangle {
 
     Timer {
         id: oskReloadTimer
-        interval: 100
+        interval: 500
         running: true
         repeat: true
         onTriggered: function () { oskConfigProcess.running = true }

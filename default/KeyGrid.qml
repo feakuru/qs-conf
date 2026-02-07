@@ -8,17 +8,33 @@ ColumnLayout {
     property var model: []
     spacing: 6
 
+    property var expectedRows: 5
+    property var expectedCols: 6
+
     signal layerSwitched(layerName: string)
 
     Repeater {
-        model: keyGrid.model
+        id: rowRepeater
+        model: keyGrid.expectedRows
         delegate: RowLayout {
+            id: repeatedRow
             spacing: 6
+            property int realModelRowIndex: index
 
             Repeater {
-                model: modelData === null ? [] : modelData
+                model: keyGrid.expectedCols
                 delegate: Rectangle {
-                    property var cell: modelData
+                    property int realModelColIndex: index
+                    property var cell: {
+                        if (keyGrid.model
+                                && keyGrid.model.length > repeatedRow.realModelRowIndex
+                                && keyGrid.model[repeatedRow.realModelRowIndex]
+                                && keyGrid.model[repeatedRow.realModelRowIndex].length > realModelColIndex) {
+                                    // console.log(JSON.stringify(keyGrid.model[repeatedRow.realModelRowIndex][realModelColIndex]));
+                            return keyGrid.model[repeatedRow.realModelRowIndex][realModelColIndex];
+                        }
+                        return null;
+                    }
                     property bool hasButton: cell !== null && typeof cell === "object"
                     color: hasButton ? AppConstants.solidBgColor : "transparent"
                     radius: 3
@@ -54,8 +70,7 @@ ColumnLayout {
                                         return cell.layer_switch;
                                     }
                                 }
-                                if (cell && cell.key_held) {}
-                                (cell && cell.key_held) ? cell.key_held : ""
+                                return "";
                             }
                             Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
                             visible: heldText !== "" && hasButton
@@ -164,7 +179,7 @@ ColumnLayout {
                                         command: [
                                             "sh",
                                             "-c",
-                                            "uv run python " + 
+                                            "uv run python " +
                                             Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "")
                                             + " --event short_press --code "
                                             + String(code)
