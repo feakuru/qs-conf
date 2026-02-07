@@ -21,8 +21,8 @@ ColumnLayout {
                     color: hasButton ? AppConstants.solidBgColor : "transparent"
                     radius: 3
                     border.width: hasButton ? 2 : 0
-                    Layout.preferredWidth: 64
-                    Layout.preferredHeight: 64
+                    Layout.preferredWidth: 72
+                    Layout.preferredHeight: 72
                     opacity: hasButton ? 1 : 0
                     enabled: hasButton
 
