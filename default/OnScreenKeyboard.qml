@@ -22,8 +22,7 @@ Rectangle {
         target: "osk"
 
         function toggle(): void {
-            oskLeft.visible = !oskLeft.visible;
-            oskRight.visible = !oskRight.visible;
+            oskWindow.visible = !oskWindow.visible;
         }
     }
 
@@ -32,8 +31,7 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         onClicked: mouseEvent => {
-            oskLeft.visible = !oskLeft.visible;
-            oskRight.visible = !oskRight.visible;
+            oskWindow.visible = !oskWindow.visible;
         }
     }
 
@@ -46,46 +44,56 @@ Rectangle {
     }
 
     PanelWindow {
-        id: oskLeft
+        id: oskWindow
         color: "transparent"
         visible: false
         screen: Quickshell.screens[0]
+        aboveWindows: true
         anchors {
             left: true
-            top: true
+            right: true
         }
         margins {
             left: 10
-            top: parseInt(screen.height / 2)
-        }
-        implicitWidth: oskLeftBody.width
-        implicitHeight: oskLeftBody.height
-
-        KeyGrid {
-            id: oskLeftBody
-            model: oskLeftModel
-        }
-    }
-
-    PanelWindow {
-        id: oskRight
-        color: "transparent"
-        visible: false
-        screen: Quickshell.screens[0]
-        anchors {
-            right: true
-            top: true
-        }
-        margins {
             right: 10
             top: parseInt(screen.height / 2)
         }
-        implicitWidth: oskRightBody.width
-        implicitHeight: oskRightBody.height
 
-        KeyGrid {
-            id: oskRightBody
-            model: oskRightModel
+        implicitHeight: Math.max(oskLeftBody.height, oskRightBody.height)
+
+        Item {
+            id: leftRegion
+            anchors.left: parent.left
+            x: 0
+            width: oskLeftBody.width
+            height: parent.height
+
+            KeyGrid {
+                id: oskLeftBody
+                model: oskLeftModel
+            }
+        }
+
+        Item {
+            id: rightRegion
+            anchors.right: parent.right
+            width: oskRightBody.width
+            x: parent.width - width
+            height: parent.height
+
+            KeyGrid {
+                id: oskRightBody
+                model: oskRightModel
+            }
+        }
+
+        Item {
+            id: oskGap
+            x: leftRegion.width
+            width: Math.max(0, rightRegion.x - leftRegion.width)
+            height: parent.height
+            enabled: false
+            visible: false
         }
     }
 
