@@ -30,6 +30,9 @@ class K:
                 return None
             return evdev.ecodes.ecodes[f"KEY_{name}"]
 
+        if not self.key_held and self.key_pressed:
+            self.key_held = self.key_pressed
+
         self.keycode_pressed = lookup_key(self.key_pressed)
         self.keycode_held = lookup_key(self.key_held)
 

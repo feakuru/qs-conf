@@ -64,7 +64,7 @@ ColumnLayout {
                         Text {
                             property string heldText: {
                                 if (cell) {
-                                    if (cell.key_held) {
+                                    if (cell.key_held && cell.keycode_held != cell.keycode_pressed) {
                                         return cell.key_held;
                                     } else if (cell.layer_switch) {
                                         return cell.layer_switch;
