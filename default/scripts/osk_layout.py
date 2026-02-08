@@ -250,11 +250,18 @@ if __name__ == "__main__":
         merged = []
         for i in range(len(main_side)):
             s = selected_side[i] if selected_side and i < len(selected_side) else None
+            m = main_side[i] if main_side and i < len(main_side) else None
             if s is None:
-                m = main_side[i] if main_side and i < len(main_side) else None
                 merged.append(m)
             else:
-                merged.append(s)
+                merged.append(
+                    [
+                        s[idx]
+                        if s[idx] is not None
+                        else (m[idx] if m is not None and idx < len(m) else None)
+                        for idx in range(len(s))
+                    ]
+                )
         return merged
 
     merged_layer = Layer(
