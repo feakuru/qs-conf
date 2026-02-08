@@ -44,7 +44,6 @@ class OSKDaemon:
         self.sock = self.ctx.socket(zmq.PULL)
         self.held = {}  # code -> count
         self._timers = {}  # code -> threading.Timer
-        # set up file logging so the server's activity can be tailed
         self.log_path = default_log_path()
         try:
             fh = logging.FileHandler(self.log_path, encoding="utf-8")
@@ -185,7 +184,7 @@ class OSKDaemon:
                     self.held[code] = cnt + 1
                     # schedule auto-release in case we never see a long_end
                     try:
-                        self._schedule_auto_release(code, delay=5.0)
+                        self._schedule_auto_release(code, delay=60.0)
                     except Exception:
                         logging.exception(
                             "failed to schedule auto-release for %s", code
