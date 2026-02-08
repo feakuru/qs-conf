@@ -106,21 +106,21 @@ ColumnLayout {
                             onTriggered: {
                                 btnTouchArea.longHeld = true
                                 var codeHeld = btnTouchArea.heldKeyCodeProp
-                                if (codeHeld !== null && codeHeld !== undefined) {
+                                if (btnTouchArea.layerSwitch) {
+                                    keyGrid.layerSwitched(btnTouchArea.layerSwitch);
+                                } else if (codeHeld !== null && codeHeld !== undefined) {
                                     btnTouchArea.heldKeyCode = codeHeld;
                                     Quickshell.execDetached({
                                         command: [
                                             "sh",
                                             "-c",
-                                            "uv run python " + 
+                                            "uv run python " +
                                             Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "")
                                             + " --event long_start --code "
                                             + String(btnTouchArea.heldKeyCode)
                                         ],
                                         workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
                                     });
-                                } else if (btnTouchArea.layerSwitch) {
-                                    keyGrid.layerSwitched(btnTouchArea.layerSwitch);
                                 }
                             }
                         }
@@ -160,7 +160,7 @@ ColumnLayout {
                                         command: [
                                             "sh",
                                             "-c",
-                                            "uv run python " + 
+                                            "uv run python " +
                                             Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "")
                                             + " --event long_end --code "
                                             + String(btnTouchArea.heldKeyCode)
