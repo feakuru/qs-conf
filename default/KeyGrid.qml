@@ -20,7 +20,7 @@ RowLayout {
             id: keyCol
             spacing: 6
             property int realModelColIndex: index
-            anchors.top: parent.top
+            Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
 
             Rectangle {
                 width: 30
