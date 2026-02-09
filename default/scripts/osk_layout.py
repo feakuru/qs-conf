@@ -47,7 +47,7 @@ LAYOUT = {
     "main": Layer(
         left=[
             [K("Esc"), K("1"), K("2"), K("3"), K("4"), K("5")],
-            [K(""), K("q"), K("w"), K("e"), K("r"), K("t")],
+            [K("", layer_switch="sysnav"), K("q"), K("w"), K("e"), K("r"), K("t")],
             [
                 K("Esc"),
                 K("a"),
@@ -67,15 +67,15 @@ LAYOUT = {
             ],
         ],
         right=[
-            [K("6"), K("7"), K("8"), K("9"), K("0"), K("")],
-            [K("y"), K("u"), K("i"), K("o"), K("p"), K("⌫", ["BACKSPACE"])],
+            [K("6"), K("7"), K("8"), K("9"), K("0"), K("⌫", ["BACKSPACE"])],
+            [K("y"), K("u"), K("i"), K("o"), K("p"), K("", layer_switch="symnum")],
             [
                 K("h"),
                 K("j", keys_held=["RIGHTSHIFT"]),
                 K("k", keys_held=["RIGHTCTRL"]),
                 K("l", keys_held=["RIGHTALT"]),
                 K(";", ["SEMICOLON"]),
-                K(""),
+                K("Esc"),
             ],
             [
                 K("n"),
