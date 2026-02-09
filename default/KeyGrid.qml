@@ -10,7 +10,17 @@ RowLayout {
 
     property var expectedRows: 5
     property var expectedCols: 6
+    property real rotationAngle: 10
     property bool isRightHalf: false
+
+    transform: Rotation {angle: rotationAngle; origin.x: width / 2; origin.y: height / 2}
+    property real rotatedWidth:
+        Math.abs(width * Math.cos(rotationAngle * Math.PI / 180)) +
+        Math.abs(height * Math.sin(rotationAngle * Math.PI / 180))
+    property real rotatedHeight:
+        Math.abs(width * Math.sin(rotationAngle * Math.PI / 180)) +
+        Math.abs(height * Math.cos(rotationAngle * Math.PI / 180))
+
 
     signal layerSwitched(layerName: string)
 

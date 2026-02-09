@@ -60,51 +60,58 @@ Rectangle {
         }
         property string layerName: "main"
 
-        implicitHeight: Math.max(oskLeftBody.height, oskRightBody.height)
+        implicitWidth: Quickshell.screens[0].width
+        implicitHeight: Math.max(leftRegion.height, rightRegion.height)
 
-        Item {
-            id: leftRegion
-            anchors.left: parent.left
-            x: 0
-            width: oskLeftBody.width
-            height: parent.height
+        RowLayout {
+            anchors.fill: parent
+            Item {
+                id: leftRegion
+                width: oskLeftBody.rotatedWidth
+                height: oskLeftBody.rotatedHeight
+                Layout.fillHeight: true
+                Layout.leftMargin: 50
 
-            KeyGrid {
-                id: oskLeftBody
-                model: oskLeftModel
-                onLayerSwitched: layerName => {
-                    oskWindow.layerName = layerName;
-                    oskConfigProcess.running = true;
+                KeyGrid {
+                    id: oskLeftBody
+                    model: oskLeftModel
+                    anchors.left: leftRegion.left
+                    rotationAngle: 10
+                    onLayerSwitched: layerName => {
+                        oskWindow.layerName = layerName;
+                        oskConfigProcess.running = true;
+                    }
                 }
             }
-        }
 
-        Item {
-            id: rightRegion
-            anchors.right: parent.right
-            width: oskRightBody.width
-            x: parent.width - width
-            height: parent.height
+            Item {
+                id: oskGap
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
 
-            KeyGrid {
-                id: oskRightBody
-                model: oskRightModel
-                isRightHalf: true
-                onLayerSwitched: layerName => {
-                    oskWindow.layerName = layerName;
-                    oskConfigProcess.running = true;
+
+            Item {
+                id: rightRegion
+                width: oskRightBody.rotatedWidth
+                height: oskRightBody.rotatedHeight
+                Layout.fillHeight: true
+
+                KeyGrid {
+                    id: oskRightBody
+                    model: oskRightModel
+                    isRightHalf: true
+                    rotationAngle: -10
+
+                    onLayerSwitched: layerName => {
+                        oskWindow.layerName = layerName;
+                        oskConfigProcess.running = true;
+                    }
                 }
             }
+
         }
 
-        Item {
-            id: oskGap
-            x: leftRegion.width
-            width: Math.max(0, rightRegion.x - leftRegion.width)
-            height: parent.height
-            enabled: false
-            visible: false
-        }
     }
 
     ScriptProcess {
