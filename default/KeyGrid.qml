@@ -3,34 +3,54 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 
-ColumnLayout {
+RowLayout {
     id: keyGrid
     property var model: []
     spacing: 6
 
     property var expectedRows: 5
     property var expectedCols: 6
+    property bool isRightHalf: false
 
     signal layerSwitched(layerName: string)
 
     Repeater {
-        id: rowRepeater
-        model: keyGrid.expectedRows
-        delegate: RowLayout {
-            id: repeatedRow
+        model: keyGrid.expectedCols
+        delegate: ColumnLayout {
+            id: keyCol
             spacing: 6
-            property int realModelRowIndex: index
+            property int realModelColIndex: index
+            anchors.top: parent.top
+
+            Rectangle {
+                width: 30
+                height: {
+                    switch (keyGrid.isRightHalf ? (keyGrid.expectedCols - 1 - realModelColIndex) : realModelColIndex) {
+                        case 0:
+                        case 1:
+                        case 5:
+                            return 32;
+                        case 2:
+                        case 4:
+                            return 16;
+                        case 3:
+                            return 0;
+
+                    }
+                }
+                color: "transparent"
+            }
 
             Repeater {
-                model: keyGrid.expectedCols
+                model: keyGrid.expectedRows
                 delegate: Rectangle {
-                    property int realModelColIndex: index
+                    property int realModelRowIndex: index
                     property var cell: {
                         if (keyGrid.model
-                                && keyGrid.model.length > repeatedRow.realModelRowIndex
-                                && keyGrid.model[repeatedRow.realModelRowIndex]
-                                && keyGrid.model[repeatedRow.realModelRowIndex].length > realModelColIndex) {
-                            return keyGrid.model[repeatedRow.realModelRowIndex][realModelColIndex];
+                                && keyGrid.model.length > realModelRowIndex
+                                && keyGrid.model[realModelRowIndex]
+                                && keyGrid.model[realModelRowIndex].length > realModelColIndex) {
+                            return keyGrid.model[realModelRowIndex][keyCol.realModelColIndex];
                         }
                         return null;
                     }

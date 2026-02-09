@@ -89,6 +89,7 @@ Rectangle {
             KeyGrid {
                 id: oskRightBody
                 model: oskRightModel
+                isRightHalf: true
                 onLayerSwitched: layerName => {
                     oskWindow.layerName = layerName;
                     oskConfigProcess.running = true;
@@ -130,12 +131,6 @@ Rectangle {
             }
         }
     }
-
-    // ScriptProcess {
-    //     id: oskInputProcess
-    //     scriptName: "osk_zmq_daemon"
-    //     running: false
-    // }
 
     Timer {
         id: oskReloadTimer
