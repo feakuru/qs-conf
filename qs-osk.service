@@ -1,0 +1,12 @@
+[Unit]
+Description=Custom OSK for Quickshell
+
+[Service]
+User=???
+Group=???
+Environment="YDOTOOL_SOCKET=/run/user/???/.ydotool_socket"
+WorkingDirectory=???/.config/quickshell
+ExecStart=/usr/bin/uv run default/scripts/osk_zmq_daemon.py
+
+[Install]
+WantedBy=multi-user.target

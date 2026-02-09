@@ -28,13 +28,11 @@ def default_log_path():
     env = os.environ.get("OSK_LOG_FILE")
     if env:
         return Path(env)
-    xdg = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
-    return Path(xdg) / "quickshell-osk.log"
+    return Path("/tmp") / "quickshell-osk.log"
 
 
 def default_socket_addr():
-    xdg = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
-    return f"ipc://{Path(xdg) / 'quickshell-osk.ipc'}"
+    return f"ipc://{Path("/tmp") / 'quickshell-osk.ipc'}"
 
 
 def setup_logging():

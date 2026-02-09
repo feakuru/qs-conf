@@ -15,4 +15,4 @@ This is my personal config for Quickshell. It includes a top bar and a bottom ba
         // IP4.GATEWAY:192.168.0.1      <-- means it is used for internet (duh)
         // GENERAL.DEVICE:someotherdev
         // IP4.GATEWAY:
-
+- need to fill in values in `qs-osk.service` and add it to systemd services (enable and start)
