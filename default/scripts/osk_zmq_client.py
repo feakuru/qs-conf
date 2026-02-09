@@ -32,7 +32,7 @@ def default_log_path():
 
 
 def default_socket_addr():
-    return f"ipc://{Path("/tmp") / 'quickshell-osk.ipc'}"
+    return f"ipc://{Path('/tmp') / 'quickshell-osk.ipc'}"
 
 
 def setup_logging():
@@ -50,7 +50,7 @@ def setup_logging():
 
 
 def send_event(
-    event: str, code: int | None = None, socket_addr: str | None = None
+    event: str, codes: list[int] | None = None, socket_addr: str | None = None
 ) -> None:
     setup_logging()
     addr = socket_addr or default_socket_addr()
@@ -63,8 +63,8 @@ def send_event(
     sock.connect(addr)
 
     payload = {"event": event, "ts": time.time()}
-    if code is not None:
-        payload["code"] = code
+    if codes is not None:
+        payload["codes"] = codes
 
     try:
         logging.info(f"sending: {payload}")
@@ -89,13 +89,15 @@ def parse_args(argv):
         required=True,
         choices=["short_press", "long_start", "long_end", "cancel", "reset"],
     )  # required
-    p.add_argument("--code", type=int, help="keycode for the event")
-    return p.parse_args(argv)
+    p.add_argument("--codes", type=str, help="keycodes for the event")
+    result = p.parse_args(argv)
+    result.codes = [int(code) for code in result.codes.split(",")]
+    return result
 
 
 def main(argv=None):
     args = parse_args(argv or sys.argv[1:])
-    send_event(args.event, args.code, args.socket)
+    send_event(args.event, args.codes, args.socket)
 
 
 if __name__ == "__main__":

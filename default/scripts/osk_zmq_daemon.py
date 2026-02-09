@@ -172,39 +172,51 @@ class OSKDaemon:
                 logging.info("received event: %s", data)
 
                 evt = data.get("event")
-                code = data.get("code")
+                codes = data.get("codes")
+                if not isinstance(codes, (list, tuple)):
+                    logging.warning("expected 'codes' list, got %r", type(codes))
+                    codes = None
 
-                if evt == "long_start" and code is not None:
-                    cnt = self.held.get(code, 0)
-                    if cnt == 0:
-                        logging.info("long_start press %s", code)
-                        self._emit_ydotool(["key", f"{code}:1"])
-                    self.held[code] = cnt + 1
-                    # schedule auto-release in case we never see a long_end
-                    try:
-                        self._schedule_auto_release(code, delay=60.0)
-                    except Exception:
-                        logging.exception(
-                            "failed to schedule auto-release for %s", code
-                        )
-
-                elif evt in ("long_end", "cancel") and code is not None:
-                    cnt = self.held.get(code, 0)
-                    if cnt > 0:
-                        cnt -= 1
-                        self.held[code] = cnt
+                if evt == "long_start" and codes is not None:
+                    for code in codes:
+                        cnt = self.held.get(code, 0)
                         if cnt == 0:
-                            logging.info("long_end release %s", code)
-                            self._emit_ydotool(["key", f"{code}:0"])
-                    # cancel any pending auto-release for this code
-                    try:
-                        self._cancel_auto_release(code)
-                    except Exception:
-                        logging.exception("failed to cancel auto-release for %s", code)
+                            logging.info("long_start press %s", code)
+                            self._emit_ydotool(["key", f"{code}:1"])
+                        self.held[code] = cnt + 1
+                        # schedule auto-release in case we never see a long_end
+                        try:
+                            self._schedule_auto_release(code, delay=60.0)
+                        except Exception:
+                            logging.exception(
+                                "failed to schedule auto-release for %s", code
+                            )
 
-                elif evt == "short_press" and code is not None:
-                    logging.info("short_press %s", code)
-                    self._emit_ydotool(["key", f"{code}:1", f"{code}:0"])
+                elif evt in ("long_end", "cancel") and codes is not None:
+                    for code in codes:
+                        cnt = self.held.get(code, 0)
+                        if cnt > 0:
+                            cnt -= 1
+                            self.held[code] = cnt
+                            if cnt == 0:
+                                logging.info("long_end release %s", code)
+                                self._emit_ydotool(["key", f"{code}:0"])
+                        # cancel any pending auto-release for this code
+                        try:
+                            self._cancel_auto_release(code)
+                        except Exception:
+                            logging.exception(
+                                "failed to cancel auto-release for %s", code
+                            )
+
+                elif evt == "short_press" and codes is not None:
+                    logging.info("short_press %s", codes)
+                    args = []
+                    for code in codes[::-1]:
+                        args.insert(0, f"{code}:1")
+                        args.append(f"{code}:0")
+                    args.insert(0, "key")
+                    self._emit_ydotool(args)
 
                 elif evt == "reset":
                     logging.info("reset: releasing all held keys")

@@ -30,7 +30,6 @@ ColumnLayout {
                                 && keyGrid.model.length > repeatedRow.realModelRowIndex
                                 && keyGrid.model[repeatedRow.realModelRowIndex]
                                 && keyGrid.model[repeatedRow.realModelRowIndex].length > realModelColIndex) {
-                                    // console.log(JSON.stringify(keyGrid.model[repeatedRow.realModelRowIndex][realModelColIndex]));
                             return keyGrid.model[repeatedRow.realModelRowIndex][realModelColIndex];
                         }
                         return null;
@@ -64,10 +63,18 @@ ColumnLayout {
                         Text {
                             property string heldText: {
                                 if (cell) {
-                                    if (cell.key_held && cell.keycode_held != cell.keycode_pressed) {
-                                        return cell.key_held;
-                                    } else if (cell.layer_switch) {
+                                    if (cell.layer_switch) {
                                         return cell.layer_switch;
+                                    }
+                                    if (cell.keycodes_held) {
+                                        if (cell.keycodes_held.length != cell.keycodes_pressed.length) {
+                                            return cell.keys_held.join(" ");
+                                        }
+                                        for (var i = 0; i < cell.keycodes_held.length; ++i) {
+                                            if (cell.keycodes_held[i] != cell.keycodes_pressed[i]) {
+                                                return cell.keys_held.join(" ");
+                                            }
+                                        }
                                     }
                                 }
                                 return "";
@@ -90,13 +97,12 @@ ColumnLayout {
                         id: btnTouchArea
                         anchors.fill: parent
 
-                        property var primaryKeyCode: (cell && cell.keycode_pressed) ? cell.keycode_pressed : null
-                        property var heldKeyCodeProp: (cell && cell.keycode_held) ? cell.keycode_held : null
+                        property var keycodesPressed: (cell && cell.keycodes_pressed) ? cell.keycodes_pressed : []
+                        property var keycodesHeld: (cell && cell.keycodes_held) ? cell.keycodes_held : []
                         property var layerSwitch: (cell && cell.layer_switch) ? cell.layer_switch : null
-                        property bool hasPrimaryKey: primaryKeyCode !== null && primaryKeyCode !== undefined
 
                         property bool longHeld: false
-                        property int heldKeyCode: -1
+                        property var currentlyHeldKeycodes: null
                         property int activePointId: -1
 
                         Timer {
@@ -104,20 +110,20 @@ ColumnLayout {
                             interval: 200
                             repeat: false
                             onTriggered: {
-                                btnTouchArea.longHeld = true
-                                var codeHeld = btnTouchArea.heldKeyCodeProp
+                                btnTouchArea.longHeld = true;
+                                var codesHeld = btnTouchArea.keycodesHeld;
                                 if (btnTouchArea.layerSwitch) {
                                     keyGrid.layerSwitched(btnTouchArea.layerSwitch);
-                                } else if (codeHeld !== null && codeHeld !== undefined) {
-                                    btnTouchArea.heldKeyCode = codeHeld;
+                                } else if (codesHeld) {
+                                    btnTouchArea.currentlyHeldKeycodes = codesHeld;
                                     Quickshell.execDetached({
                                         command: [
                                             "sh",
                                             "-c",
                                             "uv run python " +
                                             Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "")
-                                            + " --event long_start --code "
-                                            + String(btnTouchArea.heldKeyCode)
+                                            + " --event long_start --codes "
+                                            + btnTouchArea.currentlyHeldKeycodes.join(",")
                                         ],
                                         workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
                                     });
@@ -133,7 +139,7 @@ ColumnLayout {
 
                             if (btnTouchArea.activePointId === -1) {
                                 btnTouchArea.longHeld = false;
-                                btnTouchArea.heldKeyCode = -1;
+                                btnTouchArea.currentlyHeldKeycodes = null;
                                 btnTouchArea.activePointId = p.pointId;
                                 holdTimer.start();
                             }
@@ -155,15 +161,15 @@ ColumnLayout {
 
                             holdTimer.stop()
                             if (btnTouchArea.longHeld) {
-                                if (btnTouchArea.heldKeyCode !== -1) {
+                                if (btnTouchArea.currentlyHeldKeycodes && btnTouchArea.currentlyHeldKeycodes.length) {
                                     Quickshell.execDetached({
                                         command: [
                                             "sh",
                                             "-c",
                                             "uv run python " +
                                             Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "")
-                                            + " --event long_end --code "
-                                            + String(btnTouchArea.heldKeyCode)
+                                            + " --event long_end --codes "
+                                            + btnTouchArea.currentlyHeldKeycodes.join(",")
                                         ],
                                         workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
                                     });
@@ -171,18 +177,18 @@ ColumnLayout {
                                     keyGrid.layerSwitched("main");
                                 }
                                 btnTouchArea.longHeld = false;
-                                btnTouchArea.heldKeyCode = -1;
+                                btnTouchArea.currentlyHeldKeycodes = null;
                             } else {
-                                var code = btnTouchArea.primaryKeyCode;
-                                if (code !== null && code !== undefined) {
+                                var codes = btnTouchArea.keycodesPressed;
+                                if (codes) {
                                     Quickshell.execDetached({
                                         command: [
                                             "sh",
                                             "-c",
                                             "uv run python " +
                                             Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "")
-                                            + " --event short_press --code "
-                                            + String(code)
+                                            + " --event short_press --codes "
+                                            + codes.join(",")
                                         ],
                                         workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
                                     });

@@ -14,27 +14,27 @@ class EnhancedJSONEncoder(json.JSONEncoder):
 @dataclasses.dataclass
 class K:
     label: str
-    key_pressed: str | None = None
-    key_held: str | None = None
+    keys_pressed: list[str] | None = None
+    keys_held: list[str] | None = None
     layer_toggle: int | None = None
     layer_switch: str | None = None
-    keycode_pressed: int | None = dataclasses.field(init=False)
-    keycode_held: int | None = dataclasses.field(init=False)
+    keycodes_pressed: list[int] | None = dataclasses.field(init=False)
+    keycodes_held: list[int] | None = dataclasses.field(init=False)
 
     def __post_init__(self):
-        if self.label and not self.key_pressed:
-            self.key_pressed = self.label.upper()
+        if self.label and not self.keys_pressed:
+            self.keys_pressed = [self.label.upper()]
 
-        def lookup_key(name: str | None):
-            if not name:
+        def lookup_keys(names: list[str] | None):
+            if not names:
                 return None
-            return evdev.ecodes.ecodes[f"KEY_{name}"]
+            return [evdev.ecodes.ecodes[f"KEY_{name}"] for name in names]
 
-        if not self.key_held and self.key_pressed:
-            self.key_held = self.key_pressed
+        if not self.keys_held and self.keys_pressed:
+            self.keys_held = self.keys_pressed
 
-        self.keycode_pressed = lookup_key(self.key_pressed)
-        self.keycode_held = lookup_key(self.key_held)
+        self.keycodes_pressed = lookup_keys(self.keys_pressed)
+        self.keycodes_held = lookup_keys(self.keys_held)
 
 
 @dataclasses.dataclass
@@ -51,9 +51,9 @@ LAYOUT = {
             [
                 K("Esc"),
                 K("a"),
-                K("s", key_held="LEFTALT"),
-                K("d", key_held="LEFTCTRL"),
-                K("f", key_held="LEFTSHIFT"),
+                K("s", keys_held=["LEFTALT"]),
+                K("d", keys_held=["LEFTCTRL"]),
+                K("f", keys_held=["LEFTSHIFT"]),
                 K("g"),
             ],
             [K(""), K("z"), K("x"), K("c"), K("v"), K("b")],
@@ -62,25 +62,32 @@ LAYOUT = {
                 None,
                 None,
                 None,
-                K("↵", "ENTER", layer_switch="symnum"),
-                K("⌘", "LEFTMETA"),
+                K("↵", ["ENTER"], layer_switch="symnum"),
+                K("⌘", ["LEFTMETA"]),
             ],
         ],
         right=[
             [K("6"), K("7"), K("8"), K("9"), K("0"), K("")],
-            [K("y"), K("u"), K("i"), K("o"), K("p"), K("⌫", "BACKSPACE")],
+            [K("y"), K("u"), K("i"), K("o"), K("p"), K("⌫", ["BACKSPACE"])],
             [
                 K("h"),
-                K("j", key_held="RIGHTSHIFT"),
-                K("k", key_held="RIGHTCTRL"),
-                K("l", key_held="RIGHTALT"),
-                K(";", "SEMICOLON"),
+                K("j", keys_held=["RIGHTSHIFT"]),
+                K("k", keys_held=["RIGHTCTRL"]),
+                K("l", keys_held=["RIGHTALT"]),
+                K(";", ["SEMICOLON"]),
                 K(""),
             ],
-            [K("n"), K("m"), K(",", "COMMA"), K(".", "DOT"), K("/", "SLASH"), K("")],
             [
-                K("⌫", "BACKSPACE"),
-                K("␣", "SPACE", layer_switch="sysnav"),
+                K("n"),
+                K("m"),
+                K(",", ["COMMA"]),
+                K(".", ["DOT"]),
+                K("/", ["SLASH"]),
+                K(""),
+            ],
+            [
+                K("⌫", ["BACKSPACE"]),
+                K("␣", ["SPACE"], layer_switch="sysnav"),
                 None,
                 None,
                 None,
@@ -92,81 +99,81 @@ LAYOUT = {
         left=[
             [
                 None,
-                K("F1", "F1"),
-                K("F2", "F2"),
-                K("F3", "F3"),
-                K("F4", "F4"),
-                K("F5", "F5"),
+                K("F1", ["F1"]),
+                K("F2", ["F2"]),
+                K("F3", ["F3"]),
+                K("F4", ["F4"]),
+                K("F5", ["F5"]),
             ],
             [
                 None,
                 None,
-                K("`", "GRAVE"),
-                K("'", "APOSTROPHE"),
-                K("[", "LEFTBRACE"),
-                K("]", "RIGHTBRACE"),
+                K("`", ["GRAVE"]),
+                K("'", ["APOSTROPHE"]),
+                K("[", ["LEFTBRACE"]),
+                K("]", ["RIGHTBRACE"]),
             ],
             [
                 None,
                 None,
-                K("-", "MINUS", key_held="LEFTALT"),
-                K("=", "EQUAL", key_held="LEFTCTRL"),
-                K(";", "SEMICOLON", key_held="LEFTSHIFT"),
-                K(":", "SEMICOLON"),
+                K("-", ["MINUS"], keys_held=["LEFTALT"]),
+                K("=", ["EQUAL"], keys_held=["LEFTCTRL"]),
+                K(";", ["SEMICOLON"], keys_held=["LEFTSHIFT"]),
+                K(":", ["LEFTSHIFT", "SEMICOLON"]),
             ],
             [
                 None,
                 None,
-                K("_", "MINUS"),
-                K("+", "EQUAL"),
-                K("\\", "BACKSLASH"),
-                K("/", "SLASH"),
+                K("_", ["LEFTSHIFT", "MINUS"]),
+                K("+", ["LEFTSHIFT", "EQUAL"]),
+                K("\\", ["BACKSLASH"]),
+                K("/", ["SLASH"]),
             ],
             [
                 None,
                 None,
                 None,
                 None,
-                K("↵", "ENTER", layer_switch="main"),
-                K("⌘", "LEFTMETA"),
+                K("↵", ["ENTER"], layer_switch="main"),
+                K("⌘", ["LEFTMETA"]),
             ],
         ],
         right=[
             [
-                K("F6", "F6"),
-                K("F7", "F7"),
-                K("F8", "F8"),
-                K("F9", "F9"),
-                K("F10", "F10"),
+                K("F6", ["F6"]),
+                K("F7", ["F7"]),
+                K("F8", ["F8"]),
+                K("F9", ["F9"]),
+                K("F10", ["F10"]),
                 None,
             ],
             [
-                K("7", "7"),
-                K("8", "8"),
-                K("9", "9"),
-                K("F11", "F11"),
-                K("F12", "F12"),
+                K("7", ["7"]),
+                K("8", ["8"]),
+                K("9", ["9"]),
+                K("F11", ["F11"]),
+                K("F12", ["F12"]),
                 None,
             ],
             [
-                K("4", "4"),
-                K("5", "5", key_held="RIGHTSHIFT"),
-                K("6", "6", key_held="RIGHTCTRL"),
-                K(",", "COMMA", key_held="RIGHTALT"),
-                None,
-                None,
-            ],
-            [
-                K("1", "1"),
-                K("2", "2"),
-                K("3", "3"),
-                K(".", "DOT"),
+                K("4", ["4"]),
+                K("5", ["5"], keys_held=["RIGHTSHIFT"]),
+                K("6", ["6"], keys_held=["RIGHTCTRL"]),
+                K(",", ["COMMA"], keys_held=["RIGHTALT"]),
                 None,
                 None,
             ],
             [
-                K("⌫", "BACKSPACE"),
-                K("␣", "SPACE", layer_switch="sysnav"),
+                K("1", ["1"]),
+                K("2", ["2"]),
+                K("3", ["3"]),
+                K(".", ["DOT"]),
+                None,
+                None,
+            ],
+            [
+                K("⌫", ["BACKSPACE"]),
+                K("␣", ["SPACE"], layer_switch="sysnav"),
                 None,
                 None,
                 None,
@@ -176,62 +183,69 @@ LAYOUT = {
     ),
     "sysnav": Layer(
         left=[
-            [None, None, None, None, None, K("BRI+", "BRIGHTNESSUP")],
+            [None, None, None, None, None, K("BRI+", ["BRIGHTNESSUP"])],
             [
                 None,
                 None,
-                K("MUTE", "MUTE"),
-                K("VOL-", "VOLUMEDOWN"),
-                K("VOL+", "VOLUMEUP"),
-                K("BRI-", "BRIGHTNESSDOWN"),
+                K("MUTE", ["MUTE"]),
+                K("VOL-", ["VOLUMEDOWN"]),
+                K("VOL+", ["VOLUMEUP"]),
+                K("BRI-", ["BRIGHTNESSDOWN"]),
             ],
             [
                 None,
                 None,
-                K("", "LEFTALT", key_held="LEFTALT"),
-                K("", "LEFTCTRL", key_held="LEFTCTRL"),
-                K("", "LEFTSHIFT", key_held="LEFTSHIFT"),
+                K("ALT", ["LEFTALT"], keys_held=["LEFTALT"]),
+                K("CTRL", ["LEFTCTRL"], keys_held=["LEFTCTRL"]),
+                K("SHIFT", ["LEFTSHIFT"], keys_held=["LEFTSHIFT"]),
                 None,
             ],
-            [None, None, None, None, None, K("CapsL", "CAPSLOCK")],
+            [
+                None,
+                K("←W", ["LEFTMETA", "LEFTSHIFT", "PAGEDOWN"]),
+                K("W→", ["LEFTMETA", "LEFTSHIFT", "PAGEUP"]),
+                None,
+                None,
+                K("CapsL", ["CAPSLOCK"]),
+            ],
             [
                 None,
                 None,
                 None,
                 None,
-                K("↵", "ENTER", layer_switch="symnum"),
-                K("⌘", "LEFTMETA"),
+                K("↵", ["ENTER"], layer_switch="symnum"),
+                K("⌘", ["LEFTMETA"]),
             ],
         ],
         right=[
             None,
             [
-                K("PgUp", "PAGEUP"),
-                K("PgDn", "PAGEDOWN"),
-                K("Home", "HOME"),
-                K("End", "END"),
-                K("PrtSc", "PRINT"),
+                K("PgUp", ["PAGEUP"]),
+                K("PgDn", ["PAGEDOWN"]),
+                K("Home", ["HOME"]),
+                K("End", ["END"]),
+                K("PrtSc", ["PRINT"]),
                 None,
             ],
             [
-                K("Left", "LEFT"),
-                K("Down", "DOWN"),
-                K("Up", "UP"),
-                K("Right", "RIGHT"),
-                None,
-                None,
-            ],
-            [
-                K("Tab", "TAB"),
-                K("Bspc", "BACKSPACE"),
-                K("Del", "DELETE"),
-                None,
+                K("←", ["LEFT"]),
+                K("↓", ["DOWN"]),
+                K("↑", ["UP"]),
+                K("→", ["RIGHT"]),
                 None,
                 None,
             ],
             [
-                K("⌫", "BACKSPACE"),
-                K("␣", "SPACE", layer_switch="main"),
+                K("Tab", ["TAB"]),
+                K("⌫", ["BACKSPACE"]),
+                K("⌦", ["DELETE"]),
+                K("←W", ["LEFTALT", "LEFTCTRL", "LEFT"]),
+                K("W→", ["LEFTALT", "LEFTCTRL", "RIGHT"]),
+                None,
+            ],
+            [
+                K("⌫", ["BACKSPACE"]),
+                K("␣", ["SPACE"], layer_switch="main"),
                 None,
                 None,
                 None,
