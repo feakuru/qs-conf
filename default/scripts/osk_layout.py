@@ -202,8 +202,8 @@ LAYOUT = {
             ],
             [
                 None,
-                K("←W", ["LEFTMETA", "LEFTSHIFT", "PAGEDOWN"]),
-                K("W→", ["LEFTMETA", "LEFTSHIFT", "PAGEUP"]),
+                K("←W", ["LEFTMETA", "LEFTSHIFT", "PAGEUP"]),
+                K("W→", ["LEFTMETA", "LEFTSHIFT", "PAGEDOWN"]),
                 None,
                 None,
                 K("CapsL", ["CAPSLOCK"]),
