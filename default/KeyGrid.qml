@@ -19,7 +19,7 @@ RowLayout {
         origin.y: height / 2
     }
     property real rotatedWidth: Math.abs(width * Math.cos(rotationAngle * Math.PI / 180)) + Math.abs(height * Math.sin(rotationAngle * Math.PI / 180))
-    property real rotatedHeight: Math.abs(width * Math.sin(rotationAngle * Math.PI / 180)) + Math.abs(height * Math.cos(rotationAngle * Math.PI / 180))
+    property real rotatedHeight: Math.abs(width * Math.sin(rotationAngle * Math.PI / 180)) + Math.abs(height * Math.cos(rotationAngle * Math.PI / 180)) - 30
 
     signal layerSwitched(layerName: string)
 
@@ -77,7 +77,7 @@ RowLayout {
                             Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
                             visible: hasButton && btnCol.labelText !== ""
                             text: (visible && hasButton) ? btnCol.labelText : ""
-                            font.pixelSize: 16
+                            font.pixelSize: 20
                             font.family: AppConstants.defaultFont
                             font.bold: true
                             color: AppConstants.styledTextColor

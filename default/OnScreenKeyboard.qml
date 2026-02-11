@@ -39,8 +39,10 @@ Rectangle {
     property var oskRightModel: []
 
     Component.onCompleted: {
-        if (typeof oskConfigProcess !== 'undefined') oskConfigProcess.running = true;
-        if (typeof oskInputProcess !== 'undefined') oskInputProcess.running = true;
+        if (typeof oskConfigProcess !== 'undefined')
+            oskConfigProcess.running = true;
+        if (typeof oskInputProcess !== 'undefined')
+            oskInputProcess.running = true;
     }
 
     PanelWindow {
@@ -51,12 +53,13 @@ Rectangle {
         aboveWindows: true
         anchors {
             left: true
-            right: true
+            bottom: true
         }
         margins {
             left: 10
             right: 10
-            top: parseInt(screen.height / 2)
+            top: 10
+            bottom: 10
         }
         property string layerName: "main"
 
@@ -90,7 +93,6 @@ Rectangle {
                 Layout.fillHeight: true
             }
 
-
             Item {
                 id: rightRegion
                 width: oskRightBody.rotatedWidth
@@ -109,9 +111,7 @@ Rectangle {
                     }
                 }
             }
-
         }
-
     }
 
     ScriptProcess {
@@ -123,7 +123,8 @@ Rectangle {
         stdout: StdioCollector {
             onStreamFinished: {
                 var out = this.text.trim();
-                if (out.length === 0) return;
+                if (out.length === 0)
+                    return;
                 try {
                     var parsed = JSON.parse(out);
                     if (parsed.left && parsed.left instanceof Array && parsed.left.length > 0) {
@@ -144,6 +145,8 @@ Rectangle {
         interval: 500
         running: true
         repeat: true
-        onTriggered: function () { oskConfigProcess.running = true }
+        onTriggered: function () {
+            oskConfigProcess.running = true;
+        }
     }
 }
