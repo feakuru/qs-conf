@@ -232,7 +232,7 @@ LAYOUT = {
                 K("↓", ["DOWN"]),
                 K("↑", ["UP"]),
                 K("→", ["RIGHT"]),
-                None,
+                K("모", ["LEFTALT", "LEFTCTRL", "T"]),
                 None,
             ],
             [

@@ -20,7 +20,7 @@ DropdownMenu {
     property list<var> displayedEntries: {
         let model = new Array(...DesktopEntries.applications.values);
         if (searchField.text.length > 0) {
-            model = model.filter(val => val.name.toLowerCase().includes(searchField.text));
+            model = model.filter(val => val.name.toLowerCase().includes(searchField.text)).sort((lhs, rhs) => lhs.name.length - rhs.name.length);
         } else if (currentCategory.length > 0) {
             model = model.filter(entry => entry.categories.includes(currentCategory)).sort((lhs, rhs) => lhs.name.localeCompare(rhs.name)).slice(0, 100);
         } else {

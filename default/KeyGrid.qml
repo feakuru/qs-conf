@@ -13,14 +13,13 @@ RowLayout {
     property real rotationAngle: 10
     property bool isRightHalf: false
 
-    transform: Rotation {angle: rotationAngle; origin.x: width / 2; origin.y: height / 2}
-    property real rotatedWidth:
-        Math.abs(width * Math.cos(rotationAngle * Math.PI / 180)) +
-        Math.abs(height * Math.sin(rotationAngle * Math.PI / 180))
-    property real rotatedHeight:
-        Math.abs(width * Math.sin(rotationAngle * Math.PI / 180)) +
-        Math.abs(height * Math.cos(rotationAngle * Math.PI / 180))
-
+    transform: Rotation {
+        angle: rotationAngle
+        origin.x: width / 2
+        origin.y: height / 2
+    }
+    property real rotatedWidth: Math.abs(width * Math.cos(rotationAngle * Math.PI / 180)) + Math.abs(height * Math.sin(rotationAngle * Math.PI / 180))
+    property real rotatedHeight: Math.abs(width * Math.sin(rotationAngle * Math.PI / 180)) + Math.abs(height * Math.cos(rotationAngle * Math.PI / 180))
 
     signal layerSwitched(layerName: string)
 
@@ -36,16 +35,15 @@ RowLayout {
                 width: 30
                 height: {
                     switch (keyGrid.isRightHalf ? (keyGrid.expectedCols - 1 - realModelColIndex) : realModelColIndex) {
-                        case 0:
-                        case 1:
-                        case 5:
-                            return 32;
-                        case 2:
-                        case 4:
-                            return 16;
-                        case 3:
-                            return 0;
-
+                    case 0:
+                    case 1:
+                    case 5:
+                        return 32;
+                    case 2:
+                    case 4:
+                        return 16;
+                    case 3:
+                        return 0;
                     }
                 }
                 color: "transparent"
@@ -56,10 +54,7 @@ RowLayout {
                 delegate: Rectangle {
                     property int realModelRowIndex: index
                     property var cell: {
-                        if (keyGrid.model
-                                && keyGrid.model.length > realModelRowIndex
-                                && keyGrid.model[realModelRowIndex]
-                                && keyGrid.model[realModelRowIndex].length > realModelColIndex) {
+                        if (keyGrid.model && keyGrid.model.length > realModelRowIndex && keyGrid.model[realModelRowIndex] && keyGrid.model[realModelRowIndex].length > realModelColIndex) {
                             return keyGrid.model[realModelRowIndex][keyCol.realModelColIndex];
                         }
                         return null;
@@ -84,6 +79,7 @@ RowLayout {
                             text: (visible && hasButton) ? btnCol.labelText : ""
                             font.pixelSize: 16
                             font.family: AppConstants.defaultFont
+                            font.bold: true
                             color: AppConstants.styledTextColor
                             opacity: 0.8
                             horizontalAlignment: Text.AlignHCenter
@@ -147,23 +143,18 @@ RowLayout {
                                 } else if (codesHeld) {
                                     btnTouchArea.currentlyHeldKeycodes = codesHeld;
                                     Quickshell.execDetached({
-                                        command: [
-                                            "sh",
-                                            "-c",
-                                            "uv run python " +
-                                            Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "")
-                                            + " --event long_start --codes "
-                                            + btnTouchArea.currentlyHeldKeycodes.join(",")
-                                        ],
+                                        command: ["sh", "-c", "uv run python " + Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "") + " --event long_start --codes " + btnTouchArea.currentlyHeldKeycodes.join(",")],
                                         workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
                                     });
                                 }
                             }
                         }
 
-                        onPressed: function(points) {
-                            if (!hasButton) return;
-                            if (!points || points.length === 0) return;
+                        onPressed: function (points) {
+                            if (!hasButton)
+                                return;
+                            if (!points || points.length === 0)
+                                return;
                             var p = points[0];
                             p.accepted = true;
 
@@ -175,9 +166,11 @@ RowLayout {
                             }
                         }
 
-                        onReleased: function(points) {
-                            if (!hasButton) return;
-                            if (!points || points.length === 0) return;
+                        onReleased: function (points) {
+                            if (!hasButton)
+                                return;
+                            if (!points || points.length === 0)
+                                return;
 
                             var match = null;
                             for (var i = 0; i < points.length; ++i) {
@@ -187,20 +180,14 @@ RowLayout {
                                     break;
                                 }
                             }
-                            if (!match) return;
+                            if (!match)
+                                return;
 
-                            holdTimer.stop()
+                            holdTimer.stop();
                             if (btnTouchArea.longHeld) {
                                 if (btnTouchArea.currentlyHeldKeycodes && btnTouchArea.currentlyHeldKeycodes.length) {
                                     Quickshell.execDetached({
-                                        command: [
-                                            "sh",
-                                            "-c",
-                                            "uv run python " +
-                                            Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "")
-                                            + " --event long_end --codes "
-                                            + btnTouchArea.currentlyHeldKeycodes.join(",")
-                                        ],
+                                        command: ["sh", "-c", "uv run python " + Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "") + " --event long_end --codes " + btnTouchArea.currentlyHeldKeycodes.join(",")],
                                         workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
                                     });
                                 } else if (btnTouchArea.layerSwitch) {
@@ -212,14 +199,7 @@ RowLayout {
                                 var codes = btnTouchArea.keycodesPressed;
                                 if (codes) {
                                     Quickshell.execDetached({
-                                        command: [
-                                            "sh",
-                                            "-c",
-                                            "uv run python " +
-                                            Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "")
-                                            + " --event short_press --codes "
-                                            + codes.join(",")
-                                        ],
+                                        command: ["sh", "-c", "uv run python " + Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "") + " --event short_press --codes " + codes.join(",")],
                                         workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
                                     });
                                 }
@@ -227,7 +207,7 @@ RowLayout {
                             btnTouchArea.activePointId = -1;
                         }
 
-                        onCanceled: function(points) {
+                        onCanceled: function (points) {
                             onReleased(points);
                         }
                     }
