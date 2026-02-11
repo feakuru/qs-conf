@@ -261,6 +261,26 @@ DropdownMenu {
                 DropdownMenuItem {
                     Layout.columnSpan: 1
                     action: () => {
+                        Quickshell.execDetached({
+                            command: ["reboot"]
+                        });
+                    }
+                    RowLayout {
+                        anchors.fill: parent
+                        RecoloredIcon {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: preferredWidth
+                            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+                            iconWidth: 26
+                            iconHeight: 26
+                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/arrows-rotate.svg`)
+                            iconColor: "red"
+                        }
+                    }
+                }
+                DropdownMenuItem {
+                    Layout.columnSpan: 1
+                    action: () => {
                         powerIndicator.showShutdownDialog = false;
                     }
                     RowLayout {
