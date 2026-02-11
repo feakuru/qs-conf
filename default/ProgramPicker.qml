@@ -15,7 +15,7 @@ DropdownMenu {
     menuColumns: 4
     disableDisappearanceOnNoFocus: true
 
-    property int focusedIdx: -1
+    property int focusedIdx: 0
     property string currentCategory: ""
     property list<var> displayedEntries: {
         let model = new Array(...DesktopEntries.applications.values);
@@ -41,7 +41,7 @@ DropdownMenu {
         function toggle(): void {
             searchField.text = "";
             programPicker.currentCategory = "";
-            programPicker.focusedIdx = -1;
+            programPicker.focusedIdx = 0;
             programPicker.toggleMenuVisibility();
             searchField.forceActiveFocus(Qt.ShortcutFocusReason);
         }
@@ -124,7 +124,7 @@ DropdownMenu {
             Keys.onEscapePressed: {
                 programPicker.toggleMenuVisibility();
                 searchField.text = "";
-                programPicker.focusedIdx = -1;
+                programPicker.focusedIdx = 0;
             }
             TextField {
                 id: searchField
@@ -134,7 +134,7 @@ DropdownMenu {
                 font.family: "FiraCode Nerd Font"
                 placeholderText: "Search programs or choose category"
                 onTextChanged: {
-                    programPicker.focusedIdx = -1;
+                    programPicker.focusedIdx = 0;
                 }
                 onAccepted: {
                     if (programPicker.focusedIdx >= 0 && programPicker.focusedIdx < programPicker.displayedEntries.length) {
