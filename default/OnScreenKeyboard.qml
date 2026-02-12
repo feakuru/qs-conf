@@ -142,7 +142,7 @@ Rectangle {
 
     Timer {
         id: oskReloadTimer
-        interval: 500
+        interval: 2000
         running: true
         repeat: true
         onTriggered: function () {
