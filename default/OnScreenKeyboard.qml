@@ -4,10 +4,18 @@ import QtQuick
 import QtQuick.Layouts
 
 Rectangle {
+    id: oskContainer
     color: oskToggleMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
     border.width: 1
     border.color: AppConstants.indicatorBorderColor
     property real preferredWidth: oskIcon.iconWidth + 20
+    property bool isShiftDown: oskLeftBody.isShiftDown || oskRightBody.isShiftDown
+
+    onIsShiftDownChanged: () => {
+        oskConfigProcess.running = true;
+    }
+
+    required property string layoutName
 
     RecoloredIcon {
         id: oskIcon
@@ -77,7 +85,7 @@ Rectangle {
 
                 KeyGrid {
                     id: oskLeftBody
-                    model: oskLeftModel
+                    model: oskContainer.oskLeftModel
                     anchors.left: leftRegion.left
                     rotationAngle: 10
                     onLayerSwitched: layerName => {
@@ -101,7 +109,7 @@ Rectangle {
 
                 KeyGrid {
                     id: oskRightBody
-                    model: oskRightModel
+                    model: oskContainer.oskRightModel
                     isRightHalf: true
                     rotationAngle: -10
 
@@ -117,7 +125,7 @@ Rectangle {
     ScriptProcess {
         id: oskConfigProcess
         scriptName: "osk_layout"
-        scriptArgs: [oskWindow.layerName]
+        scriptArgs: [oskWindow.layerName, oskContainer.layoutName, oskContainer.isShiftDown ? "on" : "off"]
         running: false
 
         stdout: StdioCollector {
@@ -128,10 +136,10 @@ Rectangle {
                 try {
                     var parsed = JSON.parse(out);
                     if (parsed.left && parsed.left instanceof Array && parsed.left.length > 0) {
-                        oskLeftModel = parsed.left;
+                        oskContainer.oskLeftModel = parsed.left;
                     }
                     if (parsed.right && parsed.right instanceof Array && parsed.right.length > 0) {
-                        oskRightModel = parsed.right;
+                        oskContainer.oskRightModel = parsed.right;
                     }
                 } catch (e) {
                     console.log("Failed to parse osk_layout output:", e);
@@ -142,7 +150,7 @@ Rectangle {
 
     Timer {
         id: oskReloadTimer
-        interval: 2000
+        interval: 500
         running: true
         repeat: true
         onTriggered: function () {

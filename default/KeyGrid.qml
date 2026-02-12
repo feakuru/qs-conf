@@ -12,6 +12,7 @@ RowLayout {
     property var expectedCols: 6
     property real rotationAngle: 10
     property bool isRightHalf: false
+    property bool isShiftDown: false
 
     transform: Rotation {
         angle: rotationAngle
@@ -142,6 +143,9 @@ RowLayout {
                                     keyGrid.layerSwitched(btnTouchArea.layerSwitch);
                                 } else if (codesHeld) {
                                     btnTouchArea.currentlyHeldKeycodes = codesHeld;
+                                    if (cell.keys_held.includes("LEFTSHIFT") || cell.keys_held.includes("RIGHTSHIFT")) {
+                                        keyGrid.isShiftDown = true;
+                                    }
                                     Quickshell.execDetached({
                                         command: ["sh", "-c", "uv run python " + Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "") + " --event long_start --codes " + btnTouchArea.currentlyHeldKeycodes.join(",")],
                                         workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
@@ -186,6 +190,9 @@ RowLayout {
                             holdTimer.stop();
                             if (btnTouchArea.longHeld) {
                                 if (btnTouchArea.currentlyHeldKeycodes && btnTouchArea.currentlyHeldKeycodes.length) {
+                                    if (cell.keys_held.includes("LEFTSHIFT") || cell.keys_held.includes("RIGHTSHIFT")) {
+                                        keyGrid.isShiftDown = false;
+                                    }
                                     Quickshell.execDetached({
                                         command: ["sh", "-c", "uv run python " + Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "") + " --event long_end --codes " + btnTouchArea.currentlyHeldKeycodes.join(",")],
                                         workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")

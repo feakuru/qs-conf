@@ -3,10 +3,12 @@ import Quickshell.Io
 import Quickshell.Hyprland
 
 Rectangle {
+    id: kbLayoutIndicatorContainer
     color: kbLayoutMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
     border.width: 1
     border.color: AppConstants.indicatorBorderColor
     property real preferredWidth: kbLayoutIndicator.width + 20
+    property string currentLayoutName
 
     Process {
         id: toggleKeyboardProcess
@@ -44,6 +46,7 @@ Rectangle {
                 layoutIdx = parseInt(layoutIdx);
                 layouts = layouts.split(',');
                 kbLayoutIndicator.text = flagEmojiFromCountryCode(layouts[layoutIdx]);
+                kbLayoutIndicatorContainer.currentLayoutName = layouts[layoutIdx];
             }
         }
     }

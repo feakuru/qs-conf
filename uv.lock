@@ -262,6 +262,7 @@ dependencies = [
     { name = "evdev" },
     { name = "psutil" },
     { name = "pyzmq" },
+    { name = "xkbcommon" },
 ]
 
 [package.dev-dependencies]
@@ -275,6 +276,7 @@ requires-dist = [
     { name = "evdev", specifier = ">=1.9.2" },
     { name = "psutil", specifier = ">=7.1.3" },
     { name = "pyzmq", specifier = ">=27.1.0" },
+    { name = "xkbcommon", specifier = ">=1.5.1" },
 ]
 
 [package.metadata.requires-dev]
@@ -291,3 +293,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/72/94/1a15dd82efb362ac8
 wheels = [
     { url = "https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548", size = 44614, upload-time = "2025-08-25T13:49:24.86Z" },
 ]
+
+[[package]]
+name = "xkbcommon"
+version = "1.5.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cffi" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/bf/f6/6f304689f619323bfa64a8f3777da7b3108fdd513b6bf66e9438bf1c8a17/xkbcommon-1.5.1.tar.gz", hash = "sha256:ac174808dbf61d35d9da804bf33baac74bc6f2be0c108594ae93c79cd15ddc36", size = 80170, upload-time = "2024-07-07T09:45:22.446Z" }

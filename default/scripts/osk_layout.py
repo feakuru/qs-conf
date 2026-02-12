@@ -1,7 +1,67 @@
 import dataclasses
 import json
 import argparse
+
 import evdev
+import xkbcommon.xkb as xkb
+
+_xkb_context = xkb.Context()
+_xkb_keymap_cache: dict[str, xkb.Keymap] = {}
+
+
+def _get_keymap(layout: str):
+    if layout not in _xkb_keymap_cache:
+        try:
+            _xkb_keymap_cache[layout] = _xkb_context.keymap_new_from_names(
+                rules="evdev",
+                model="pc105",
+                layout=layout,
+                variant=None,
+                options=None,
+            )
+        except Exception as e:
+            raise Exception(layout) from e
+    return _xkb_keymap_cache[layout]
+
+
+def _find_keycode_for_symbol(symbol: str, layout: str):
+    keymap = _get_keymap(layout)
+
+    target_keysym = xkb.keysym_from_name(symbol, case_insensitive=True)
+
+    for keycode in keymap:
+        syms = keymap.key_get_syms_by_level(keycode, 0, 0)
+        if syms and syms[0] == target_keysym:
+            return keycode
+
+    return None
+
+
+def get_layout_label(key_label: str, layout: str, shift: bool) -> str:
+    keymap = _get_keymap(layout)
+    state = keymap.state_new()
+
+    if shift:
+        shift_index = keymap.mod_get_index("Shift")
+        state.update_mask(
+            depressed_mods=1 << shift_index,
+            latched_mods=0,
+            locked_mods=0,
+            depressed_layout=0,
+            latched_layout=0,
+            locked_layout=0,
+        )
+
+    try:
+        keycode = _find_keycode_for_symbol(key_label, "us")
+        if keycode:
+            keysym = state.key_get_one_sym(keycode)
+            s = xkb.keysym_to_string(keysym)
+            if s:
+                return s
+    except (UnicodeEncodeError, xkb.XKBKeyDoesNotExist):
+        pass
+    return key_label
 
 
 class EnhancedJSONEncoder(json.JSONEncoder):
@@ -37,10 +97,13 @@ class K:
         self.keycodes_held = lookup_keys(self.keys_held)
 
 
+LayerSide = list[list[K | None] | None]
+
+
 @dataclasses.dataclass
 class Layer:
-    left: list[list[K | None] | None]
-    right: list[list[K | None] | None]
+    left: LayerSide
+    right: LayerSide
 
 
 LAYOUT = {
@@ -258,10 +321,22 @@ LAYOUT = {
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("layer", nargs="?", default="main", help="layer name to output")
+    parser.add_argument(
+        "layout",
+        nargs="?",
+        default="us",
+        help="current kb layout name",
+    )
+    parser.add_argument(
+        "shift",
+        nargs="?",
+        default="off",
+        help="current shift state",
+    )
     args = parser.parse_args()
     layer_name = args.layer
 
-    def _merge_side(selected_side, main_side):
+    def _merge_side(selected_side: LayerSide, main_side: LayerSide) -> LayerSide:
         if len(main_side) != len(selected_side):
             raise ValueError("Incompatible layer heights")
         merged = []
@@ -281,9 +356,30 @@ if __name__ == "__main__":
                 )
         return merged
 
+    def _localize_side(side: LayerSide) -> LayerSide:
+        def _process_key(key: K | None) -> K | None:
+            if (
+                key is not None
+                and key.label
+                and key.keys_pressed
+                and key.keycodes_pressed
+                and len(key.keys_pressed) == 1
+                and key.keys_pressed[0] == key.label.upper()
+            ):
+                key.label = get_layout_label(
+                    key.label,
+                    args.layout,
+                    args.shift == "on",
+                )
+            return key
+
+        return [[_process_key(key) for key in row] if row else row for row in side]
+
     merged_layer = Layer(
-        left=_merge_side(LAYOUT[layer_name].left, LAYOUT["main"].left),
-        right=_merge_side(LAYOUT[layer_name].right, LAYOUT["main"].right),
+        left=_localize_side(_merge_side(LAYOUT[layer_name].left, LAYOUT["main"].left)),
+        right=_localize_side(
+            _merge_side(LAYOUT[layer_name].right, LAYOUT["main"].right)
+        ),
     )
 
     print(json.dumps(merged_layer, cls=EnhancedJSONEncoder))

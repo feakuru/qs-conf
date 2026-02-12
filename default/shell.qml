@@ -53,10 +53,11 @@ Scope {
             OnScreenKeyboard {
                 Layout.fillHeight: true
                 Layout.preferredWidth: preferredWidth
-
+                layoutName: kbLayoutIndicator.currentLayoutName
             }
 
             KbLayoutIndicator {
+                id: kbLayoutIndicator
                 Layout.fillHeight: true
                 Layout.preferredWidth: preferredWidth
             }
