@@ -268,8 +268,8 @@ LAYOUT = {
                 None,
                 K("←W", ["LEFTMETA", "LEFTSHIFT", "PAGEUP"]),
                 K("W→", ["LEFTMETA", "LEFTSHIFT", "PAGEDOWN"]),
-                None,
-                None,
+                K("Copy", keys_pressed=["LEFTCTRL", "C"]),
+                K("Paste", keys_pressed=["LEFTCTRL", "V"]),
                 K("CapsL", ["CAPSLOCK"]),
             ],
             [
