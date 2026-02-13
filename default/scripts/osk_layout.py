@@ -78,6 +78,7 @@ class K:
     keys_held: list[str] | None = None
     layer_toggle: int | None = None
     layer_switch: str | None = None
+    localize: bool = False
     keycodes_pressed: list[int] | None = dataclasses.field(init=False)
     keycodes_held: list[int] | None = dataclasses.field(init=False)
 
@@ -137,15 +138,15 @@ LAYOUT = {
                 K("j", keys_held=["RIGHTSHIFT"]),
                 K("k", keys_held=["RIGHTCTRL"]),
                 K("l", keys_held=["RIGHTALT"]),
-                K(";", ["SEMICOLON"]),
+                K(";", ["SEMICOLON"], localize=True),
                 K("Esc"),
             ],
             [
                 K("n"),
                 K("m"),
-                K(",", ["COMMA"]),
-                K(".", ["DOT"]),
-                K("/", ["SLASH"]),
+                K(",", ["COMMA"], localize=True),
+                K(".", ["DOT"], localize=True),
+                K("/", ["SLASH"], localize=True),
                 K(""),
             ],
             [
@@ -171,26 +172,26 @@ LAYOUT = {
             [
                 None,
                 None,
-                K("`", ["GRAVE"]),
-                K("'", ["APOSTROPHE"]),
-                K("[", ["LEFTBRACE"]),
-                K("]", ["RIGHTBRACE"]),
+                K("`", ["GRAVE"], localize=True),
+                K("'", ["APOSTROPHE"], localize=True),
+                K("[", ["LEFTBRACE"], localize=True),
+                K("]", ["RIGHTBRACE"], localize=True),
             ],
             [
                 None,
                 None,
-                K("-", ["MINUS"], keys_held=["LEFTALT"]),
-                K("=", ["EQUAL"], keys_held=["LEFTCTRL"]),
-                K(";", ["SEMICOLON"], keys_held=["LEFTSHIFT"]),
-                K(":", ["LEFTSHIFT", "SEMICOLON"]),
+                K("-", ["MINUS"], keys_held=["LEFTALT"], localize=True),
+                K("=", ["EQUAL"], keys_held=["LEFTCTRL"], localize=True),
+                K(";", ["SEMICOLON"], keys_held=["LEFTSHIFT"], localize=True),
+                K(":", ["LEFTSHIFT", "SEMICOLON"], localize=True),
             ],
             [
                 None,
                 None,
-                K("_", ["LEFTSHIFT", "MINUS"]),
-                K("+", ["LEFTSHIFT", "EQUAL"]),
-                K("\\", ["BACKSLASH"]),
-                K("/", ["SLASH"]),
+                K("_", ["LEFTSHIFT", "MINUS"], localize=True),
+                K("+", ["LEFTSHIFT", "EQUAL"], localize=True),
+                K("\\", ["BACKSLASH"], localize=True),
+                K("/", ["SLASH"], localize=True),
             ],
             [
                 None,
@@ -222,7 +223,7 @@ LAYOUT = {
                 K("4", ["4"]),
                 K("5", ["5"], keys_held=["RIGHTSHIFT"]),
                 K("6", ["6"], keys_held=["RIGHTCTRL"]),
-                K(",", ["COMMA"], keys_held=["RIGHTALT"]),
+                K(",", ["COMMA"], keys_held=["RIGHTALT"], localize=True),
                 None,
                 None,
             ],
@@ -230,7 +231,7 @@ LAYOUT = {
                 K("1", ["1"]),
                 K("2", ["2"]),
                 K("3", ["3"]),
-                K(".", ["DOT"]),
+                K(".", ["DOT"], localize=True),
                 None,
                 None,
             ],
@@ -358,19 +359,54 @@ if __name__ == "__main__":
 
     def _localize_side(side: LayerSide) -> LayerSide:
         def _process_key(key: K | None) -> K | None:
-            if (
-                key is not None
-                and key.label
-                and key.keys_pressed
-                and key.keycodes_pressed
+            if key is None:
+                return key
+
+            should_localize = key.localize or (
+                key.keys_pressed is not None
                 and len(key.keys_pressed) == 1
                 and key.keys_pressed[0] == key.label.upper()
-            ):
-                key.label = get_layout_label(
-                    key.label,
+            )
+
+            if should_localize:
+                lookup_symbol = key.label
+                if (
+                    key.keys_pressed
+                    and len(key.keys_pressed) == 1
+                    and key.keys_pressed[0] != key.label.upper()
+                ):
+                    lookup_symbol = key.keys_pressed[0]
+
+                res = get_layout_label(
+                    lookup_symbol,
                     args.layout,
                     args.shift == "on",
                 )
+
+                if res == lookup_symbol and lookup_symbol.isupper():
+                    evdev_to_xkb_keysym = {
+                        "LEFTBRACE": "bracketleft",
+                        "RIGHTBRACE": "bracketright",
+                        "BACKSLASH": "backslash",
+                        "SLASH": "slash",
+                        "GRAVE": "grave",
+                        "APOSTROPHE": "apostrophe",
+                        "SEMICOLON": "semicolon",
+                        "COMMA": "comma",
+                        "DOT": "period",
+                        "MINUS": "minus",
+                        "EQUAL": "equal",
+                        "SPACE": "space",
+                    }
+                    mapped_name = evdev_to_xkb_keysym.get(lookup_symbol)
+                    if mapped_name:
+                        res2 = get_layout_label(
+                            mapped_name, args.layout, args.shift == "on"
+                        )
+                        if res2 and res2 != mapped_name:
+                            res = res2
+
+                key.label = res
             return key
 
         return [[_process_key(key) for key in row] if row else row for row in side]
