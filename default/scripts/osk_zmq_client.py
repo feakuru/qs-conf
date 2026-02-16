@@ -17,11 +17,15 @@ import json
 import argparse
 from pathlib import Path
 
+import pyaudio
+import wave
 import zmq
 
 logging.basicConfig(
     level=logging.INFO, format="osk-client | %(levelname)s: %(message)s"
 )
+
+WAV_CHUNK_SIZE = 1024
 
 
 def default_log_path():
@@ -47,6 +51,21 @@ def setup_logging():
         logging.info("logging to %s", log_path)
     except Exception:
         logging.exception("failed to set up file logging")
+
+
+def play_wav_sound(filepath: str) -> None:
+    with wave.open(filepath, "rb") as wf:
+        p = pyaudio.PyAudio()
+        stream = p.open(
+            format=p.get_format_from_width(wf.getsampwidth()),
+            channels=wf.getnchannels(),
+            rate=wf.getframerate(),
+            output=True,
+        )
+        while len(data := wf.readframes(WAV_CHUNK_SIZE)):
+            stream.write(data)
+        stream.close()
+        p.terminate()
 
 
 def send_event(
@@ -76,6 +95,18 @@ def send_event(
     finally:
         sock.close(0)
         ctx.term()
+    sound_name = f"osk_{event}"
+    try:
+        logging.info("before playing")
+        play_wav_sound(
+            os.path.join(
+                os.path.dirname(__file__),
+                f"../../default/assets/sounds/{sound_name}.wav",
+            )
+        )
+        logging.info("after pl")
+    except:
+        logging.exception("AA")
 
 
 def parse_args(argv):
