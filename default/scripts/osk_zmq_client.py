@@ -17,8 +17,6 @@ import json
 import argparse
 from pathlib import Path
 
-import pyaudio
-import wave
 import zmq
 
 logging.basicConfig(
@@ -53,21 +51,6 @@ def setup_logging():
         logging.exception("failed to set up file logging")
 
 
-def play_wav_sound(filepath: str) -> None:
-    with wave.open(filepath, "rb") as wf:
-        p = pyaudio.PyAudio()
-        stream = p.open(
-            format=p.get_format_from_width(wf.getsampwidth()),
-            channels=wf.getnchannels(),
-            rate=wf.getframerate(),
-            output=True,
-        )
-        while len(data := wf.readframes(WAV_CHUNK_SIZE)):
-            stream.write(data)
-        stream.close()
-        p.terminate()
-
-
 def send_event(
     event: str, codes: list[int] | None = None, socket_addr: str | None = None
 ) -> None:
@@ -91,22 +74,10 @@ def send_event(
         # give the socket a short moment to send when run in fast-exit contexts
         time.sleep(0.01)
     except Exception:
-        raise
+        logging.exception('Could not send event')
     finally:
         sock.close(0)
         ctx.term()
-    sound_name = f"osk_{event}"
-    try:
-        logging.info("before playing")
-        play_wav_sound(
-            os.path.join(
-                os.path.dirname(__file__),
-                f"../../default/assets/sounds/{sound_name}.wav",
-            )
-        )
-        logging.info("after pl")
-    except:
-        logging.exception("AA")
 
 
 def parse_args(argv):

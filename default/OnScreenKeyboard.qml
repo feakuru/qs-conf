@@ -120,41 +120,41 @@ Rectangle {
                 }
             }
         }
-    }
 
-    ScriptProcess {
-        id: oskConfigProcess
-        scriptName: "osk_layout"
-        scriptArgs: [oskWindow.layerName, oskContainer.layoutName, oskContainer.isShiftDown ? "on" : "off"]
-        running: false
+        ScriptProcess {
+            id: oskConfigProcess
+            scriptName: "osk_layout"
+            scriptArgs: [oskWindow.layerName, oskContainer.layoutName, oskContainer.isShiftDown ? "on" : "off"]
+            running: false
 
-        stdout: StdioCollector {
-            onStreamFinished: {
-                var out = this.text.trim();
-                if (out.length === 0)
-                    return;
-                try {
-                    var parsed = JSON.parse(out);
-                    if (parsed.left && parsed.left instanceof Array && parsed.left.length > 0) {
-                        oskContainer.oskLeftModel = parsed.left;
+            stdout: StdioCollector {
+                onStreamFinished: {
+                    var out = this.text.trim();
+                    if (out.length === 0)
+                        return;
+                    try {
+                        var parsed = JSON.parse(out);
+                        if (parsed.left && parsed.left instanceof Array && parsed.left.length > 0) {
+                            oskContainer.oskLeftModel = parsed.left;
+                        }
+                        if (parsed.right && parsed.right instanceof Array && parsed.right.length > 0) {
+                            oskContainer.oskRightModel = parsed.right;
+                        }
+                    } catch (e) {
+                        console.log("Failed to parse osk_layout output:", e);
                     }
-                    if (parsed.right && parsed.right instanceof Array && parsed.right.length > 0) {
-                        oskContainer.oskRightModel = parsed.right;
-                    }
-                } catch (e) {
-                    console.log("Failed to parse osk_layout output:", e);
                 }
             }
         }
-    }
 
-    Timer {
-        id: oskReloadTimer
-        interval: 500
-        running: true
-        repeat: true
-        onTriggered: function () {
-            oskConfigProcess.running = true;
+        Timer {
+            id: oskReloadTimer
+            interval: 500
+            running: true
+            repeat: true
+            onTriggered: function () {
+                oskConfigProcess.running = true;
+            }
         }
     }
 }

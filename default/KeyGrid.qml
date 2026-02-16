@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Io
+import QtMultimedia
 
 RowLayout {
     id: keyGrid
@@ -23,6 +23,26 @@ RowLayout {
     property real rotatedHeight: Math.abs(width * Math.sin(rotationAngle * Math.PI / 180)) + Math.abs(height * Math.cos(rotationAngle * Math.PI / 180)) - 30
 
     signal layerSwitched(layerName: string)
+
+    SoundEffect {
+        id: shortPressSound
+        source: Qt.resolvedUrl("assets/sounds/osk_short_press.wav")
+    }
+
+    SoundEffect {
+        id: longStartSound
+        source: Qt.resolvedUrl("assets/sounds/osk_long_start.wav")
+    }
+
+    SoundEffect {
+        id: longEndSound
+        source: Qt.resolvedUrl("assets/sounds/osk_long_end.wav")
+    }
+
+    SoundEffect {
+        id: layerSwitchStartSound
+        source: Qt.resolvedUrl("assets/sounds/osk_layer_switch.wav")
+    }
 
     Repeater {
         model: keyGrid.expectedCols
@@ -141,6 +161,7 @@ RowLayout {
                                 var codesHeld = btnTouchArea.keycodesHeld;
                                 if (btnTouchArea.layerSwitch) {
                                     keyGrid.layerSwitched(btnTouchArea.layerSwitch);
+                                    layerSwitchStartSound.play();
                                 } else if (codesHeld) {
                                     btnTouchArea.currentlyHeldKeycodes = codesHeld;
                                     if (cell.keys_held.includes("LEFTSHIFT") || cell.keys_held.includes("RIGHTSHIFT")) {
@@ -150,6 +171,7 @@ RowLayout {
                                         command: ["sh", "-c", "uv run python " + Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "") + " --event long_start --codes " + btnTouchArea.currentlyHeldKeycodes.join(",")],
                                         workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
                                     });
+                                    longStartSound.play();
                                 }
                             }
                         }
@@ -197,8 +219,10 @@ RowLayout {
                                         command: ["sh", "-c", "uv run python " + Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "") + " --event long_end --codes " + btnTouchArea.currentlyHeldKeycodes.join(",")],
                                         workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
                                     });
+                                    longEndSound.play();
                                 } else if (btnTouchArea.layerSwitch) {
                                     keyGrid.layerSwitched("main");
+                                    layerSwitchStartSound.play();
                                 }
                                 btnTouchArea.longHeld = false;
                                 btnTouchArea.currentlyHeldKeycodes = null;
@@ -209,6 +233,7 @@ RowLayout {
                                         command: ["sh", "-c", "uv run python " + Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "") + " --event short_press --codes " + codes.join(",")],
                                         workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
                                     });
+                                    shortPressSound.play();
                                 }
                             }
                             btnTouchArea.activePointId = -1;
