@@ -153,7 +153,9 @@ Rectangle {
             running: true
             repeat: true
             onTriggered: function () {
-                oskConfigProcess.running = true;
+                if (oskWindow.visible) {
+                    oskConfigProcess.running = true;
+                }
             }
         }
     }
