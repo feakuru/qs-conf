@@ -52,6 +52,9 @@ DropdownMenu {
         let device = UPower.displayDevice;
         let percentage = Math.floor(device.percentage * 10000) / 100;
         let result = `${percentage}%`;
+        if (device.state == UPowerDeviceState.Charging) {
+            result += "+";
+        }
         if (toggleMouseAreaContainsMouse) {
             if (device.state == UPowerDeviceState.Charging) {
                 result += ` [${Math.floor(device.timeToFull / 60)}m to full]`;
