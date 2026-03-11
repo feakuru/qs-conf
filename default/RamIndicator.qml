@@ -43,7 +43,7 @@ DropdownMenu {
     }
 
     Timer {
-        interval: 300
+        interval: 1000
         running: true
         repeat: true
         onTriggered: function () {

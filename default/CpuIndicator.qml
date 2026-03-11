@@ -63,19 +63,11 @@ DropdownMenu {
     }
 
     Timer {
-        interval: 300
-        running: true
-        repeat: true
-        onTriggered: function () {
-            cpuProcess.running = true;
-        }
-    }
-
-    Timer {
         interval: 1000
         running: true
         repeat: true
         onTriggered: function () {
+            cpuProcess.running = true;
             cpuPercentProcess.running = true;
         }
     }
