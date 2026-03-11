@@ -96,9 +96,63 @@ Rectangle {
             }
 
             Item {
-                id: oskGap
+                id: oskControlGap
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+
+                GridLayout {
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    columns: 3
+                    columnSpacing: 10
+
+                    ListModel {
+                        id: oskControlsModel
+                        ListElement {
+                            text: "pin"
+                            onPressed: points => {
+                                oskWindow.anchors.right = !oskWindow.anchors.right;
+                            }
+                        }
+                        ListElement {
+                            text: "hide"
+                            onPressed: points => {
+                                oskWindow.visible = false;
+                            }
+                        }
+                        ListElement {
+                            text: "log"
+                            onPressed: points => {
+                                console.log("hello!");
+                            }
+                        }
+                    }
+
+                    Repeater {
+                        model: oskControlsModel
+                        delegate: Rectangle {
+                            Layout.preferredWidth: 60
+                            Layout.preferredHeight: 60
+                            border.width: 2
+                            radius: 3
+                            color: AppConstants.solidBgColor
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: model.text
+                                font.family: AppConstants.defaultFont
+                                color: AppConstants.styledTextColor
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+
+                            MultiPointTouchArea {
+                                anchors.fill: parent
+                                onPressed: (points) => model.onPressed(points)
+                            }
+                        }
+                    }
+                }
             }
 
             Item {
