@@ -152,6 +152,8 @@ DropdownMenu {
                             }
                             programPicker.toggleMenuVisibility();
                             searchField.text = "";
+                            programPicker.focusedIdx = 0;
+                            programPicker.currentCategory = "";
                         }
                     }
                 }
