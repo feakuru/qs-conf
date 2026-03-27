@@ -19,7 +19,7 @@ DropdownMenu {
     property string currentCategory: ""
     property list<var> displayedEntries: {
         let model = new Array(...DesktopEntries.applications.values);
-        if (searchField.text.length > 0) {
+        if (searchField.text.length > 1) {
             model = model.filter(val => val.name.toLowerCase().includes(searchField.text.toLowerCase()) || val.categories.join(" ").toLowerCase().includes(searchField.text.toLowerCase()) || val.keywords.join(" ").toLowerCase().includes(searchField.text.toLowerCase())).sort((lhs, rhs) => {
                 let lhsStartsWith = lhs.name.toLowerCase().startsWith(searchField.text.toLowerCase());
                 let rhsStartsWith = rhs.name.toLowerCase().startsWith(searchField.text.toLowerCase());
