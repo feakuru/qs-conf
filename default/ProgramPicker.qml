@@ -20,7 +20,15 @@ DropdownMenu {
     property list<var> displayedEntries: {
         let model = new Array(...DesktopEntries.applications.values);
         if (searchField.text.length > 0) {
-            model = model.filter(val => val.name.toLowerCase().includes(searchField.text)).sort((lhs, rhs) => lhs.name.length - rhs.name.length);
+            model = model.filter(val => val.name.toLowerCase().includes(searchField.text.toLowerCase()) || val.categories.join(" ").toLowerCase().includes(searchField.text.toLowerCase()) || val.keywords.join(" ").toLowerCase().includes(searchField.text.toLowerCase())).sort((lhs, rhs) => {
+                let lhsStartsWith = lhs.name.toLowerCase().startsWith(searchField.text.toLowerCase());
+                let rhsStartsWith = rhs.name.toLowerCase().startsWith(searchField.text.toLowerCase());
+                if (lhsStartsWith && !rhsStartsWith)
+                    return -1;
+                if (!lhsStartsWith && rhsStartsWith)
+                    return 1;
+                return lhs.name.length - rhs.name.length;
+            });
         } else if (currentCategory.length > 0) {
             model = model.filter(entry => entry.categories.includes(currentCategory)).sort((lhs, rhs) => lhs.name.localeCompare(rhs.name)).slice(0, 100);
         } else {
