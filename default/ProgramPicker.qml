@@ -18,7 +18,7 @@ DropdownMenu {
     property int focusedIdx: 0
     property string currentCategory: ""
     property list<var> displayedEntries: {
-        let model = new Array(...DesktopEntries.applications.values);
+        let model = [...new Map(DesktopEntries.applications.values.map(entry => [entry.name, entry])).values()];
         if (searchField.text.length > 1) {
             model = model.filter(val => val.name.toLowerCase().includes(searchField.text.toLowerCase()) || val.categories.join(" ").toLowerCase().includes(searchField.text.toLowerCase()) || val.keywords.join(" ").toLowerCase().includes(searchField.text.toLowerCase())).sort((lhs, rhs) => {
                 let lhsStartsWith = lhs.name.toLowerCase().startsWith(searchField.text.toLowerCase());
