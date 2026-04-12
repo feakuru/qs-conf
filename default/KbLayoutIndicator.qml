@@ -7,16 +7,48 @@ Rectangle {
     color: kbLayoutMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
     border.width: 1
     border.color: AppConstants.indicatorBorderColor
-    property real preferredWidth: kbLayoutIndicator.width + 20
+    property real preferredWidth: kbLayoutRow.width + 20
     property string currentLayoutName
+    property bool capsLockOn: false
+    property bool numLockOn: false
 
     Process {
         id: toggleKeyboardProcess
         command: ["hyprctl", "switchxkblayout", "current", "next"]
     }
 
-    StyledText {
-        id: kbLayoutIndicator
+    Row {
+        id: kbLayoutRow
+        anchors.centerIn: parent
+        spacing: 4
+
+        StyledText {
+            id: kbLayoutIndicator
+            anchors.centerIn: undefined
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        StyledText {
+            id: capsLockIndicator
+            text: "Caps"
+            color: AppConstants.indicatorOnColor
+            visible: kbLayoutIndicatorContainer.capsLockOn
+            styleColor: AppConstants.styledTextOutlineColor
+            font.pixelSize: 16
+            anchors.centerIn: undefined
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        StyledText {
+            id: numLockIndicator
+            text: "Num"
+            color: AppConstants.indicatorOnColor
+            visible: kbLayoutIndicatorContainer.numLockOn
+            styleColor: AppConstants.styledTextOutlineColor
+            font.pixelSize: 16
+            anchors.centerIn: undefined
+            anchors.verticalCenter: parent.verticalCenter
+        }
     }
 
     MouseArea {
@@ -51,12 +83,38 @@ Rectangle {
         }
     }
 
+    Process {
+        id: capsLockProc
+        command: ["bash", "-c", "cat /sys/class/leds/input*::capslock/brightness 2>/dev/null | head -1"]
+        running: true
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                kbLayoutIndicatorContainer.capsLockOn = this.text.trim() === "1";
+            }
+        }
+    }
+
+    Process {
+        id: numLockProc
+        command: ["bash", "-c", "cat /sys/class/leds/input*::numlock/brightness 2>/dev/null | head -1"]
+        running: true
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                kbLayoutIndicatorContainer.numLockOn = this.text.trim() === "1";
+            }
+        }
+    }
+
     Timer {
         interval: 200
         running: true
         repeat: true
         onTriggered: function () {
             kbLayoutProc.running = true;
+            capsLockProc.running = true;
+            numLockProc.running = true;
         }
     }
 }
