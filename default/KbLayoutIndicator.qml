@@ -61,8 +61,8 @@ Rectangle {
     }
 
     Process {
-        id: kbLayoutProc
-        command: ["bash", "-c", "hyprctl devices -j | jq -r '.keyboards[] | select(.main == true) | \"\\(.layout) \\(.active_layout_index)\"'",]
+        id: kbDevicesProc
+        command: ["bash", "-c", "hyprctl devices -j | jq -r '.keyboards[] | \"\\(.main) \\(.capsLock) \\(.numLock) \\(.layout) \\(.active_layout_index)\"'"]
         running: true
 
         stdout: StdioCollector {
@@ -74,35 +74,26 @@ Rectangle {
             }
 
             onStreamFinished: {
-                var [layouts, layoutIdx] = this.text.trim().split(' ');
-                layoutIdx = parseInt(layoutIdx);
-                layouts = layouts.split(',');
-                kbLayoutIndicator.text = flagEmojiFromCountryCode(layouts[layoutIdx]);
-                kbLayoutIndicatorContainer.currentLayoutName = layouts[layoutIdx];
-            }
-        }
-    }
-
-    Process {
-        id: capsLockProc
-        command: ["bash", "-c", "cat /sys/class/leds/input*::capslock/brightness 2>/dev/null | head -1"]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                kbLayoutIndicatorContainer.capsLockOn = this.text.trim() === "1";
-            }
-        }
-    }
-
-    Process {
-        id: numLockProc
-        command: ["bash", "-c", "cat /sys/class/leds/input*::numlock/brightness 2>/dev/null | head -1"]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                kbLayoutIndicatorContainer.numLockOn = this.text.trim() === "1";
+                var lines = this.text.trim().split('\n').filter(l => l.length > 0);
+                var anyCaps = false;
+                var anyNum = false;
+                for (var i = 0; i < lines.length; i++) {
+                    var parts = lines[i].split(' ');
+                    // parts: [main, capsLock, numLock, layout, active_layout_index]
+                    if (parts[1] === "true")
+                        anyCaps = true;
+                    if (parts[2] === "true")
+                        anyNum = true;
+                    if (parts[0] === "true") {
+                        // main keyboard — update layout indicator
+                        var layoutIdx = parseInt(parts[4]);
+                        var layouts = parts[3].split(',');
+                        kbLayoutIndicator.text = flagEmojiFromCountryCode(layouts[layoutIdx]);
+                        kbLayoutIndicatorContainer.currentLayoutName = layouts[layoutIdx];
+                    }
+                }
+                kbLayoutIndicatorContainer.capsLockOn = anyCaps;
+                kbLayoutIndicatorContainer.numLockOn = anyNum;
             }
         }
     }
@@ -112,9 +103,7 @@ Rectangle {
         running: true
         repeat: true
         onTriggered: function () {
-            kbLayoutProc.running = true;
-            capsLockProc.running = true;
-            numLockProc.running = true;
+            kbDevicesProc.running = true;
         }
     }
 }
