@@ -300,7 +300,7 @@ LAYOUT = {
                 None,
             ],
             [
-                K("Tab", ["TAB"]),
+                K("⇥", ["TAB"]),
                 K("⌫", ["BACKSPACE"]),
                 K("⌦", ["DELETE"]),
                 K("←W", ["LEFTALT", "LEFTCTRL", "LEFT"]),
