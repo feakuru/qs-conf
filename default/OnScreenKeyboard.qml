@@ -70,6 +70,8 @@ Rectangle {
             bottom: 10
         }
         property string layerName: "main"
+        property real soundVolume: 0.1
+        property bool soundMuted: false
 
         implicitWidth: Quickshell.screens[0].width
         implicitHeight: Math.max(leftRegion.height, rightRegion.height)
@@ -78,8 +80,8 @@ Rectangle {
             anchors.fill: parent
             Item {
                 id: leftRegion
-                width: oskLeftBody.rotatedWidth
-                height: oskLeftBody.rotatedHeight
+                implicitWidth: oskLeftBody.rotatedWidth
+                implicitHeight: oskLeftBody.rotatedHeight
                 Layout.fillHeight: true
                 Layout.leftMargin: 50
 
@@ -88,6 +90,8 @@ Rectangle {
                     model: oskContainer.oskLeftModel
                     anchors.left: leftRegion.left
                     rotationAngle: 10
+                    soundMuted: oskWindow.soundMuted
+                    soundVolume: oskWindow.soundVolume
                     onLayerSwitched: layerName => {
                         oskWindow.layerName = layerName;
                         oskConfigProcess.running = true;
@@ -126,6 +130,24 @@ Rectangle {
                                 console.log("hello!");
                             }
                         }
+                        ListElement {
+                            text: "mute"
+                            onPressed: points => {
+                                oskWindow.soundMuted = !oskWindow.soundMuted;
+                            }
+                        }
+                        ListElement {
+                            text: "quiet"
+                            onPressed: points => {
+                                oskWindow.soundVolume = 0.1;
+                            }
+                        }
+                        ListElement {
+                            text: "loud"
+                            onPressed: points => {
+                                oskWindow.soundVolume = 0.5;
+                            }
+                        }
                     }
 
                     Repeater {
@@ -148,7 +170,7 @@ Rectangle {
 
                             MultiPointTouchArea {
                                 anchors.fill: parent
-                                onPressed: (points) => model.onPressed(points)
+                                onPressed: points => model.onPressed(points)
                             }
                         }
                     }
@@ -157,8 +179,8 @@ Rectangle {
 
             Item {
                 id: rightRegion
-                width: oskRightBody.rotatedWidth
-                height: oskRightBody.rotatedHeight
+                implicitWidth: oskRightBody.rotatedWidth
+                implicitHeight: oskRightBody.rotatedHeight
                 Layout.fillHeight: true
 
                 KeyGrid {
@@ -166,7 +188,8 @@ Rectangle {
                     model: oskContainer.oskRightModel
                     isRightHalf: true
                     rotationAngle: -10
-
+                    soundMuted: oskWindow.soundMuted
+                    soundVolume: oskWindow.soundVolume
                     onLayerSwitched: layerName => {
                         oskWindow.layerName = layerName;
                         oskConfigProcess.running = true;

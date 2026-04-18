@@ -13,6 +13,8 @@ RowLayout {
     property real rotationAngle: 10
     property bool isRightHalf: false
     property bool isShiftDown: false
+    property bool soundMuted: false
+    property real soundVolume: 1.0
 
     transform: Rotation {
         angle: rotationAngle
@@ -27,21 +29,29 @@ RowLayout {
     SoundEffect {
         id: shortPressSound
         source: Qt.resolvedUrl("assets/sounds/osk_short_press.wav")
+        muted: keyGrid.soundMuted
+        volume: keyGrid.soundVolume
     }
 
     SoundEffect {
         id: longStartSound
         source: Qt.resolvedUrl("assets/sounds/osk_long_start.wav")
+        muted: keyGrid.soundMuted
+        volume: keyGrid.soundVolume
     }
 
     SoundEffect {
         id: longEndSound
         source: Qt.resolvedUrl("assets/sounds/osk_long_end.wav")
+        muted: keyGrid.soundMuted
+        volume: keyGrid.soundVolume
     }
 
     SoundEffect {
         id: layerSwitchStartSound
         source: Qt.resolvedUrl("assets/sounds/osk_layer_switch.wav")
+        muted: keyGrid.soundMuted
+        volume: keyGrid.soundVolume
     }
 
     Repeater {

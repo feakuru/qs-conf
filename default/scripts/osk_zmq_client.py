@@ -23,8 +23,6 @@ logging.basicConfig(
     level=logging.INFO, format="osk-client | %(levelname)s: %(message)s"
 )
 
-WAV_CHUNK_SIZE = 1024
-
 
 def default_log_path():
     env = os.environ.get("OSK_LOG_FILE")
@@ -74,7 +72,7 @@ def send_event(
         # give the socket a short moment to send when run in fast-exit contexts
         time.sleep(0.01)
     except Exception:
-        logging.exception('Could not send event')
+        logging.exception("Could not send event")
     finally:
         sock.close(0)
         ctx.term()
