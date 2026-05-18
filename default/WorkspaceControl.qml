@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Quickshell.Hyprland
 
 Rectangle {
+    id: wsControlContainer
     color: "transparent"
 
     property real preferredWidth: {
@@ -17,10 +18,39 @@ Rectangle {
         result;
     }
 
+    property var currentWorkspaces: {
+        let workspaces = new Array();
+        let firstWs = Hyprland.workspaces.values[0];
+        if (firstWs.id > 1) {
+            for (let idx = 1; idx < firstWs.id; idx++) {
+                workspaces.push({
+                    id: idx,
+                    toplevels: {
+                        values: []
+                    }
+                });
+            }
+        }
+        for (let idx = 0; idx < Hyprland.workspaces.values.length; idx++) {
+            if (idx > 0 && Hyprland.workspaces.values[idx].id > Hyprland.workspaces.values[idx - 1].id + 1) {
+                for (let subid = Hyprland.workspaces.values[idx - 1].id + 1; subid < Hyprland.workspaces.values[idx].id; subid++) {
+                    workspaces.push({
+                        id: subid,
+                        toplevels: {
+                            values: []
+                        }
+                    });
+                }
+            }
+            workspaces.push(Hyprland.workspaces.values[idx]);
+        }
+        return workspaces;
+    }
+
     RowLayout {
         spacing: 0
         Repeater {
-            model: Hyprland.workspaces
+            model: wsControlContainer.currentWorkspaces
             delegate: Rectangle {
                 Layout.preferredWidth: this.childrenRect.width
                 Layout.preferredHeight: 32
