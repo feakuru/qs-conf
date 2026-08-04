@@ -18,10 +18,6 @@ DropdownMenu {
             return Qt.rgba(0.9, 0.2, 0.2, 0.9);
         } else if (percentage <= 0.3) {
             return Qt.rgba(0.9, 0.9, 0.2, 0.9);
-        // } else if (percentage <= 0.6) {
-        //     return Qt.rgba(0.7, 0.7, 0.2, 0.9);
-        // } else if (percentage <= 0.9) {
-        //     return Qt.rgba(0.2, 0.7, 0.2, 0.9);
         } else {
             return "white";
         }
@@ -134,7 +130,9 @@ DropdownMenu {
                 DropdownMenuItem {
                     Layout.columnSpan: 1
                     action: () => {
-                        Hyprland.dispatch("switchxkblayout all 0");
+                        Quickshell.execDetached({
+                            command: ["hyprctl", "switchxkblayout", "all", "0"]
+                        });
                         Quickshell.execDetached({
                             command: ["hyprlock"]
                         });

@@ -67,7 +67,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     hoverEnabled: true
                     onClicked: {
-                        Hyprland.dispatch(`workspace ${modelData.id}`);
+                        Hyprland.dispatch(`hl.dsp.focus({ workspace = "${modelData.id}" })`);
                     }
                     Row {
                         Rectangle {
@@ -121,7 +121,7 @@ Rectangle {
                 anchors.fill: parent
                 hoverEnabled: true
                 onClicked: {
-                    Hyprland.dispatch("workspace emptyn");
+                    Hyprland.dispatch("hl.dsp.focus({ workspace = \"emptyn\" })");
                 }
             }
         }
@@ -134,9 +134,9 @@ Rectangle {
             // because inconsistency has been observed
             let delta = wheelEvent.angleDelta.x ? wheelEvent.angleDelta.x : wheelEvent.angleDelta.y;
             if (delta > 0) {
-                Hyprland.dispatch("workspace -1");
+                Hyprland.dispatch("hl.dsp.focus({ workspace = \"-1\" })");
             } else if (delta < 0) {
-                Hyprland.dispatch("workspace +1");
+                Hyprland.dispatch("hl.dsp.focus({ workspace = \"+1\" })");
             }
         }
     }
