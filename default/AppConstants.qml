@@ -15,6 +15,7 @@ Singleton {
     property color indicatorOnColor: "lightblue"
     property color indicatorOffColor: "gray"
     property color bluetoothColor: "#0082FC"
+    property color dangerColor: "#FF6B6B"
 
     property string defaultFont: "FiraCode Nerd Font"
 }

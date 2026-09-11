@@ -52,6 +52,7 @@ Rectangle {
         Repeater {
             model: wsControlContainer.currentWorkspaces
             delegate: Rectangle {
+                id: wsPill
                 Layout.preferredWidth: this.childrenRect.width
                 Layout.preferredHeight: 32
                 Layout.margins: 5
@@ -67,6 +68,14 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     hoverEnabled: true
                     onClicked: {
+                        if (modelData.focused) {
+                            // Clicking the workspace you are already on opens the
+                            // window management menu for it instead of re-focusing.
+                            let origin = wsPill.mapToItem(null, 0, 0);
+                            windowManagementMenu.toggleFor(modelData, origin.x, wsPill.width);
+                            return;
+                        }
+                        windowManagementMenu.visible = false;
                         Hyprland.dispatch(`hl.dsp.focus({ workspace = "${modelData.id}" })`);
                     }
                     Row {
@@ -125,6 +134,10 @@ Rectangle {
                 }
             }
         }
+    }
+
+    WindowManagementMenu {
+        id: windowManagementMenu
     }
 
     MouseArea {
