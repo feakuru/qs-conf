@@ -44,6 +44,7 @@ DropdownMenu {
     }
 
     IpcHandler {
+        id: programPickerIPCHandler
         target: "programPicker"
 
         function toggle(): void {
@@ -51,7 +52,9 @@ DropdownMenu {
             programPicker.currentCategory = "";
             programPicker.focusedIdx = 0;
             programPicker.toggleMenuVisibility();
-            searchField.forceActiveFocus(Qt.ShortcutFocusReason);
+            if (programPicker.visible) {
+                searchField.forceActiveFocus(Qt.ShortcutFocusReason);
+            }
         }
     }
 
@@ -84,7 +87,6 @@ DropdownMenu {
                     if (typeof modelData == "string") {
                         programPicker.currentCategory = modelData;
                     } else {
-                        programPicker.toggleMenuVisibility();
                         if (modelData.runInTerminal) {
                             Quickshell.execDetached({
                                 command: ["xdg-terminal-exec", modelData.command],
@@ -93,6 +95,7 @@ DropdownMenu {
                         } else {
                             modelData.execute();
                         }
+                        programPickerIPCHandler.toggle();
                     }
                 }
                 RowLayout {
@@ -130,9 +133,7 @@ DropdownMenu {
         DropdownMenuItem {
             Layout.columnSpan: 4
             Keys.onEscapePressed: {
-                programPicker.toggleMenuVisibility();
-                searchField.text = "";
-                programPicker.focusedIdx = 0;
+                programPickerIPCHandler.toggle();
             }
             TextField {
                 id: searchField
@@ -158,10 +159,7 @@ DropdownMenu {
                             } else {
                                 entry.execute();
                             }
-                            programPicker.toggleMenuVisibility();
-                            searchField.text = "";
-                            programPicker.focusedIdx = 0;
-                            programPicker.currentCategory = "";
+                            programPickerIPCHandler.toggle();
                         }
                     }
                 }
