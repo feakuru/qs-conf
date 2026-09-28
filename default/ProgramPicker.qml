@@ -14,6 +14,7 @@ DropdownMenu {
     menuAnchors.bottom: true
     menuColumns: 4
     disableDisappearanceOnNoFocus: true
+    keepInitialMenuHeight: true
 
     property int focusedIdx: 0
     property string currentCategory: ""
@@ -42,6 +43,9 @@ DropdownMenu {
         }
         return model;
     }
+
+    onDisplayedEntriesChanged: programPicker.menuFlickable.contentY = 0
+    onFocusedIdxChanged: Qt.callLater(() => programPicker.scrollMenuItemIntoView(entriesRepeater.itemAt(programPicker.focusedIdx)))
 
     IpcHandler {
         id: programPickerIPCHandler
@@ -73,6 +77,7 @@ DropdownMenu {
             }
         },
         Repeater {
+            id: entriesRepeater
             model: programPicker.displayedEntries
             delegate: DropdownMenuItem {
                 id: programMenuItem
@@ -129,9 +134,11 @@ DropdownMenu {
                     }
                 }
             }
-        },
+        }
+    ]
+
+    menuFooter: [
         DropdownMenuItem {
-            Layout.columnSpan: 4
             Keys.onEscapePressed: {
                 programPickerIPCHandler.toggle();
             }
