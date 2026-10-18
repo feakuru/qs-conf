@@ -5,7 +5,9 @@ Rectangle {
     id: dropdownItem
     Layout.minimumHeight: 42
     Layout.fillWidth: true
-    color: dropdownItemMouseArea.containsMouse ? AppConstants.focusedSolidBgColor : "transparent"
+    // `pressed` matters on touch screens, where `containsMouse` never becomes
+    // true and hovering therefore gives no feedback at all.
+    color: dropdownItemMouseArea.containsMouse || dropdownItemMouseArea.pressed ? AppConstants.focusedSolidBgColor : "transparent"
     border.width: 1
     radius: 0
     property var action: () => {}

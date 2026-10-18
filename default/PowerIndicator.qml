@@ -19,7 +19,7 @@ DropdownMenu {
         } else if (percentage <= 0.3) {
             return Qt.rgba(0.9, 0.9, 0.2, 0.9);
         } else {
-            return "white";
+            return AppConstants.styledTextColor;
         }
     }
     toggleIconSource: {
@@ -80,7 +80,12 @@ DropdownMenu {
 
     onMenuVisibleChanged: () => {
         showShutdownDialog = false;
+        if (menuVisible) {
+            // Pick up changes made outside the shell (CLI, autostart, ...).
+            ThemeMode.refresh();
+        }
     }
+
 
     menuContent: [
         Loader {
@@ -105,7 +110,7 @@ DropdownMenu {
                             iconWidth: 26
                             iconHeight: 26
                             source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/power-off.svg`)
-                            iconColor: "lightgray"
+                            iconColor: AppConstants.iconColor
                         }
                     }
                 }
@@ -123,7 +128,7 @@ DropdownMenu {
                             iconWidth: 26
                             iconHeight: 26
                             source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/right-from-bracket.svg`)
-                            iconColor: "lightgray"
+                            iconColor: AppConstants.iconColor
                         }
                     }
                 }
@@ -146,7 +151,7 @@ DropdownMenu {
                             iconWidth: 26
                             iconHeight: 26
                             source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/lock.svg`)
-                            iconColor: "lightgray"
+                            iconColor: AppConstants.iconColor
                         }
                     }
                 }
@@ -180,7 +185,7 @@ DropdownMenu {
                             iconWidth: 26
                             iconHeight: 26
                             source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/square-minus.svg`)
-                            iconColor: "lightgray"
+                            iconColor: AppConstants.iconColor
                         }
                         RecoloredIcon {
                             Layout.fillHeight: true
@@ -188,7 +193,7 @@ DropdownMenu {
                             iconWidth: 26
                             iconHeight: 26
                             source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/sun.svg`)
-                            iconColor: "lightgray"
+                            iconColor: AppConstants.iconColor
                         }
                         Rectangle {
                             color: "transparent"
@@ -218,7 +223,7 @@ DropdownMenu {
                             iconWidth: 26
                             iconHeight: 26
                             source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/sun.svg`)
-                            iconColor: "lightgray"
+                            iconColor: AppConstants.iconColor
                         }
                         RecoloredIcon {
                             Layout.fillHeight: true
@@ -226,7 +231,52 @@ DropdownMenu {
                             iconWidth: 26
                             iconHeight: 26
                             source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/square-plus.svg`)
-                            iconColor: "lightgray"
+                            iconColor: AppConstants.iconColor
+                        }
+                        Rectangle {
+                            color: "transparent"
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                        }
+                    }
+                }
+                // Full-width tap-to-toggle row: shows the mode that is active
+                // now, and a tap always flips it. Deliberately not a two-half
+                // segmented control, because on a touch screen one half would
+                // be a silent no-op with no hover state to explain why.
+                DropdownMenuItem {
+                    id: themeToggleItem
+                    Layout.columnSpan: 2
+                    enabled: !ThemeMode.busy
+                    opacity: ThemeMode.busy ? 0.5 : 1
+                    action: () => {
+                        ThemeMode.toggle();
+                    }
+
+                    RowLayout {
+                        anchors.fill: parent
+                        spacing: 8
+                        Rectangle {
+                            color: "transparent"
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                        }
+                        RecoloredIcon {
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: preferredWidth
+                            iconWidth: 26
+                            iconHeight: 26
+                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/${ThemeMode.isDark ? "moon" : "sun"}.svg`)
+                            iconColor: AppConstants.iconColor
+                        }
+                        Rectangle {
+                            color: "transparent"
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: themeToggleLabel.width
+                            StyledText {
+                                id: themeToggleLabel
+                                text: ThemeMode.isDark ? "Dark" : "Light"
+                            }
                         }
                         Rectangle {
                             color: "transparent"
@@ -255,7 +305,7 @@ DropdownMenu {
                             iconWidth: 26
                             iconHeight: 26
                             source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/power-off.svg`)
-                            iconColor: "red"
+                            iconColor: AppConstants.dangerColor
                         }
                     }
                 }
@@ -275,7 +325,7 @@ DropdownMenu {
                             iconWidth: 26
                             iconHeight: 26
                             source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/arrows-rotate.svg`)
-                            iconColor: "red"
+                            iconColor: AppConstants.dangerColor
                         }
                     }
                 }
@@ -293,7 +343,7 @@ DropdownMenu {
                             iconWidth: 26
                             iconHeight: 26
                             source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/cancel.svg`)
-                            iconColor: "lightgray"
+                            iconColor: AppConstants.iconColor
                         }
                     }
                 }

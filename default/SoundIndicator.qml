@@ -5,7 +5,7 @@ import Quickshell.Io
 
 DropdownMenu {
     id: volumeIndicator
-    toggleIconColor: "white"
+    toggleIconColor: AppConstants.styledTextColor
     toggleIconSource: {
         let iconName = "off";
         if (isMuted) {
@@ -56,7 +56,7 @@ DropdownMenu {
                     iconWidth: 26
                     iconHeight: 26
                     source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/volume-low.svg`)
-                    iconColor: "lightgray"
+                    iconColor: AppConstants.iconColor
                 }
             }
             DropdownMenuItem {
@@ -71,7 +71,7 @@ DropdownMenu {
                     iconWidth: 26
                     iconHeight: 26
                     source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/volume-xmark.svg`)
-                    iconColor: "lightgray"
+                    iconColor: AppConstants.iconColor
                 }
             }
             DropdownMenuItem {
@@ -86,7 +86,7 @@ DropdownMenu {
                     iconWidth: 26
                     iconHeight: 26
                     source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/volume-high.svg`)
-                    iconColor: "lightgray"
+                    iconColor: AppConstants.iconColor
                 }
             }
         }

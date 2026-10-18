@@ -4,7 +4,7 @@ import Quickshell.Io
 
 DropdownMenu {
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/memory.svg")
-    toggleIconColor: "white"
+    toggleIconColor: AppConstants.styledTextColor
 
     toggleTextFont.pixelSize: 18
     toggleText: `${ramIndicator.percentValue}%`

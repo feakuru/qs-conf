@@ -13,7 +13,7 @@ DropdownMenu {
 
     toggleTextFont.pixelSize: 18
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/microchip.svg")
-    toggleIconColor: "white"
+    toggleIconColor: AppConstants.styledTextColor
 
     Row {
         anchors.fill: parent

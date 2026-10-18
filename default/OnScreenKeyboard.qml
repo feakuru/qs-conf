@@ -23,7 +23,7 @@ Rectangle {
         iconWidth: 26
         iconHeight: 26
         source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/keyboard.svg`)
-        iconColor: "lightgray"
+        iconColor: AppConstants.iconColor
     }
 
     IpcHandler {
