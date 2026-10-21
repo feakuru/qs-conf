@@ -15,7 +15,7 @@ DropdownMenu {
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
-        color: AppConstants.indicatorBarColor
+        color: AppConstants.memoryBarColor
         property var percentValue: 0
         height: (percentValue / 100) * 42
     }

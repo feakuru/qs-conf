@@ -15,6 +15,7 @@ Singleton {
     readonly property color accentColor: isDark ? Qt.rgba(0.5, 0.5, 0.7, 0.5) : Qt.rgba(0.35, 0.35, 0.6, 0.5)
     readonly property color indicatorBorderColor: isDark ? Qt.rgba(0.5, 0.5, 0.5, 0.5) : Qt.rgba(0.4, 0.4, 0.4, 0.4)
     readonly property color indicatorBarColor: isDark ? Qt.rgba(0.5, 0.5, 1, 0.8) : Qt.rgba(0.25, 0.25, 0.75, 0.8)
+    readonly property color memoryBarColor: isDark ? Qt.rgba(1, 0.7, 0.4, 0.8) : Qt.rgba(0.9, 0.5, 0.15, 0.8)
     readonly property color indicatorOnColor: isDark ? "lightblue" : "steelblue"
     readonly property color indicatorOffColor: isDark ? "gray" : Qt.rgba(0.45, 0.45, 0.45, 1)
     readonly property color bluetoothColor: "#0082FC"

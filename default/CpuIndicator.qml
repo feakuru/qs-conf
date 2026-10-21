@@ -15,13 +15,13 @@ DropdownMenu {
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/microchip.svg")
     toggleIconColor: AppConstants.styledTextColor
 
-    Row {
+    Item {
         anchors.fill: parent
-        spacing: 0
         z: -1
         Repeater {
             model: cpuIndicator.cpuData
             Rectangle {
+                x: index * cpuIndicator.barWidth
                 width: cpuIndicator.barWidth
                 height: (modelData / 100) * 42
                 color: AppConstants.indicatorBarColor

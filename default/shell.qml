@@ -103,12 +103,17 @@ Scope {
                 Layout.fillHeight: true
             }
 
+            CpuIndicator {
+                Layout.preferredWidth: preferredWidth
+                Layout.fillHeight: true
+            }
+
             RamIndicator {
                 Layout.preferredWidth: preferredWidth
                 Layout.fillHeight: true
             }
 
-            CpuIndicator {
+            GpuIndicator {
                 Layout.preferredWidth: preferredWidth
                 Layout.fillHeight: true
             }
