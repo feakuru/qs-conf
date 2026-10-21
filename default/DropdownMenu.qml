@@ -21,6 +21,7 @@ Rectangle {
     property alias toggleTextHorizontalAlignment: dropdownToggleText.horizontalAlignment
     property alias toggleIconSource: dropdownToggleIcon.source
     property alias toggleIconColor: dropdownToggleIcon.iconColor
+    property alias toggleIconOutlineColor: dropdownToggleIcon.outlineColor
     property alias toggleMouseAreaContainsMouse: dropdownToggleMouseArea.containsMouse
     property real preferredWidth: dropdownToggleText.width + (dropdownToggleIcon.visible ? dropdownToggleIcon.width : 0) + 20
     property list<Item> menuContent

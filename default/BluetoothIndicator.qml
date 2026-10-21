@@ -6,6 +6,7 @@ import Quickshell.Hyprland
 
 DropdownMenu {
     toggleIconColor: Bluetooth.defaultAdapter.enabled ? AppConstants.bluetoothColor : AppConstants.indicatorOffColor
+    toggleIconOutlineColor: AppConstants.iconOutlineColor
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/brands/bluetooth.svg")
 
     toggleTextFont.pixelSize: 16
