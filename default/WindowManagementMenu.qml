@@ -88,6 +88,7 @@ PanelWindow {
         }
     }
 
+    screen: AppConstants.primaryScreen
     visible: false
     // Deliberately not focusable: taking keyboard focus would change which
     // window Hyprland considers active while the menu is being used.
@@ -100,7 +101,7 @@ PanelWindow {
 
     margins {
         left: {
-            let foundScreen = Quickshell.screens.find(s => s.name == "DP-1") || Quickshell.screens[0];
+            let foundScreen = AppConstants.primaryScreen;
             let centerOfAnchor = windowMenu.anchorX + (windowMenu.anchorWidth / 2);
             let targetPosition = centerOfAnchor - (windowMenu.implicitWidth / 2);
             let rightmostPosition = foundScreen.width - windowMenu.implicitWidth - 10;

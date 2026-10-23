@@ -33,4 +33,13 @@ Singleton {
     readonly property color iconOutlineColor: isDark ? "transparent" : styledTextColor
 
     property string defaultFont: "FiraCode Nerd Font"
+
+    // First external output if any is connected, otherwise the first screen.
+    // Connector names vary (DP-1, DP-3, HDMI-A-1, ...), so detect internal
+    // panels by prefix instead of matching a specific external name.
+    readonly property var primaryScreen: {
+        let screens = Quickshell.screens;
+        let isInternal = s => /^(eDP|LVDS|DSI)/.test(s.name);
+        return screens.find(s => !isInternal(s)) || screens[0];
+    }
 }
