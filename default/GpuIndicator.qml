@@ -8,7 +8,9 @@ DropdownMenu {
     property int loadPercent: 0
     property int memoryUsed: 0
     property int memoryTotal: 0
-    property int memoryPercent: memoryTotal > 0 ? Math.round(memoryUsed / memoryTotal * 100) : 0
+    // Integrated GPUs share system RAM and report no dedicated memory.
+    property bool hasDedicatedMemory: memoryTotal > 0
+    property int memoryPercent: hasDedicatedMemory ? Math.round(memoryUsed / memoryTotal * 100) : 0
 
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/display.svg")
     toggleIconColor: AppConstants.styledTextColor
@@ -29,13 +31,14 @@ DropdownMenu {
         anchors.fill: parent
         z: -1
         Rectangle {
-            width: parent.width / 2
+            width: gpuIndicator.hasDedicatedMemory ? parent.width / 2 : parent.width
             height: (gpuIndicator.loadPercent / 100) * 42
             color: AppConstants.indicatorBarColor
             anchors.bottom: parent.bottom
             anchors.left: parent.left
         }
         Rectangle {
+            visible: gpuIndicator.hasDedicatedMemory
             width: parent.width / 2
             height: (gpuIndicator.memoryPercent / 100) * 42
             color: AppConstants.memoryBarColor
@@ -59,26 +62,28 @@ DropdownMenu {
         },
         DropdownMenuItem {
             StyledText {
-                text: `Memory: ${gpuIndicator.memoryUsed} / ${gpuIndicator.memoryTotal} MiB (${gpuIndicator.memoryPercent}%)`
+                text: gpuIndicator.hasDedicatedMemory ? `Memory: ${gpuIndicator.memoryUsed} / ${gpuIndicator.memoryTotal} MiB (${gpuIndicator.memoryPercent}%)` : "Memory: shared with system RAM"
             }
         }
     ]
 
-    Process {
+    ScriptProcess {
         id: gpuProcess
-        command: ["nvidia-smi", "--query-gpu=utilization.gpu,memory.used,memory.total,name", "--format=csv,noheader,nounits"]
+        scriptName: "gpu_usage"
         running: true
 
         stdout: StdioCollector {
             onStreamFinished: {
-                let fields = this.text.trim().split("\n")[0].split(",").map(x => x.trim());
-                if (fields.length < 4) {
+                let info;
+                try {
+                    info = JSON.parse(this.text);
+                } catch (e) {
                     return;
                 }
-                gpuIndicator.loadPercent = parseInt(fields[0]) || 0;
-                gpuIndicator.memoryUsed = parseInt(fields[1]) || 0;
-                gpuIndicator.memoryTotal = parseInt(fields[2]) || 0;
-                gpuIndicator.gpuName = fields.slice(3).join(",");
+                gpuIndicator.loadPercent = info.load || 0;
+                gpuIndicator.memoryUsed = info.memory_used || 0;
+                gpuIndicator.memoryTotal = info.memory_total || 0;
+                gpuIndicator.gpuName = info.name || "";
             }
         }
     }
