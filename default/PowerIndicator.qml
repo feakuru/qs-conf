@@ -48,25 +48,6 @@ DropdownMenu {
         if (device.state == UPowerDeviceState.Charging) {
             result += "+";
         }
-        if (toggleMouseAreaContainsMouse) {
-            if (device.state == UPowerDeviceState.Charging) {
-                result += ` [${Math.floor(device.timeToFull / 60)}m to full]`;
-            } else {
-                let hours = Math.floor(device.timeToEmpty / 3600);
-                if (hours > 0) {
-                    let minutes = Math.floor((device.timeToEmpty % 3600) / 60);
-                    result += ` [${hours}h${minutes}m]`;
-                } else {
-                    let minutes = Math.floor(device.timeToEmpty / 60);
-                    if (minutes > 0) {
-                        result += ` [${minutes}m]`;
-                    }
-                }
-            }
-            if (device.healthSupported) {
-                result += ` [health ${device.healthPercentage}%]`;
-            }
-        }
         result;
     }
 
@@ -109,7 +90,7 @@ DropdownMenu {
             countdownLabel: "Logging out in",
             confirmLabel: "Log out",
             iconName: "right-from-bracket",
-            run: () => Hyprland.dispatch("exit")
+            run: () => Hyprland.dispatch("hl.dsp.exit()")
         })
     readonly property var restartAction: ({
             title: "Restart?",
@@ -200,17 +181,38 @@ DropdownMenu {
         BrightnessMenuItem {
             active: powerIndicator.menuVisible
         },
-        // Full-width tap-to-toggle row: shows the mode that is active
-        // now, and a tap always flips it. Deliberately not a two-half
-        // segmented control, because on a touch screen one half would
-        // be a silent no-op with no hover state to explain why.
-        IconMenuItem {
-            enabled: !ThemeMode.busy
-            opacity: ThemeMode.busy ? 0.5 : 1
-            iconNames: [ThemeMode.isDark ? "moon" : "sun"]
-            text: ThemeMode.isDark ? "Dark" : "Light"
-            action: () => {
-                ThemeMode.toggle();
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 0
+
+            // Tap-to-toggle: shows the mode that is active now, and a tap
+            // always flips it. Deliberately not a two-half segmented
+            // control, because on a touch screen one half would be a
+            // silent no-op with no hover state to explain why.
+            IconMenuItem {
+                enabled: !ThemeMode.busy
+                opacity: ThemeMode.busy ? 0.5 : 1
+                iconNames: [ThemeMode.isDark ? "moon" : "sun"]
+                text: ThemeMode.isDark ? "Dark" : "Light"
+                action: () => {
+                    ThemeMode.toggle();
+                }
+            }
+
+            Separator {
+                visible: AutoRotate.available
+                thickness: 1
+            }
+
+            // Lit while on; when off, the screen keeps its orientation.
+            IconMenuItem {
+                visible: AutoRotate.available
+                iconNames: ["rotate"]
+                iconColor: AutoRotate.enabled ? AppConstants.indicatorOnColor : AppConstants.indicatorOffColor
+                text: "Auto-rotate"
+                action: () => {
+                    AutoRotate.toggle();
+                }
             }
         }
     ]
