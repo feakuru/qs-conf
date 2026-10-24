@@ -25,6 +25,11 @@ Singleton {
     readonly property color indicatorOffColor: isDark ? "gray" : Qt.rgba(0.45, 0.45, 0.45, 1)
     readonly property color bluetoothColor: "#0082FC"
     readonly property color dangerColor: isDark ? "#FF6B6B" : "#C62828"
+    // Bars of things that are off, e.g. a muted volume.
+    readonly property color mutedBarColor: Qt.rgba(indicatorOffColor.r, indicatorOffColor.g, indicatorOffColor.b, loadBarAlpha)
+    readonly property color dangerBarColor: Qt.rgba(dangerColor.r, dangerColor.g, dangerColor.b, loadBarAlpha)
+    // Dims the screen behind full-screen dialogs.
+    readonly property color dialogScrimColor: Qt.rgba(0, 0, 0, 0.5)
 
     // Default tint for monochrome SVG icons; mutedIconColor is for de-emphasis.
     readonly property color iconColor: isDark ? "#BDC1C6" : "#5F6368"

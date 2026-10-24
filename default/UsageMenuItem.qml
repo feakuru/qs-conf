@@ -6,6 +6,8 @@ DropdownMenuItem {
     id: usageMenuItem
     property string label: ""
     property color labelColor: AppConstants.styledTextColor
+    // E.g. Text.ElideMiddle for names whose end tells them apart.
+    property int labelElide: Text.ElideRight
     property string valueText: ""
     property real percent: 0
     property color barColor: AppConstants.indicatorBarColor
@@ -37,7 +39,7 @@ DropdownMenuItem {
         font.pixelSize: 16
         color: usageMenuItem.labelColor
         horizontalAlignment: Text.AlignLeft
-        elide: Text.ElideRight
+        elide: usageMenuItem.labelElide
         text: usageMenuItem.label
     }
 

@@ -1,11 +1,8 @@
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Dialogs
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Services.UPower
-import Quickshell.Widgets
 
 DropdownMenu {
     id: powerIndicator
@@ -73,119 +70,148 @@ DropdownMenu {
         result;
     }
 
-    menuWidth: 200
+    function formatDuration(seconds) {
+        let hours = Math.floor(seconds / 3600);
+        let minutes = Math.floor((seconds % 3600) / 60);
+        return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+    }
 
-    property bool showShutdownDialog: false
+    // e.g. "85% · 2h 10m left · health 92%"
+    readonly property string batteryDetails: {
+        let device = UPower.displayDevice;
+        if (!device.isLaptopBattery) {
+            return "";
+        }
+        let parts = [`${Math.round(device.percentage * 100)}%`];
+        switch (device.state) {
+        case UPowerDeviceState.Charging:
+            parts.push(device.timeToFull > 0 ? `${formatDuration(device.timeToFull)} to full` : "charging");
+            break;
+        case UPowerDeviceState.Discharging:
+            if (device.timeToEmpty > 0) {
+                parts.push(`${formatDuration(device.timeToEmpty)} left`);
+            }
+            break;
+        case UPowerDeviceState.FullyCharged:
+            parts.push("full");
+            break;
+        }
+        if (device.healthSupported) {
+            parts.push(`health ${Math.round(device.healthPercentage)}%`);
+        }
+        return parts.join(" · ");
+    }
+
+    // Each runs after confirmation in sessionActionDialog, or by itself once
+    // its countdown ends.
+    readonly property var logoutAction: ({
+            title: "Log out?",
+            countdownLabel: "Logging out in",
+            confirmLabel: "Log out",
+            iconName: "right-from-bracket",
+            run: () => Hyprland.dispatch("exit")
+        })
+    readonly property var restartAction: ({
+            title: "Restart?",
+            countdownLabel: "Restarting in",
+            confirmLabel: "Restart",
+            iconName: "arrows-rotate",
+            run: () => Quickshell.execDetached({
+                    command: ["systemctl", "reboot"]
+                })
+        })
+    readonly property var powerOffAction: ({
+            title: "Power off?",
+            countdownLabel: "Powering off in",
+            confirmLabel: "Power off",
+            iconName: "power-off",
+            run: () => Quickshell.execDetached({
+                    command: ["systemctl", "poweroff"]
+                })
+        })
+
+    function askSessionAction(sessionAction) {
+        powerIndicator.closeMenu();
+        sessionActionDialog.ask(sessionAction);
+    }
+
+    menuWidth: 450
 
     onMenuVisibleChanged: () => {
-        showShutdownDialog = false;
         if (menuVisible) {
             // Pick up changes made outside the shell (CLI, autostart, ...).
             ThemeMode.refresh();
         }
     }
 
+    SessionActionDialog {
+        id: sessionActionDialog
+    }
+
+    ScriptProcess {
+        id: lockProcess
+        scriptName: "lock_session"
+    }
+
     menuContent: [
-        Loader {
+        UsageMenuItem {
+            visible: UPower.displayDevice.isLaptopBattery
+            label: "Battery"
+            valueText: powerIndicator.batteryDetails
+            percent: UPower.displayDevice.percentage * 100
+            barColor: UPower.displayDevice.percentage <= 0.1 ? AppConstants.dangerBarColor : AppConstants.indicatorBarColor
+        },
+        DropdownMenuHeader {
+            text: "Session"
+        },
+        GridLayout {
             Layout.fillWidth: true
+            columns: 2
+            columnSpacing: 0
+            rowSpacing: 0
 
-            readonly property Component baseMenu: GridLayout {
-                columns: 2
-                columnSpacing: 0
-                rowSpacing: 0
-
-                IconMenuItem {
-                    iconNames: ["power-off"]
-                    action: () => {
-                        powerIndicator.showShutdownDialog = true;
-                    }
-                }
-                IconMenuItem {
-                    iconNames: ["right-from-bracket"]
-                    action: () => {
-                        Hyprland.dispatch("exit");
-                    }
-                }
-                IconMenuItem {
-                    iconNames: ["lock"]
-                    action: () => {
-                        Quickshell.execDetached({
-                            command: ["hyprctl", "switchxkblayout", "all", "0"]
-                        });
-                        Quickshell.execDetached({
-                            command: ["hyprlock"]
-                        });
-                    }
-                }
-                IconMenuItem {
-                    action: () => {
-                        console.log("there will be an autorotate control here");
-                    }
-                }
-                IconMenuItem {
-                    iconNames: ["square-minus", "sun"]
-                    action: () => {
-                        Quickshell.execDetached({
-                            command: ["brightnessctl", "set", "5%-"]
-                        });
-                    }
-                }
-                IconMenuItem {
-                    iconNames: ["sun", "square-plus"]
-                    action: () => {
-                        Quickshell.execDetached({
-                            command: ["brightnessctl", "set", "5%+"]
-                        });
-                    }
-                }
-                // Full-width tap-to-toggle row: shows the mode that is active
-                // now, and a tap always flips it. Deliberately not a two-half
-                // segmented control, because on a touch screen one half would
-                // be a silent no-op with no hover state to explain why.
-                IconMenuItem {
-                    Layout.columnSpan: 2
-                    enabled: !ThemeMode.busy
-                    opacity: ThemeMode.busy ? 0.5 : 1
-                    iconNames: [ThemeMode.isDark ? "moon" : "sun"]
-                    text: ThemeMode.isDark ? "Dark" : "Light"
-                    action: () => {
-                        ThemeMode.toggle();
-                    }
+            IconMenuItem {
+                iconNames: ["lock"]
+                text: "Lock"
+                action: () => {
+                    powerIndicator.closeMenu();
+                    lockProcess.running = true;
                 }
             }
-
-            readonly property Component shutdownMenu: GridLayout {
-                columns: 2
-                columnSpacing: 0
-                rowSpacing: 0
-
-                IconMenuItem {
-                    iconNames: ["power-off"]
-                    iconColor: AppConstants.dangerColor
-                    action: () => {
-                        Quickshell.execDetached({
-                            command: ["shutdown", "now"]
-                        });
-                    }
-                }
-                IconMenuItem {
-                    iconNames: ["arrows-rotate"]
-                    iconColor: AppConstants.dangerColor
-                    action: () => {
-                        Quickshell.execDetached({
-                            command: ["reboot"]
-                        });
-                    }
-                }
-                IconMenuItem {
-                    iconNames: ["cancel"]
-                    action: () => {
-                        powerIndicator.showShutdownDialog = false;
-                    }
-                }
+            IconMenuItem {
+                iconNames: ["right-from-bracket"]
+                text: "Log out"
+                action: () => powerIndicator.askSessionAction(powerIndicator.logoutAction)
             }
-
-            sourceComponent: powerIndicator.showShutdownDialog ? shutdownMenu : baseMenu
+            IconMenuItem {
+                iconNames: ["arrows-rotate"]
+                text: "Restart"
+                action: () => powerIndicator.askSessionAction(powerIndicator.restartAction)
+            }
+            IconMenuItem {
+                iconNames: ["power-off"]
+                text: "Power off"
+                action: () => powerIndicator.askSessionAction(powerIndicator.powerOffAction)
+            }
+        },
+        DropdownMenuHeader {
+            text: "Display"
+        },
+        BrightnessMenuItem {
+            active: powerIndicator.menuVisible
+        },
+        // Full-width tap-to-toggle row: shows the mode that is active
+        // now, and a tap always flips it. Deliberately not a two-half
+        // segmented control, because on a touch screen one half would
+        // be a silent no-op with no hover state to explain why.
+        IconMenuItem {
+            enabled: !ThemeMode.busy
+            opacity: ThemeMode.busy ? 0.5 : 1
+            iconNames: [ThemeMode.isDark ? "moon" : "sun"]
+            text: ThemeMode.isDark ? "Dark" : "Light"
+            action: () => {
+                ThemeMode.toggle();
+            }
         }
     ]
 }

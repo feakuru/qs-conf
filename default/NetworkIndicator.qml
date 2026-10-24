@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
@@ -145,7 +144,7 @@ DropdownMenu {
         onTriggered: netIndicator.wifiRescanning = false
     }
 
-    toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/network-wired.svg")
+    toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/earth.svg")
     toggleIconColor: AppConstants.styledTextColor
     // Speeds left of the icon, like VpnIndicator, so the room reserved for
     // wider values is at the outer edge.
@@ -361,49 +360,25 @@ DropdownMenu {
                 text: "Scanning…"
             }
         },
-        Flickable {
-            id: wifiNetworksFlickable
-            // Rows all have the same height; at most wifiNetworksShown of them
-            // are visible and the rest scroll.
-            readonly property real visibleHeight: wifiNetworksRepeater.count > 0 ? wifiNetworksColumn.implicitHeight * Math.min(wifiNetworksRepeater.count, netIndicator.wifiNetworksShown) / wifiNetworksRepeater.count : 0
+        ScrollingMenuList {
+            rowCount: wifiNetworksRepeater.count
+            maxVisibleRows: netIndicator.wifiNetworksShown
 
-            visible: wifiNetworksRepeater.count > 0
-            Layout.fillWidth: true
-            implicitHeight: visibleHeight
-            clip: true
-            boundsBehavior: Flickable.StopAtBounds
-            contentWidth: width
-            contentHeight: wifiNetworksColumn.implicitHeight
-
-            ScrollBar.vertical: ScrollBar {
-                id: wifiNetworksScrollBar
-                // Hover-enabled controls swallow hover events, which would
-                // hide the pointer from the menu (see DropdownMenu.qml).
-                hoverEnabled: false
-                policy: wifiNetworksFlickable.contentHeight > wifiNetworksFlickable.height ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
-            }
-
-            ColumnLayout {
-                id: wifiNetworksColumn
-                width: wifiNetworksFlickable.width - (wifiNetworksScrollBar.policy === ScrollBar.AlwaysOn ? wifiNetworksScrollBar.width : 0)
-                spacing: 0
-
-                Repeater {
-                    id: wifiNetworksRepeater
-                    // ScriptModel keeps the rows of networks that are still
-                    // listed, so re-sorting doesn't recreate them.
-                    model: ScriptModel {
-                        values: netIndicator.wifiNetworks
-                    }
-                    delegate: WifiNetworkMenuItem {
-                        required property var modelData
-                        // The first row is at the top of the scroll area,
-                        // but still follows the rows above it.
-                        showSeparator: true
-                        network: modelData
-                        action: () => netIndicator.toggleWifiNetwork(modelData)
-                        forgetAction: () => modelData.forget()
-                    }
+            Repeater {
+                id: wifiNetworksRepeater
+                // ScriptModel keeps the rows of networks that are still
+                // listed, so re-sorting doesn't recreate them.
+                model: ScriptModel {
+                    values: netIndicator.wifiNetworks
+                }
+                delegate: WifiNetworkMenuItem {
+                    required property var modelData
+                    // The first row is at the top of the scroll area, but
+                    // still follows the rows above it.
+                    showSeparator: true
+                    network: modelData
+                    action: () => netIndicator.toggleWifiNetwork(modelData)
+                    forgetAction: () => modelData.forget()
                 }
             }
         }
