@@ -9,7 +9,8 @@ import Quickshell
 // - the button is clicked again,
 // - the mouse leaves the menu (after a short grace period, and only if it was
 //   inside the menu at some point, so a menu that was opened but never visited
-//   stays open),
+//   stays open; never once the button or menu has been touched while open,
+//   see touchUsed),
 // - another dropdown is opened.
 //
 // There is deliberately no click-outside dismissal: it needs a
@@ -34,6 +35,7 @@ BarButton {
 
     function closeMenu() {
         closeOnLeaveTimer.stop();
+        dropdown.touchUsed = false;
         dropdownPopup.visible = false;
         if (Dropdowns.current === dropdown) {
             Dropdowns.current = null;
@@ -53,14 +55,41 @@ BarButton {
     property bool pointerVisitedMenu: false
     readonly property bool pointerInside: dropdownMenuHover.hovered || dropdown.toggleMouseAreaContainsMouse
 
+    // Qt Quick turns the first touch point into synthetic hover events that
+    // claim to come from the core pointer device (so HoverHandler's
+    // acceptedDevices can't filter them out), and that hover ends after the
+    // finger lifts. Without this flag, every tap inside the menu would count as
+    // "the mouse visited and left", and the menu would close shortly after it.
+    // Set on a touch press on the button or in the menu; reset when the menu
+    // closes.
+    property bool touchUsed: false
+
+    onTouchUsedChanged: {
+        if (dropdown.touchUsed) {
+            closeOnLeaveTimer.stop();
+        }
+    }
+
     onPointerInsideChanged: {
         if (!dropdown.menuVisible) {
             return;
         }
         if (dropdown.pointerInside) {
             closeOnLeaveTimer.stop();
-        } else if (dropdown.pointerVisitedMenu) {
+        } else if (dropdown.pointerVisitedMenu && !dropdown.touchUsed) {
             closeOnLeaveTimer.restart();
+        }
+    }
+
+    // A HoverHandler is "hovered" while a finger is pressed on its item, even
+    // when a child MouseArea has grabbed the touch. PointHandler/TapHandler
+    // would not work here: they ignore points that a child already grabbed.
+    HoverHandler {
+        acceptedDevices: PointerDevice.TouchScreen
+        onHoveredChanged: {
+            if (hovered) {
+                dropdown.touchUsed = true;
+            }
         }
     }
 
@@ -106,12 +135,23 @@ BarButton {
             // track hover with HoverHandlers (which don't accept) instead.
             HoverHandler {
                 id: dropdownMenuHover
-                // Touch input has no hover, so touch users close the menu with
-                // its button instead.
+                // This doesn't keep touch out: synthetic hover from touch is
+                // reported by the core pointer device (see touchUsed).
                 acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
                 onHoveredChanged: {
                     if (hovered) {
                         dropdown.pointerVisitedMenu = true;
+                    }
+                }
+            }
+
+            // Touch users close the menu with its button instead. See the
+            // button's touch HoverHandler for why this is a HoverHandler.
+            HoverHandler {
+                acceptedDevices: PointerDevice.TouchScreen
+                onHoveredChanged: {
+                    if (hovered) {
+                        dropdown.touchUsed = true;
                     }
                 }
             }
