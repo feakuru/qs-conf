@@ -110,6 +110,13 @@ Item {
                         WindowActionButton {
                             implicitWidth: 24
                             implicitHeight: 24
+                            iconName: "camera"
+                            action: () => Screenshots.captureWindow(windowPill.modelData)
+                        }
+
+                        WindowActionButton {
+                            implicitWidth: 24
+                            implicitHeight: 24
                             iconName: "xmark"
                             activeIconColor: AppConstants.dangerColor
                             action: () => WindowActions.closeWindow(windowPill.modelData)

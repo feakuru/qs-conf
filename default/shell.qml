@@ -65,6 +65,10 @@ Scope {
 
                 Separator {}
 
+                ScreenshotMenu {}
+
+                Separator {}
+
                 PowerIndicator {}
             }
 

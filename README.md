@@ -14,6 +14,7 @@ This list might not be exhaustive. I am running this over Arch with Gnome instal
 - `pactl`
 - `sensors`
 - `uv` with a Python 3.12 or greater available
+- `hyprshot`
 - `xdg-terminal-exec` (available on Arch only as a separate AUR at the time of writing)
 - need to fill in values in `qs-osk.service` and add it to systemd services (enable and start)
 
