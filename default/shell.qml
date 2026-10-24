@@ -108,6 +108,10 @@ Scope {
             NotificationToasts {
                 screen: screenScope.modelData
             }
+
+            DropdownHints {
+                screen: screenScope.modelData
+            }
         }
     }
 }

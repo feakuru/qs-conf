@@ -52,6 +52,35 @@ BarButton {
 
     onClicked: toggleMenu()
 
+    // Index of this menu's key in Dropdowns.hintKeys, or -1 if no key label is
+    // shown.
+    readonly property int hintIndex: Dropdowns.hintedMenus.indexOf(dropdown)
+
+    Component.onCompleted: Dropdowns.menus = Dropdowns.menus.concat([dropdown])
+    Component.onDestruction: {
+        Dropdowns.menus = Dropdowns.menus.filter(menu => menu !== dropdown);
+        Dropdowns.hintedMenus = Dropdowns.hintedMenus.filter(menu => menu !== dropdown);
+    }
+
+    Rectangle {
+        anchors.centerIn: parent
+        z: 1
+        visible: dropdown.hintIndex >= 0
+        width: Math.max(height, hintText.implicitWidth + 10)
+        height: hintText.implicitHeight + 4
+        radius: 4
+        color: AppConstants.solidBgColor
+        border.width: 2
+        border.color: AppConstants.indicatorOnColor
+
+        StyledText {
+            id: hintText
+            font.pixelSize: 18
+            font.bold: true
+            text: dropdown.hintIndex >= 0 ? Dropdowns.hintKeys.charAt(dropdown.hintIndex).toUpperCase() : ""
+        }
+    }
+
     property bool pointerVisitedMenu: false
     readonly property bool pointerInside: dropdownMenuHover.hovered || dropdown.toggleMouseAreaContainsMouse
 
