@@ -12,6 +12,8 @@ Singleton {
     readonly property color pressedSolidBgColor: isDark ? Qt.rgba(0.32, 0.32, 0.32, 0.9) : Qt.rgba(0.82, 0.82, 0.82, 0.95)
     readonly property color focusedBgColor: isDark ? Qt.rgba(0.4, 0.4, 0.4, 0.9) : Qt.rgba(0.75, 0.75, 0.75, 0.9)
     readonly property color focusedSolidBgColor: isDark ? Qt.rgba(0.3, 0.3, 0.4, 0.9) : Qt.rgba(0.8, 0.8, 0.88, 0.95)
+    // Cards (e.g. notifications) inside a solidBgColor menu.
+    readonly property color cardBgColor: isDark ? Qt.rgba(0.26, 0.26, 0.26, 0.9) : Qt.rgba(0.89, 0.89, 0.89, 0.95)
     readonly property color styledTextColor: isDark ? "#E8EAED" : "#2D2F31"
     readonly property color styledTextOutlineColor: isDark ? Qt.rgba(0.2, 0.2, 0.2, 0.7) : Qt.rgba(1, 1, 1, 0.35)
     readonly property color accentColor: isDark ? Qt.rgba(0.5, 0.5, 0.7, 0.5) : Qt.rgba(0.35, 0.35, 0.6, 0.5)

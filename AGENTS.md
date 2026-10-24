@@ -61,8 +61,9 @@ Debugging: when behaviour can't be worked out from the code, add temporary `cons
   - `DropdownMenu`: a `BarButton` that opens a `PopupWindow` anchored to it (`opensUpward: true` on the bottom bar). Menu rows go in `menuContent`.
   - Menu rows: `DropdownMenuItem` (base row with hover, click `action` and separator), `IconMenuItem` (centred icons and/or label), `UsageMenuItem` (label, value and a usage bar, plus an optional smaller second line via `detailLabel`/`detailValueText`), `DropdownMenuHeader` (section header).
   - `ScrollingMenuList`: shows at most `maxVisibleRows` of the rows inside it and scrolls the rest (Wi-Fi networks, Bluetooth devices).
-  - Singletons: `AppConstants` (theme), `Dropdowns` (only one dropdown/launcher open at a time), `WindowActions` (Hyprland window move/float/close/focus), `Screenshots` (hyprshot captures of a window, screen or region).
-  - `ProgramPicker`, `WifiPasswordPrompt` and `SessionActionDialog` use their own keyboard-focusable `PanelWindow` instead of a popup, because popups can't reliably get keyboard focus.
+  - Singletons: `AppConstants` (theme), `Dropdowns` (only one dropdown/launcher open at a time), `WindowActions` (Hyprland window move/float/close/focus), `Screenshots` (hyprshot captures of a window, screen or region), `NotificationCenter` (the notification server: which notifications exist, which are shown as toasts, and requests to open/focus the notification area).
+  - Notifications: `NotificationCard` (one notification, full or `compact`), `NotificationList` (the notification area at the top of `DateClock`'s menu), `NotificationToasts` (bottom-right toasts, one window per screen in `shell.qml`).
+  - `ProgramPicker`, `WifiPasswordPrompt`, `NotificationReplyPrompt` and `SessionActionDialog` use their own keyboard-focusable `PanelWindow` instead of a popup, because popups can't reliably get keyboard focus.
 
 6. Known pitfalls
   - Hover inside dropdown menus: a `MouseArea` with `hoverEnabled: true` (or a hover-enabled Control such as a `ScrollBar`) accepts hover events, and Qt then stops delivering hover to its ancestors. This breaks the menu-level `HoverHandler` that closes menus when the mouse leaves. Inside menus, track hover with `HoverHandler` and use `MouseArea` only for clicks.

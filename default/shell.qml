@@ -104,8 +104,10 @@ Scope {
 
                 DateClock {}
             }
+
+            NotificationToasts {
+                screen: screenScope.modelData
+            }
         }
     }
-
-    // NotificationPanel {}
 }
