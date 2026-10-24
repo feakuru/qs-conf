@@ -25,7 +25,9 @@ DropdownMenu {
         z: -1
         anchors.bottom: parent.bottom
         anchors.left: parent.left
+        anchors.leftMargin: AppConstants.loadBarInset
         anchors.right: parent.right
+        anchors.rightMargin: AppConstants.loadBarInset
         color: AppConstants.memoryBarColor
         property var percentValue: 0
         height: (percentValue / 100) * parent.height

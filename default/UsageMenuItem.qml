@@ -5,9 +5,12 @@ import QtQuick
 DropdownMenuItem {
     id: usageMenuItem
     property string label: ""
+    property color labelColor: AppConstants.styledTextColor
     property string valueText: ""
     property real percent: 0
     property color barColor: AppConstants.indicatorBarColor
+    // Room to leave right of the value, e.g. for a button.
+    property real valueRightMargin: 12
 
     Rectangle {
         anchors.left: parent.left
@@ -32,6 +35,7 @@ DropdownMenuItem {
         anchors.rightMargin: 12
         anchors.verticalCenter: parent.verticalCenter
         font.pixelSize: 16
+        color: usageMenuItem.labelColor
         horizontalAlignment: Text.AlignLeft
         elide: Text.ElideRight
         text: usageMenuItem.label
@@ -41,7 +45,7 @@ DropdownMenuItem {
         id: usageValueText
         anchors.centerIn: undefined
         anchors.right: parent.right
-        anchors.rightMargin: 12
+        anchors.rightMargin: usageMenuItem.valueRightMargin
         anchors.verticalCenter: parent.verticalCenter
         font.pixelSize: 16
         text: usageMenuItem.valueText

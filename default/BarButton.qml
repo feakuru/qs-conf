@@ -9,6 +9,12 @@ Rectangle {
     signal clicked(var mouse)
 
     property alias toggleText: toggleLabel.text
+    // Optional text left of the icon. It is right-aligned, so that it stays
+    // next to the icon.
+    property alias toggleLeadingText: leadingLabel.text
+    property alias toggleLeadingTextFont: leadingLabel.font
+    // Like toggleTextWidest, for toggleLeadingText.
+    property string toggleLeadingTextWidest: ""
     property alias toggleTextFont: toggleLabel.font
     property alias toggleTextColor: toggleLabel.color
     property alias toggleTextHorizontalAlignment: toggleLabel.horizontalAlignment
@@ -33,6 +39,14 @@ Rectangle {
         anchors.centerIn: parent
         spacing: 5
 
+        StyledText {
+            id: leadingLabel
+            anchors.centerIn: undefined
+            visible: text.length > 0
+            horizontalAlignment: Text.AlignRight
+            Layout.minimumWidth: widestLeadingTextMetrics.advanceWidth
+        }
+
         RecoloredIcon {
             id: toggleIcon
             visible: source.toString() !== ""
@@ -52,6 +66,12 @@ Rectangle {
         id: widestToggleTextMetrics
         font: toggleLabel.font
         text: barButton.toggleTextWidest
+    }
+
+    TextMetrics {
+        id: widestLeadingTextMetrics
+        font: leadingLabel.font
+        text: barButton.toggleLeadingTextWidest
     }
 
     MouseArea {

@@ -1,4 +1,4 @@
-"""Helper for scripts that stream JSON lines to a long-running Quickshell Process."""
+"""Helpers for scripts that stream JSON lines to a long-running Quickshell Process."""
 
 import json
 import os
@@ -6,6 +6,20 @@ import sys
 import time
 from collections.abc import Callable
 from typing import Any
+
+
+def print_json_line(value: Any) -> None:
+    print(json.dumps(value), flush=True)
+
+
+def silence_stdout() -> None:
+    """Point stdout at devnull after the reader went away.
+
+    Without this, the interpreter's flush on exit raises BrokenPipeError again
+    (see Python docs on SIGPIPE).
+    """
+    devnull = os.open(os.devnull, os.O_WRONLY)
+    os.dup2(devnull, sys.stdout.fileno())
 
 
 def stream_json_lines(
@@ -17,13 +31,9 @@ def stream_json_lines(
     try:
         time.sleep(interval_s if first_interval_s is None else first_interval_s)
         while True:
-            print(json.dumps(sample()), flush=True)
+            print_json_line(sample())
             time.sleep(interval_s)
     except BrokenPipeError:
-        # Quickshell stopped reading. Point stdout at devnull so the
-        # interpreter's flush on exit doesn't raise again (see Python docs on
-        # SIGPIPE).
-        devnull = os.open(os.devnull, os.O_WRONLY)
-        os.dup2(devnull, sys.stdout.fileno())
+        silence_stdout()
     except KeyboardInterrupt:
         pass

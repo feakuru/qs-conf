@@ -6,7 +6,7 @@ import QtQuick.Layouts
 DropdownMenu {
     id: cpuIndicator
     property real barWidth: cpuIndicator.cpuData.length > 16 ? 4 : 10
-    implicitWidth: Math.max(contentImplicitWidth, cpuIndicator.cpuData.length * barWidth)
+    implicitWidth: Math.max(contentImplicitWidth, cpuIndicator.cpuData.length * barWidth + 2 * AppConstants.loadBarInset)
 
     property var cpuData: []
     property var temperature: null
@@ -20,6 +20,8 @@ DropdownMenu {
 
     Item {
         anchors.fill: parent
+        anchors.leftMargin: AppConstants.loadBarInset
+        anchors.rightMargin: AppConstants.loadBarInset
         z: -1
         Repeater {
             // Keyed on the core count only, so bars are updated in place

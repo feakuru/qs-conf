@@ -18,6 +18,9 @@ Singleton {
     readonly property real loadBarAlpha: 0.5
     readonly property color indicatorBarColor: isDark ? Qt.rgba(0.5, 0.5, 1, loadBarAlpha) : Qt.rgba(0.25, 0.25, 0.75, loadBarAlpha)
     readonly property color memoryBarColor: isDark ? Qt.rgba(1, 0.7, 0.4, loadBarAlpha) : Qt.rgba(0.9, 0.5, 0.15, loadBarAlpha)
+    // Horizontal gap between the load bars on bar widgets and the widget's
+    // edges, so they don't run into the separators.
+    readonly property int loadBarInset: 4
     readonly property color indicatorOnColor: isDark ? "lightblue" : "steelblue"
     readonly property color indicatorOffColor: isDark ? "gray" : Qt.rgba(0.45, 0.45, 0.45, 1)
     readonly property color bluetoothColor: "#0082FC"
