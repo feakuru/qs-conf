@@ -8,6 +8,7 @@ This list might not be exhaustive. I am running this over Arch with Gnome instal
 
 - `jq`
 - `sar`
+- `nvidia-smi` (only for Nvidia GPUs)
 - `nmcli`
 - `nethogs`, for per-process network usage in the network dropdown (see below)
 - `pactl`
