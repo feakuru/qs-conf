@@ -13,6 +13,7 @@ Rectangle {
     // next to the icon.
     property alias toggleLeadingText: leadingLabel.text
     property alias toggleLeadingTextFont: leadingLabel.font
+    property alias toggleLeadingTextHorizontalAlignment: leadingLabel.horizontalAlignment
     // Like toggleTextWidest, for toggleLeadingText.
     property string toggleLeadingTextWidest: ""
     property alias toggleTextFont: toggleLabel.font
@@ -27,6 +28,8 @@ Rectangle {
     property real toggleIconSize: 32
     readonly property alias toggleMouseAreaContainsMouse: toggleMouseArea.containsMouse
     property real horizontalPadding: 10
+    // Gap between the leading text, icon and text.
+    property alias contentSpacing: toggleContent.spacing
     // Width needed by the icon and text, for widgets that override implicitWidth.
     readonly property real contentImplicitWidth: toggleContent.implicitWidth + 2 * horizontalPadding
 
