@@ -9,7 +9,9 @@ DropdownMenu {
     property real preferredWidth: cpuIndicator.cpuData.length * barWidth
 
     property var cpuData: []
-    property var cpuTempData: []
+    property var temperature: null
+    property var topProcesses: []
+    readonly property int topProcessCount: 5
 
     toggleTextFont.pixelSize: 18
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/microchip.svg")
@@ -19,82 +21,60 @@ DropdownMenu {
         anchors.fill: parent
         z: -1
         Repeater {
-            model: cpuIndicator.cpuData
+            // Keyed on the core count only, so bars are updated in place
+            // instead of being recreated on every sample.
+            model: cpuIndicator.cpuData.length
             Rectangle {
                 x: index * cpuIndicator.barWidth
                 width: cpuIndicator.barWidth
-                height: (modelData / 100) * 42
+                height: ((cpuIndicator.cpuData[index] || 0) / 100) * 42
                 color: AppConstants.indicatorBarColor
                 anchors.bottom: parent.bottom
             }
         }
     }
 
-    menuWidth: 500
+    menuWidth: 400
     menuAnchors.bottom: true
     menuContent: [
+        DropdownMenuItem {
+            StyledText {
+                font.pixelSize: 18
+                color: cpuIndicator.temperature && cpuIndicator.temperature.hot ? AppConstants.dangerColor : AppConstants.styledTextColor
+                text: cpuIndicator.temperature ? cpuIndicator.temperature.text : "Temperature: n/a"
+            }
+        },
+        DropdownMenuHeader {
+            text: "Top processes"
+        },
         Repeater {
-            model: cpuIndicator.cpuTempData
-            delegate: DropdownMenuItem {
-                height: chipLabel.height + Math.ceil(modelData.temps.length / 2) * 36
-                GridLayout {
-                    anchors.fill: parent
-                    columns: 2
-                    anchors.margins: 12
-                    Rectangle {
-                        color: "transparent"
-                        Layout.preferredHeight: chipLabel.height
-                        Layout.preferredWidth: chipLabel.width
-                        Layout.columnSpan: 2
-                        StyledText {
-                            id: chipLabel
-                            text: modelData.name
-                        }
-                    }
-                    Repeater {
-                        model: modelData.temps
-                        delegate: Rectangle {
-                            color: "transparent"
-                            Layout.preferredHeight: tempLabel.height
-                            Layout.preferredWidth: tempLabel.width
-                            StyledText {
-                                id: tempLabel
-                                text: modelData
-                                font.pixelSize: 14
-                            }
-                        }
-                    }
-                }
+            // A fixed number of rows that only have their values swapped, so
+            // hovering and the menu size stay stable between samples.
+            model: cpuIndicator.topProcessCount
+            delegate: UsageMenuItem {
+                readonly property var processInfo: cpuIndicator.topProcesses[index] || null
+                label: processInfo ? processInfo.name : "…"
+                valueText: processInfo ? processInfo.value : ""
+                percent: processInfo ? processInfo.percent : 0
             }
         }
     ]
 
-    Process {
-        id: cpuTempProcess
-        command: ["sensors", "-J"]
+    ScriptProcess {
+        id: cpuDetailsProcess
+        scriptName: "cpu_details"
+        running: cpuIndicator.menuVisible
 
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let result = [];
-                let sensorData = JSON.parse(this.text);
-                for (let chipKey in sensorData) {
-                    let chipData = {
-                        "name": `${chipKey} [${sensorData[chipKey]["Adapter"]}]`,
-                        "temps": []
-                    };
-                    for (let tempKey in sensorData[chipKey]) {
-                        if (tempKey.startsWith("temp")) {
-                            let tempData = sensorData[chipKey][tempKey];
-                            let tempLabel = tempData["label"] || tempKey;
-                            let tempInput = tempData["input"] || {"value": "?", "unit": "?"};
-                            chipData["temps"].push(`${tempLabel}: ${tempInput["value"]}${tempInput["unit"]}`);
-                        }
-                    }
-                    if (chipData["temps"].length > 0) {
-                        result.push(chipData);
-                    }
+        stdout: SplitParser {
+            onRead: data => {
+                let details;
+                try {
+                    details = JSON.parse(data);
+                } catch (e) {
+                    return;
                 }
-                cpuIndicator.cpuTempData = result;
+                cpuIndicator.temperature = details.temperature;
+                cpuIndicator.topProcesses = details.processes || [];
             }
         }
     }
@@ -130,9 +110,6 @@ DropdownMenu {
         onTriggered: function () {
             cpuProcess.running = true;
             cpuPercentProcess.running = true;
-            if (cpuIndicator.menuVisible) {
-                cpuTempProcess.running = true;
-            }
         }
     }
 }
