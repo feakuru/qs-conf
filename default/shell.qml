@@ -35,6 +35,12 @@ Scope {
                     Layout.leftMargin: 5
                 }
 
+                WindowControls {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    Layout.maximumWidth: preferredWidth
+                }
+
                 Rectangle {
                     color: "transparent"
                     Layout.fillWidth: true
@@ -111,6 +117,11 @@ Scope {
                 }
 
                 NetworkIndicator {
+                    Layout.preferredWidth: preferredWidth
+                    Layout.fillHeight: true
+                }
+
+                VpnIndicator {
                     Layout.preferredWidth: preferredWidth
                     Layout.fillHeight: true
                 }
