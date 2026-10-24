@@ -148,18 +148,18 @@ DropdownMenu {
     toggleIconColor: AppConstants.styledTextColor
     // Speeds left of the icon, like VpnIndicator, so the room reserved for
     // wider values is at the outer edge.
-    toggleLeadingText: `${formatSpeed(txSpeed)} ⬆️\n${formatSpeed(rxSpeed)} ⬇️`
-    toggleLeadingTextWidest: "999.99 kB/s ⬆️"
+    toggleLeadingText: `${formatSpeed(txSpeed)} 🢁\n${formatSpeed(rxSpeed)} 🡻`
+    toggleLeadingTextWidest: "999.99 kB/s 🢁"
     // Small enough that the two lines don't take up the bar's full height.
     toggleLeadingTextFont.pixelSize: 12
     // Active connections by type, each only when there are any.
     toggleText: {
         let parts = [];
         if (wiredConnectionCount > 0) {
-            parts.push(`🔌${wiredConnectionCount}`);
+            parts.push(`${wiredConnectionCount}🔌`);
         }
         if (wifiConnectionCount > 0) {
-            parts.push(`🛜${wifiConnectionCount}`);
+            parts.push(`${wifiConnectionCount}ᯤ`);
         }
         return parts.length > 0 ? parts.join(" ") : "0";
     }
