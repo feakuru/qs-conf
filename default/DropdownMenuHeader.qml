@@ -5,7 +5,7 @@ Rectangle {
     property alias text: headerText.text
 
     Layout.fillWidth: true
-    Layout.preferredHeight: 28
+    implicitHeight: 28
     color: AppConstants.accentColor
 
     StyledText {

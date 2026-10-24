@@ -3,12 +3,11 @@ import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 
-Rectangle {
+BarButton {
     id: oskContainer
-    color: oskToggleMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
-    border.width: 1
-    border.color: AppConstants.indicatorBorderColor
-    property real preferredWidth: oskIcon.iconWidth + 20
+    toggleIconSize: 26
+    toggleIconSource: Qt.resolvedUrl(`assets/icons/fontawesome/solid/keyboard.svg`)
+    toggleIconColor: AppConstants.iconColor
     property bool isShiftDown: oskLeftBody.isShiftDown || oskRightBody.isShiftDown
 
     onIsShiftDownChanged: () => {
@@ -17,28 +16,14 @@ Rectangle {
 
     required property string layoutName
 
-    RecoloredIcon {
-        id: oskIcon
-        anchors.centerIn: parent
-        iconWidth: 26
-        iconHeight: 26
-        source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/keyboard.svg`)
-        iconColor: AppConstants.iconColor
+    onClicked: {
+        oskWindow.visible = !oskWindow.visible;
     }
 
     IpcHandler {
         target: "osk"
 
         function toggle(): void {
-            oskWindow.visible = !oskWindow.visible;
-        }
-    }
-
-    MouseArea {
-        id: oskToggleMouseArea
-        anchors.fill: parent
-        hoverEnabled: true
-        onClicked: mouseEvent => {
             oskWindow.visible = !oskWindow.visible;
         }
     }

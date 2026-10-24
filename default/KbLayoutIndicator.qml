@@ -1,13 +1,13 @@
 import QtQuick
+import QtQuick.Layouts
 import Quickshell.Io
 import Quickshell.Hyprland
 
 Rectangle {
     id: kbLayoutIndicatorContainer
     color: kbLayoutMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
-    border.width: 1
-    border.color: AppConstants.indicatorBorderColor
-    property real preferredWidth: kbLayoutRow.width + 20
+    implicitWidth: kbLayoutRow.implicitWidth + 20
+    Layout.fillHeight: true
     property string currentLayoutName
     property bool capsLockOn: false
     property bool numLockOn: false

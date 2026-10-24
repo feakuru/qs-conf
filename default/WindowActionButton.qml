@@ -10,14 +10,14 @@ Rectangle {
     property color activeIconColor: AppConstants.indicatorOnColor
     property var action: () => {}
 
-    Layout.preferredWidth: 30
-    Layout.preferredHeight: 30
+    implicitWidth: 30
+    implicitHeight: 30
     Layout.alignment: Qt.AlignVCenter
 
     radius: 5
     border.width: 1
-    border.color: windowActionButtonMouseArea.containsMouse && windowActionButton.enabledAction ? AppConstants.indicatorBorderColor : "transparent"
-    color: windowActionButtonMouseArea.containsMouse && windowActionButton.enabledAction ? AppConstants.focusedBgColor : "transparent"
+    border.color: windowActionButtonHover.hovered && windowActionButton.enabledAction ? AppConstants.indicatorBorderColor : "transparent"
+    color: windowActionButtonHover.hovered && windowActionButton.enabledAction ? AppConstants.focusedBgColor : "transparent"
     opacity: windowActionButton.enabledAction ? 1.0 : 0.3
 
     RecoloredIcon {
@@ -25,14 +25,20 @@ Rectangle {
         iconWidth: 16
         iconHeight: 16
         source: windowActionButton.iconName === "" ? "" : Qt.resolvedUrl(`assets/icons/fontawesome/solid/${windowActionButton.iconName}.svg`)
-        iconColor: windowActionButton.highlighted || windowActionButtonMouseArea.containsMouse ? windowActionButton.activeIconColor : AppConstants.styledTextColor
+        iconColor: windowActionButton.highlighted || windowActionButtonHover.hovered ? windowActionButton.activeIconColor : AppConstants.styledTextColor
+    }
+
+    // A HoverHandler rather than MouseArea.hoverEnabled, so hover still
+    // propagates to parents (this button is also used inside dropdown menus,
+    // see DropdownMenu.qml).
+    HoverHandler {
+        id: windowActionButtonHover
+        cursorShape: windowActionButton.enabledAction ? Qt.PointingHandCursor : Qt.ArrowCursor
     }
 
     MouseArea {
         id: windowActionButtonMouseArea
         anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: windowActionButton.enabledAction ? Qt.PointingHandCursor : Qt.ArrowCursor
         onClicked: mouseEvent => {
             if (!windowActionButton.enabledAction) {
                 return;

@@ -10,141 +10,91 @@ Scope {
     Variants {
         model: AppConstants.primaryScreen ? [AppConstants.primaryScreen] : []
 
-        PanelWindow {
-            id: topPanelWindow
+        Scope {
+            id: screenScope
             required property var modelData
-            screen: modelData
 
-            anchors {
-                top: true
-                left: true
-                right: true
-            }
-            implicitHeight: 42
-
-            surfaceFormat.opaque: false
-            color: AppConstants.bgColor
-
-            RowLayout {
-                spacing: 0
-                anchors.fill: parent
+            Bar {
+                screen: screenScope.modelData
 
                 WorkspaceControl {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: preferredWidth
                     Layout.leftMargin: 5
                 }
 
-                WindowControls {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    Layout.maximumWidth: preferredWidth
+                Separator {
+                    visible: windowControls.hasWindows
+                    Layout.leftMargin: 16
+                    Layout.rightMargin: 16
                 }
 
-                Rectangle {
-                    color: "transparent"
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
+                // Takes up all the space between the workspaces and the
+                // right-hand widgets.
+                WindowControls {
+                    id: windowControls
                 }
 
                 SystemTrayPanel {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: preferredWidth
-                    trayMenuDisplayParent: topPanelWindow
+                    id: systemTrayPanel
                 }
 
-                BluetoothIndicator {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: preferredWidth
+                Separator {
+                    visible: systemTrayPanel.hasItems
                 }
 
-                SoundIndicator {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: preferredWidth
-                }
+                BluetoothIndicator {}
+
+                Separator {}
+
+                SoundIndicator {}
+
+                Separator {}
 
                 OnScreenKeyboard {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: preferredWidth
                     layoutName: kbLayoutIndicator.currentLayoutName
                 }
 
+                Separator {}
+
                 KbLayoutIndicator {
                     id: kbLayoutIndicator
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: preferredWidth
                 }
 
-                PowerIndicator {
-                    Layout.preferredWidth: preferredWidth
-                    Layout.fillHeight: true
-                }
+                Separator {}
+
+                PowerIndicator {}
             }
-        }
-    }
 
-    Variants {
-        model: AppConstants.primaryScreen ? [AppConstants.primaryScreen] : []
+            Bar {
+                screen: screenScope.modelData
+                atBottom: true
 
-        PanelWindow {
-            id: bottomPanelWindow
-            required property var modelData
-            screen: modelData
+                ProgramPicker {}
 
-            anchors {
-                bottom: true
-                left: true
-                right: true
-            }
-            implicitHeight: 42
-
-            surfaceFormat.opaque: false
-            color: AppConstants.bgColor
-
-            RowLayout {
-                spacing: 0
-                anchors.fill: parent
-
-                ProgramPicker {
-                    Layout.preferredWidth: preferredWidth
-                    Layout.fillHeight: true
-                }
-
-                Rectangle {
-                    color: "transparent"
+                Item {
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
                 }
 
-                NetworkIndicator {
-                    Layout.preferredWidth: preferredWidth
-                    Layout.fillHeight: true
-                }
+                NetworkIndicator {}
 
-                VpnIndicator {
-                    Layout.preferredWidth: preferredWidth
-                    Layout.fillHeight: true
-                }
+                Separator {}
 
-                CpuIndicator {
-                    Layout.preferredWidth: preferredWidth
-                    Layout.fillHeight: true
-                }
+                VpnIndicator {}
 
-                RamIndicator {
-                    Layout.preferredWidth: preferredWidth
-                    Layout.fillHeight: true
-                }
+                Separator {}
 
-                GpuIndicator {
-                    Layout.preferredWidth: preferredWidth
-                    Layout.fillHeight: true
-                }
+                CpuIndicator {}
 
-                DateClock {
-                    Layout.preferredWidth: childrenRect.width + 20
-                    Layout.fillHeight: true
-                }
+                Separator {}
+
+                RamIndicator {}
+
+                Separator {}
+
+                GpuIndicator {}
+
+                Separator {}
+
+                DateClock {}
             }
         }
     }

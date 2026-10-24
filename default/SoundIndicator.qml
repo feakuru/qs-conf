@@ -38,56 +38,30 @@ DropdownMenu {
     }
 
     menuWidth: 200
-    menuAnchors.top: true
+    menuColumns: 3
     menuContent: [
-        GridLayout {
-            columns: 3
-            columnSpacing: 0
-            rowSpacing: 0
-            DropdownMenuItem {
-                Layout.columnSpan: 1
-                action: () => {
-                    Quickshell.execDetached({
-                        command: ["pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%"]
-                    });
-                }
-                RecoloredIcon {
-                    anchors.centerIn: parent
-                    iconWidth: 26
-                    iconHeight: 26
-                    source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/volume-low.svg`)
-                    iconColor: AppConstants.iconColor
-                }
+        IconMenuItem {
+            iconNames: ["volume-low"]
+            action: () => {
+                Quickshell.execDetached({
+                    command: ["pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%"]
+                });
             }
-            DropdownMenuItem {
-                Layout.columnSpan: 1
-                action: () => {
-                    Quickshell.execDetached({
-                        command: ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"]
-                    });
-                }
-                RecoloredIcon {
-                    anchors.centerIn: parent
-                    iconWidth: 26
-                    iconHeight: 26
-                    source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/volume-xmark.svg`)
-                    iconColor: AppConstants.iconColor
-                }
+        },
+        IconMenuItem {
+            iconNames: ["volume-xmark"]
+            action: () => {
+                Quickshell.execDetached({
+                    command: ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle"]
+                });
             }
-            DropdownMenuItem {
-                Layout.columnSpan: 1
-                action: () => {
-                    Quickshell.execDetached({
-                        command: ["pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%"]
-                    });
-                }
-                RecoloredIcon {
-                    anchors.centerIn: parent
-                    iconWidth: 26
-                    iconHeight: 26
-                    source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/volume-high.svg`)
-                    iconColor: AppConstants.iconColor
-                }
+        },
+        IconMenuItem {
+            iconNames: ["volume-high"]
+            action: () => {
+                Quickshell.execDetached({
+                    command: ["pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%"]
+                });
             }
         }
     ]

@@ -2,190 +2,143 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Widgets
-import Qt5Compat.GraphicalEffects
 
-Rectangle {
-    id: dropdownToggle
-    color: dropdownToggleMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
-    border.width: 1
-    border.color: AppConstants.indicatorBorderColor
+// A bar button that opens a popup menu attached to it.
+//
+// The menu closes when:
+// - the button is clicked again,
+// - the mouse leaves the menu (after a short grace period, and only if it was
+//   inside the menu at some point, so a menu that was opened but never visited
+//   stays open),
+// - another dropdown is opened.
+//
+// There is deliberately no click-outside dismissal: it needs a
+// HyprlandFocusGrab, and with one active the popup received no pointer input
+// at all (no hover, and clicks inside the menu counted as outside), even when
+// the grab was only started after the popup's window was shown.
+BarButton {
+    id: dropdown
 
-    property alias menuWidth: dropdownMenuWindow.implicitWidth
-    property alias menuAnchors: dropdownMenuWindow.anchors
+    property real menuWidth: 300
+    property bool opensUpward: false
     property alias menuColumns: dropdownMenuBody.columns
-    property alias menuRows: dropdownMenuBody.rows
-    property alias toggleText: dropdownToggleText.text
-    property alias toggleTextFont: dropdownToggleText.font
-    property alias toggleTextColor: dropdownToggleText.color
-    property alias toggleTextHorizontalAlignment: dropdownToggleText.horizontalAlignment
-    property alias toggleIconSource: dropdownToggleIcon.source
-    property alias toggleIconColor: dropdownToggleIcon.iconColor
-    property alias toggleIconOutlineColor: dropdownToggleIcon.outlineColor
-    property alias toggleMouseAreaContainsMouse: dropdownToggleMouseArea.containsMouse
-    property real preferredWidth: dropdownToggleText.width + (dropdownToggleIcon.visible ? dropdownToggleIcon.width : 0) + 20
-    property list<Item> menuContent
-    property list<Item> menuFooter
-    property bool disableDisappearanceOnNoFocus: false
-    property bool keepInitialMenuHeight: false
-    property alias menuVisible: dropdownMenuWindow.visible
-    property alias menuFlickable: dropdownMenuFlickable
-    property real initialMenuHeight: 0
+    property alias menuContent: dropdownMenuBody.data
+    readonly property alias menuVisible: dropdownPopup.visible
+    property int closeOnLeaveDelay: 600
 
-    function captureInitialMenuHeight() {
-        if (!keepInitialMenuHeight || initialMenuHeight > 0 || !dropdownMenuWindow.visible) {
-            return;
-        }
-        if (dropdownMenuBody.childrenRect.height <= 0 || (menuFooter.length > 0 && dropdownMenuFooter.childrenRect.height <= 0)) {
-            return;
-        }
-        initialMenuHeight = (dropdownMenuBody.childrenRect.height + dropdownMenuFooter.childrenRect.height);
+    function openMenu() {
+        dropdown.pointerVisitedMenu = false;
+        Dropdowns.current = dropdown;
+        dropdownPopup.visible = true;
     }
 
-    function scrollMenuItemIntoView(item) {
-        if (!item) {
-            return;
-        }
-        let flickable = dropdownMenuFlickable;
-        if (item.y < flickable.contentY) {
-            flickable.contentY = item.y;
-        } else if (item.y + item.height > flickable.contentY + flickable.height) {
-            flickable.contentY = item.y + item.height - flickable.height;
+    function closeMenu() {
+        closeOnLeaveTimer.stop();
+        dropdownPopup.visible = false;
+        if (Dropdowns.current === dropdown) {
+            Dropdowns.current = null;
         }
     }
 
-    function toggleMenuVisibility() {
-        dropdownMenuWindow.visible = !dropdownMenuWindow.visible;
+    function toggleMenu() {
+        if (dropdown.menuVisible) {
+            dropdown.closeMenu();
+        } else {
+            dropdown.openMenu();
+        }
     }
 
-    menuAnchors.right: true
+    onClicked: toggleMenu()
 
-    RowLayout {
-        spacing: 0
-        anchors.fill: parent
-        Rectangle {
-            color: "transparent"
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+    property bool pointerVisitedMenu: false
+    readonly property bool pointerInside: dropdownMenuHover.hovered || dropdown.toggleMouseAreaContainsMouse
+
+    onPointerInsideChanged: {
+        if (!dropdown.menuVisible) {
+            return;
         }
-        RecoloredIcon {
-            id: dropdownToggleIcon
-            Layout.fillHeight: true
-            Layout.preferredWidth: preferredWidth
-            Layout.rightMargin: 5
-            visible: source !== ""
-            iconWidth: 32
-            iconHeight: 32
+        if (dropdown.pointerInside) {
+            closeOnLeaveTimer.stop();
+        } else if (dropdown.pointerVisitedMenu) {
+            closeOnLeaveTimer.restart();
         }
-        Rectangle {
-            color: "transparent"
-            visible: dropdownToggleText.text.length > 0
-            Layout.fillHeight: true
-            Layout.preferredWidth: dropdownToggleText.width
-            StyledText {
-                id: dropdownToggleText
+    }
+
+    Timer {
+        id: closeOnLeaveTimer
+        interval: dropdown.closeOnLeaveDelay
+        onTriggered: dropdown.closeMenu()
+    }
+
+    Connections {
+        target: Dropdowns
+        function onCurrentChanged() {
+            if (Dropdowns.current !== dropdown && dropdown.menuVisible) {
+                dropdown.closeMenu();
             }
         }
-        Rectangle {
-            color: "transparent"
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-        }
     }
 
-    MouseArea {
-        id: dropdownToggleMouseArea
-        anchors.fill: parent
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-        hoverEnabled: true
-        onClicked: mouseEvent => {
-            dropdownToggle.toggleMenuVisibility();
-        }
-    }
-
-    PanelWindow {
-        id: dropdownMenuWindow
-        screen: AppConstants.primaryScreen
-        focusable: true
+    PopupWindow {
+        id: dropdownPopup
         visible: false
-        margins {
-            right: {
-                let foundScreen = AppConstants.primaryScreen;
-                let centerOfToggle = foundScreen.width - dropdownToggle.x - (dropdownToggle.width / 2);
-                let targetPosition = centerOfToggle - (dropdownToggle.menuWidth / 2);
-                let rightmostPosition = foundScreen.width - dropdownToggle.menuWidth;
-                parseInt(Math.min(rightmostPosition, Math.max(targetPosition, 10)));
-            }
-        }
-
-        implicitHeight: {
-            if (dropdownToggle.initialMenuHeight > 0) {
-                return dropdownToggle.initialMenuHeight;
-            }
-            return dropdownMenuBody.childrenRect.height + dropdownMenuFooter.childrenRect.height;
-        }
-        onVisibleChanged: Qt.callLater(dropdownToggle.captureInitialMenuHeight)
-
         color: AppConstants.solidBgColor
 
-        Component.onCompleted: {
-            for (let c of dropdownToggle.menuContent) {
-                c.parent = dropdownMenuBody;
-            }
-            for (let c of dropdownToggle.menuFooter) {
-                c.parent = dropdownMenuFooter;
-            }
+        anchor {
+            item: dropdown
+            // Centred on the button, below it (or above it for bottom bars).
+            edges: dropdown.opensUpward ? Edges.Top : Edges.Bottom
+            gravity: dropdown.opensUpward ? Edges.Top : Edges.Bottom
+            adjustment: PopupAdjustment.SlideX | PopupAdjustment.ResizeY
         }
 
-        MouseArea {
-            id: dropdownMenuWindowArea
+        implicitWidth: dropdown.menuWidth
+        // Rounded up: windows have whole-pixel sizes, and rounding down would
+        // make the content overflow by a fraction and show the scrollbar.
+        implicitHeight: Math.max(1, Math.ceil(dropdownMenuBody.implicitHeight))
+
+        Item {
             anchors.fill: parent
-            propagateComposedEvents: true
-            hoverEnabled: true
-            onEntered: {
-                if (dropdownToggle.disableDisappearanceOnNoFocus) {
-                    return;
-                }
-                dropdownMenuWindow.visible = Qt.binding(() => {
-                    if (dropdownMenuWindowArea.containsMouse) {
-                        return true;
+
+            // Sits on the ancestor of all menu content. Qt stops delivering
+            // hover to ancestors as soon as a descendant accepts it, which
+            // hover-enabled MouseAreas and Controls do, so menu content must
+            // track hover with HoverHandlers (which don't accept) instead.
+            HoverHandler {
+                id: dropdownMenuHover
+                // Touch input has no hover, so touch users close the menu with
+                // its button instead.
+                acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                onHoveredChanged: {
+                    if (hovered) {
+                        dropdown.pointerVisitedMenu = true;
                     }
-                    dropdownMenuWindow.visible = false;
-                    return false;
-                });
+                }
             }
+
             Flickable {
                 id: dropdownMenuFlickable
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.bottom: dropdownMenuFooter.top
+                anchors.fill: parent
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
                 contentWidth: width
-                contentHeight: dropdownMenuBody.childrenRect.height
+                contentHeight: dropdownMenuBody.implicitHeight
 
                 ScrollBar.vertical: ScrollBar {
                     id: dropdownMenuScrollBar
+                    // Hover-enabled controls swallow hover events, which
+                    // would hide the pointer from dropdownMenuHover.
+                    hoverEnabled: false
                     policy: dropdownMenuFlickable.contentHeight > dropdownMenuFlickable.height ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
                 }
 
                 GridLayout {
                     id: dropdownMenuBody
                     width: dropdownMenuFlickable.width - (dropdownMenuScrollBar.policy === ScrollBar.AlwaysOn ? dropdownMenuScrollBar.width : 0)
-                    onChildrenRectChanged: Qt.callLater(dropdownToggle.captureInitialMenuHeight)
+                    columns: 1
                     columnSpacing: 0
                     rowSpacing: 0
-                    columns: 1
                 }
-            }
-            ColumnLayout {
-                id: dropdownMenuFooter
-                anchors.bottom: parent.bottom
-                anchors.left: parent.left
-                anchors.right: parent.right
-                onChildrenRectChanged: Qt.callLater(dropdownToggle.captureInitialMenuHeight)
-                spacing: 0
             }
         }
     }

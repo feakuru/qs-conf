@@ -5,14 +5,23 @@ import Quickshell.Bluetooth
 import Quickshell.Hyprland
 
 DropdownMenu {
-    toggleIconColor: Bluetooth.defaultAdapter.enabled ? AppConstants.bluetoothColor : AppConstants.indicatorOffColor
+    id: bluetoothIndicator
+
+    // Null until BlueZ reports an adapter (e.g. right at startup, or on
+    // machines without Bluetooth).
+    readonly property var adapter: Bluetooth.defaultAdapter
+    readonly property bool adapterEnabled: adapter ? adapter.enabled : false
+    readonly property bool adapterDiscovering: adapter ? adapter.discovering : false
+    readonly property var devices: adapter ? [...adapter.devices.values] : []
+
+    toggleIconColor: adapterEnabled ? AppConstants.bluetoothColor : AppConstants.indicatorOffColor
     toggleIconOutlineColor: AppConstants.iconOutlineColor
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/brands/bluetooth.svg")
 
     toggleTextFont.pixelSize: 16
     toggleText: {
         let result = '';
-        let connectedDevices = Bluetooth.defaultAdapter.devices.values.filter(device => device.state == BluetoothDeviceState.Connected);
+        let connectedDevices = bluetoothIndicator.devices.filter(device => device.state == BluetoothDeviceState.Connected);
         if (connectedDevices.length > 0) {
             result += `[${connectedDevices.length}]`;
         }
@@ -20,19 +29,20 @@ DropdownMenu {
     }
 
     menuWidth: 300
-    menuAnchors.top: true
     menuContent: [
         DropdownMenuItem {
             action: () => {
-                Bluetooth.defaultAdapter.enabled = !Bluetooth.defaultAdapter.enabled;
+                if (bluetoothIndicator.adapter) {
+                    bluetoothIndicator.adapter.enabled = !bluetoothIndicator.adapter.enabled;
+                }
             }
             StyledText {
                 font.pixelSize: 18
-                text: `ᛒ turn ${Bluetooth.defaultAdapter.name} ${Bluetooth.defaultAdapter.enabled ? 'off' : 'on'}`
+                text: bluetoothIndicator.adapter ? `ᛒ turn ${bluetoothIndicator.adapter.name} ${bluetoothIndicator.adapterEnabled ? 'off' : 'on'}` : "ᛒ no adapter"
             }
         },
         Repeater {
-            model: [...Bluetooth.defaultAdapter.devices.values].filter(d => d.paired).sort((lhs, rhs) => {
+            model: bluetoothIndicator.devices.filter(d => d.paired).sort((lhs, rhs) => {
                 if (lhs.state == BluetoothDeviceState.Connected) {
                     if (rhs.state != BluetoothDeviceState.Connected) {
                         return -1;
@@ -41,66 +51,59 @@ DropdownMenu {
                 }
                 return 1;
             })
-            delegate: RowLayout {
-                spacing: 0
-                DropdownMenuItem {
-                    action: () => {
-                        if (modelData.connected) {
-                            modelData.disconnect();
-                        } else {
-                            modelData.connect();
-                        }
-                    }
-                    StyledText {
-                        font.pixelSize: 18
-                        text: {
-                            let result = modelData.name;
-                            if (modelData.batteryAvailable) {
-                                result += ` [${modelData.battery * 100}%]`;
-                            }
-                            switch (modelData.state) {
-                            case BluetoothDeviceState.Connecting:
-                            case BluetoothDeviceState.Disconnecting:
-                                result += ' […]';
-                                break;
-                            case BluetoothDeviceState.Connected:
-                                result += ' [+]';
-                                break;
-                            }
-                            result;
-                        }
+            delegate: DropdownMenuItem {
+                action: () => {
+                    if (modelData.connected) {
+                        modelData.disconnect();
+                    } else {
+                        modelData.connect();
                     }
                 }
-                DropdownMenuItem {
-                    Layout.fillWidth: false
-                    Layout.minimumWidth: 42
+                StyledText {
+                    font.pixelSize: 18
+                    text: {
+                        let result = modelData.name;
+                        if (modelData.batteryAvailable) {
+                            result += ` [${modelData.battery * 100}%]`;
+                        }
+                        switch (modelData.state) {
+                        case BluetoothDeviceState.Connecting:
+                        case BluetoothDeviceState.Disconnecting:
+                            result += ' […]';
+                            break;
+                        case BluetoothDeviceState.Connected:
+                            result += ' [+]';
+                            break;
+                        }
+                        result;
+                    }
+                }
+                WindowActionButton {
+                    anchors.right: parent.right
+                    anchors.rightMargin: 6
+                    anchors.verticalCenter: parent.verticalCenter
+                    iconName: "xmark"
+                    activeIconColor: AppConstants.dangerColor
                     action: () => {
                         modelData.forget();
-                    }
-                    StyledText {
-                        font.pixelSize: 18
-                        text: "x"
                     }
                 }
             }
         },
         DropdownMenuItem {
+            visible: !!bluetoothIndicator.adapter
             action: () => {
-                Bluetooth.defaultAdapter.discovering = !Bluetooth.defaultAdapter.discovering;
+                if (bluetoothIndicator.adapter) {
+                    bluetoothIndicator.adapter.discovering = !bluetoothIndicator.adapter.discovering;
+                }
             }
             StyledText {
                 font.pixelSize: 18
-                text: {
-                    if (Bluetooth.defaultAdapter.discovering) {
-                        return "[discovering…]";
-                    } else {
-                        return "[discover devices]";
-                    }
-                }
+                text: bluetoothIndicator.adapterDiscovering ? "[discovering…]" : "[discover devices]"
             }
         },
         Repeater {
-            model: !Bluetooth.defaultAdapter.discovering ? [] : [...Bluetooth.defaultAdapter.devices.values].filter(d => !d.paired).sort((lhs, rhs) => {
+            model: !bluetoothIndicator.adapterDiscovering ? [] : bluetoothIndicator.devices.filter(d => !d.paired).sort((lhs, rhs) => {
                 if (lhs.pairing) {
                     if (!rhs.pairing) {
                         return -1;

@@ -14,8 +14,10 @@ Singleton {
     readonly property color styledTextOutlineColor: isDark ? Qt.rgba(0.2, 0.2, 0.2, 0.7) : Qt.rgba(1, 1, 1, 0.35)
     readonly property color accentColor: isDark ? Qt.rgba(0.5, 0.5, 0.7, 0.5) : Qt.rgba(0.35, 0.35, 0.6, 0.5)
     readonly property color indicatorBorderColor: isDark ? Qt.rgba(0.5, 0.5, 0.5, 0.5) : Qt.rgba(0.4, 0.4, 0.4, 0.4)
-    readonly property color indicatorBarColor: isDark ? Qt.rgba(0.5, 0.5, 1, 0.8) : Qt.rgba(0.25, 0.25, 0.75, 0.8)
-    readonly property color memoryBarColor: isDark ? Qt.rgba(1, 0.7, 0.4, 0.8) : Qt.rgba(0.9, 0.5, 0.15, 0.8)
+    // Opacity of the load bars, both on the bar widgets and in their menus.
+    readonly property real loadBarAlpha: 0.5
+    readonly property color indicatorBarColor: isDark ? Qt.rgba(0.5, 0.5, 1, loadBarAlpha) : Qt.rgba(0.25, 0.25, 0.75, loadBarAlpha)
+    readonly property color memoryBarColor: isDark ? Qt.rgba(1, 0.7, 0.4, loadBarAlpha) : Qt.rgba(0.9, 0.5, 0.15, loadBarAlpha)
     readonly property color indicatorOnColor: isDark ? "lightblue" : "steelblue"
     readonly property color indicatorOffColor: isDark ? "gray" : Qt.rgba(0.45, 0.45, 0.45, 1)
     readonly property color bluetoothColor: "#0082FC"
@@ -33,6 +35,8 @@ Singleton {
     readonly property color iconOutlineColor: isDark ? "transparent" : styledTextColor
 
     property string defaultFont: "FiraCode Nerd Font"
+
+    readonly property int barHeight: 42
 
     // First external output if any is connected, otherwise the first screen.
     // Connector names vary (DP-1, DP-3, HDMI-A-1, ...), so detect internal

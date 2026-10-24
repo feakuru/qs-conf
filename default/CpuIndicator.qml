@@ -6,7 +6,7 @@ import QtQuick.Layouts
 DropdownMenu {
     id: cpuIndicator
     property real barWidth: cpuIndicator.cpuData.length > 16 ? 4 : 10
-    property real preferredWidth: cpuIndicator.cpuData.length * barWidth
+    implicitWidth: Math.max(contentImplicitWidth, cpuIndicator.cpuData.length * barWidth)
 
     property var cpuData: []
     property var temperature: null
@@ -14,6 +14,7 @@ DropdownMenu {
     readonly property int topProcessCount: 5
 
     toggleTextFont.pixelSize: 18
+    toggleTextWidest: "100%"
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/microchip.svg")
     toggleIconColor: AppConstants.styledTextColor
 
@@ -25,9 +26,11 @@ DropdownMenu {
             // instead of being recreated on every sample.
             model: cpuIndicator.cpuData.length
             Rectangle {
-                x: index * cpuIndicator.barWidth
-                width: cpuIndicator.barWidth
-                height: ((cpuIndicator.cpuData[index] || 0) / 100) * 42
+                // Bars share the widget's width, in case the icon and text
+                // need more room than barWidth per core.
+                x: index * width
+                width: parent.width / cpuIndicator.cpuData.length
+                height: ((cpuIndicator.cpuData[index] || 0) / 100) * parent.height
                 color: AppConstants.indicatorBarColor
                 anchors.bottom: parent.bottom
             }
@@ -35,7 +38,7 @@ DropdownMenu {
     }
 
     menuWidth: 400
-    menuAnchors.bottom: true
+    opensUpward: true
     menuContent: [
         DropdownMenuItem {
             StyledText {

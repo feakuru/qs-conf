@@ -3,14 +3,15 @@ import Quickshell
 import Quickshell.Widgets
 import Qt5Compat.GraphicalEffects
 
-Rectangle {
-    color: "transparent"
+Item {
     property alias source: originalIcon.source
     property alias iconWidth: originalIcon.width
     property alias iconHeight: originalIcon.height
     property alias iconColor: recoloredIcon.color
     property color outlineColor: "transparent"
-    property real preferredWidth: originalIcon.width
+
+    implicitWidth: originalIcon.width
+    implicitHeight: originalIcon.height
 
     IconImage {
         id: originalIcon

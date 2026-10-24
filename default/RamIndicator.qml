@@ -17,6 +17,7 @@ DropdownMenu {
     toggleIconColor: AppConstants.styledTextColor
 
     toggleTextFont.pixelSize: 18
+    toggleTextWidest: "100%"
     toggleText: `${ramIndicator.percentValue}%`
 
     Rectangle {
@@ -27,11 +28,11 @@ DropdownMenu {
         anchors.right: parent.right
         color: AppConstants.memoryBarColor
         property var percentValue: 0
-        height: (percentValue / 100) * 42
+        height: (percentValue / 100) * parent.height
     }
 
     menuWidth: 450
-    menuAnchors.bottom: true
+    opensUpward: true
     menuContent: [
         DropdownMenuItem {
             StyledText {

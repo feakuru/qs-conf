@@ -74,7 +74,6 @@ DropdownMenu {
     }
 
     menuWidth: 200
-    menuAnchors.top: true
 
     property bool showShutdownDialog: false
 
@@ -86,54 +85,29 @@ DropdownMenu {
         }
     }
 
-
     menuContent: [
         Loader {
+            Layout.fillWidth: true
+
             readonly property Component baseMenu: GridLayout {
-                width: 200
                 columns: 2
                 columnSpacing: 0
                 rowSpacing: 0
 
-                DropdownMenuItem {
-                    Layout.columnSpan: 1
+                IconMenuItem {
+                    iconNames: ["power-off"]
                     action: () => {
                         powerIndicator.showShutdownDialog = true;
                     }
-
-                    RowLayout {
-                        anchors.fill: parent
-                        RecoloredIcon {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: preferredWidth
-                            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-                            iconWidth: 26
-                            iconHeight: 26
-                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/power-off.svg`)
-                            iconColor: AppConstants.iconColor
-                        }
-                    }
                 }
-                DropdownMenuItem {
-                    Layout.columnSpan: 1
+                IconMenuItem {
+                    iconNames: ["right-from-bracket"]
                     action: () => {
                         Hyprland.dispatch("exit");
                     }
-                    RowLayout {
-                        anchors.fill: parent
-                        RecoloredIcon {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: preferredWidth
-                            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-                            iconWidth: 26
-                            iconHeight: 26
-                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/right-from-bracket.svg`)
-                            iconColor: AppConstants.iconColor
-                        }
-                    }
                 }
-                DropdownMenuItem {
-                    Layout.columnSpan: 1
+                IconMenuItem {
+                    iconNames: ["lock"]
                     action: () => {
                         Quickshell.execDetached({
                             command: ["hyprctl", "switchxkblayout", "all", "0"]
@@ -142,209 +116,71 @@ DropdownMenu {
                             command: ["hyprlock"]
                         });
                     }
-                    RowLayout {
-                        anchors.fill: parent
-                        RecoloredIcon {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: preferredWidth
-                            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-                            iconWidth: 26
-                            iconHeight: 26
-                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/lock.svg`)
-                            iconColor: AppConstants.iconColor
-                        }
-                    }
                 }
-                DropdownMenuItem {
-                    Layout.columnSpan: 1
+                IconMenuItem {
                     action: () => {
                         console.log("there will be an autorotate control here");
                     }
-                    StyledText {
-                        text: ""
-                    }
                 }
-                DropdownMenuItem {
-                    Layout.columnSpan: 1
+                IconMenuItem {
+                    iconNames: ["square-minus", "sun"]
                     action: () => {
                         Quickshell.execDetached({
                             command: ["brightnessctl", "set", "5%-"]
                         });
                     }
-                    RowLayout {
-                        anchors.fill: parent
-                        spacing: 0
-                        Rectangle {
-                            color: "transparent"
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                        }
-                        RecoloredIcon {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: preferredWidth
-                            iconWidth: 26
-                            iconHeight: 26
-                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/square-minus.svg`)
-                            iconColor: AppConstants.iconColor
-                        }
-                        RecoloredIcon {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: preferredWidth
-                            iconWidth: 26
-                            iconHeight: 26
-                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/sun.svg`)
-                            iconColor: AppConstants.iconColor
-                        }
-                        Rectangle {
-                            color: "transparent"
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                        }
-                    }
                 }
-                DropdownMenuItem {
-                    Layout.columnSpan: 1
+                IconMenuItem {
+                    iconNames: ["sun", "square-plus"]
                     action: () => {
                         Quickshell.execDetached({
                             command: ["brightnessctl", "set", "5%+"]
                         });
-                    }
-                    RowLayout {
-                        anchors.fill: parent
-                        spacing: 0
-                        Rectangle {
-                            color: "transparent"
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                        }
-                        RecoloredIcon {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: preferredWidth
-                            iconWidth: 26
-                            iconHeight: 26
-                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/sun.svg`)
-                            iconColor: AppConstants.iconColor
-                        }
-                        RecoloredIcon {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: preferredWidth
-                            iconWidth: 26
-                            iconHeight: 26
-                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/square-plus.svg`)
-                            iconColor: AppConstants.iconColor
-                        }
-                        Rectangle {
-                            color: "transparent"
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                        }
                     }
                 }
                 // Full-width tap-to-toggle row: shows the mode that is active
                 // now, and a tap always flips it. Deliberately not a two-half
                 // segmented control, because on a touch screen one half would
                 // be a silent no-op with no hover state to explain why.
-                DropdownMenuItem {
-                    id: themeToggleItem
+                IconMenuItem {
                     Layout.columnSpan: 2
                     enabled: !ThemeMode.busy
                     opacity: ThemeMode.busy ? 0.5 : 1
+                    iconNames: [ThemeMode.isDark ? "moon" : "sun"]
+                    text: ThemeMode.isDark ? "Dark" : "Light"
                     action: () => {
                         ThemeMode.toggle();
                     }
-
-                    RowLayout {
-                        anchors.fill: parent
-                        spacing: 8
-                        Rectangle {
-                            color: "transparent"
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                        }
-                        RecoloredIcon {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: preferredWidth
-                            iconWidth: 26
-                            iconHeight: 26
-                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/${ThemeMode.isDark ? "moon" : "sun"}.svg`)
-                            iconColor: AppConstants.iconColor
-                        }
-                        Rectangle {
-                            color: "transparent"
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: themeToggleLabel.width
-                            StyledText {
-                                id: themeToggleLabel
-                                text: ThemeMode.isDark ? "Dark" : "Light"
-                            }
-                        }
-                        Rectangle {
-                            color: "transparent"
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                        }
-                    }
                 }
             }
+
             readonly property Component shutdownMenu: GridLayout {
-                width: 200
                 columns: 2
-                DropdownMenuItem {
-                    Layout.columnSpan: 1
+                columnSpacing: 0
+                rowSpacing: 0
+
+                IconMenuItem {
+                    iconNames: ["power-off"]
+                    iconColor: AppConstants.dangerColor
                     action: () => {
                         Quickshell.execDetached({
                             command: ["shutdown", "now"]
                         });
                     }
-                    RowLayout {
-                        anchors.fill: parent
-                        RecoloredIcon {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: preferredWidth
-                            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-                            iconWidth: 26
-                            iconHeight: 26
-                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/power-off.svg`)
-                            iconColor: AppConstants.dangerColor
-                        }
-                    }
                 }
-                DropdownMenuItem {
-                    Layout.columnSpan: 1
+                IconMenuItem {
+                    iconNames: ["arrows-rotate"]
+                    iconColor: AppConstants.dangerColor
                     action: () => {
                         Quickshell.execDetached({
                             command: ["reboot"]
                         });
                     }
-                    RowLayout {
-                        anchors.fill: parent
-                        RecoloredIcon {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: preferredWidth
-                            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-                            iconWidth: 26
-                            iconHeight: 26
-                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/arrows-rotate.svg`)
-                            iconColor: AppConstants.dangerColor
-                        }
-                    }
                 }
-                DropdownMenuItem {
-                    Layout.columnSpan: 1
+                IconMenuItem {
+                    iconNames: ["cancel"]
                     action: () => {
                         powerIndicator.showShutdownDialog = false;
-                    }
-                    RowLayout {
-                        anchors.fill: parent
-                        RecoloredIcon {
-                            Layout.fillHeight: true
-                            Layout.preferredWidth: preferredWidth
-                            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-                            iconWidth: 26
-                            iconHeight: 26
-                            source: Qt.resolvedUrl(`assets/icons/fontawesome/solid/cancel.svg`)
-                            iconColor: AppConstants.iconColor
-                        }
                     }
                 }
             }

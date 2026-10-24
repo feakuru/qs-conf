@@ -7,7 +7,7 @@ DropdownMenu {
     toggleTextHorizontalAlignment: Text.AlignRight
     toggleTextFont.pixelSize: 16
     menuWidth: 450
-    menuAnchors.bottom: true
+    opensUpward: true
     property var txSpeed: 0.0
     property var rxSpeed: 0.0
     property string defaultDevice: "enp"
