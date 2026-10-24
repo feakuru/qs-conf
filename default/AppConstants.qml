@@ -8,6 +8,8 @@ Singleton {
 
     readonly property color bgColor: isDark ? Qt.rgba(0.3, 0.3, 0.3, 0.5) : Qt.rgba(0.88, 0.88, 0.88, 0.6)
     readonly property color solidBgColor: isDark ? Qt.rgba(0.2, 0.2, 0.2, 0.9) : Qt.rgba(0.95, 0.95, 0.95, 0.95)
+    // solidBgColor while pressed: lighter on dark theme, darker on light theme.
+    readonly property color pressedSolidBgColor: isDark ? Qt.rgba(0.32, 0.32, 0.32, 0.9) : Qt.rgba(0.82, 0.82, 0.82, 0.95)
     readonly property color focusedBgColor: isDark ? Qt.rgba(0.4, 0.4, 0.4, 0.9) : Qt.rgba(0.75, 0.75, 0.75, 0.9)
     readonly property color focusedSolidBgColor: isDark ? Qt.rgba(0.3, 0.3, 0.4, 0.9) : Qt.rgba(0.8, 0.8, 0.88, 0.95)
     readonly property color styledTextColor: isDark ? "#E8EAED" : "#2D2F31"

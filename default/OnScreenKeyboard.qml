@@ -138,11 +138,12 @@ BarButton {
                     Repeater {
                         model: oskControlsModel
                         delegate: Rectangle {
+                            property int pressedPoints: 0
                             Layout.preferredWidth: 60
                             Layout.preferredHeight: 60
                             border.width: 2
                             radius: 3
-                            color: AppConstants.solidBgColor
+                            color: pressedPoints > 0 ? AppConstants.pressedSolidBgColor : AppConstants.solidBgColor
 
                             Text {
                                 anchors.centerIn: parent
@@ -155,7 +156,12 @@ BarButton {
 
                             MultiPointTouchArea {
                                 anchors.fill: parent
-                                onPressed: points => model.onPressed(points)
+                                onPressed: points => {
+                                    parent.pressedPoints += points.length;
+                                    model.onPressed(points);
+                                }
+                                onReleased: points => parent.pressedPoints = Math.max(0, parent.pressedPoints - points.length)
+                                onCanceled: points => parent.pressedPoints = Math.max(0, parent.pressedPoints - points.length)
                             }
                         }
                     }

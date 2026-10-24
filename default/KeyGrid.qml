@@ -91,7 +91,7 @@ RowLayout {
                         return null;
                     }
                     property bool hasButton: cell !== null && typeof cell === "object"
-                    color: hasButton ? AppConstants.solidBgColor : "transparent"
+                    color: hasButton ? (btnTouchArea.activePointId !== -1 ? AppConstants.pressedSolidBgColor : AppConstants.solidBgColor) : "transparent"
                     radius: 3
                     border.width: hasButton ? 2 : 0
                     Layout.preferredWidth: 72
