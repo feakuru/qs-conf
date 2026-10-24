@@ -4,6 +4,8 @@ This document is intended to orient automated/agentic contributors to build this
 
 ## Environment
 - Quickshell config (used with latest release of quickshell): manages the UI
+  - Check the installed version (`qs --version`) and use the matching docs, e.g. https://quickshell.org/docs/v0.3.2/types/ - APIs change between releases.
+  - The config hot-reloads when files are saved, so the human sees changes immediately.
 - Python runtime: used as a backend for various features, requires Python >= 3.12 (see `pyproject.toml`), uses `uv`.
 - Primary languages/artifacts: Python (`*.py`) and QML (`*.qml`).
 - Dependency groups: `dev` group contains `mypy` (see `pyproject.toml`).
@@ -22,6 +24,9 @@ Use your best judgement and keep in mind that:
     - `uv run` if you need to execute anything in the Python virtual environment
     - `uv sync` and `uv add {dependency_name}` for dependencies
   - Store icons/assets under `default/assets/` and reference via `Qt.resolvedUrl` or relative paths.
+  - Python helpers are run from QML via `ScriptProcess` (`default/ScriptProcess.qml`):
+    - one-shot scripts print a single result (usually JSON) and are re-run by a `Timer`;
+    - helpers that need state between samples (e.g. per-process CPU usage) stream one JSON line per sample using `default/scripts/json_stream.py`, read with a `SplitParser`, and only run while needed (e.g. `running: someIndicator.menuVisible`).
 
 3. Safety
   - Do not `git commit` anything ever. In this repo, that is the human's job.
@@ -33,6 +38,8 @@ Use your best judgement and keep in mind that:
 There are no steps of the above type that you would need to take after changing the UI code (qml/js) - since this is a Quickshell config, the only way to check anything is for a human to actually press the buttons.
 Also, do not use any tools for previewing or testing QML - the human operator will do that themself.
 
+Debugging: when behaviour can't be worked out from the code, add temporary `console.log` calls (with a common, greppable prefix), ask the human to reproduce the issue, then read the output with `qs log` (e.g. `qs log --no-color -t 300`; `qs log --help` for more). Remove the logging once the issue is understood. Reading Qt/Quickshell/Hyprland sources (matching the installed versions) has also been effective for input/focus issues.
+
 2. File organization
   - Keep QML components in logically-named files (current pattern: `default/*.qml`).
   - Name QML types in PascalCase.
@@ -40,4 +47,24 @@ Also, do not use any tools for previewing or testing QML - the human operator wi
 3. Codestyle
   - Prefer reusable components and small property sets per component.
   - Heavy logic belongs in Python helper modules, not in QML handlers.
+
+4. Layout and sizing
+  - Components report their natural size via `implicitWidth`/`implicitHeight`; layouts pick that up automatically. Do not add `preferredWidth`-style properties or compute sizes from `childrenRect`.
+  - Bar widgets set `Layout.fillHeight: true` themselves, so `shell.qml` stays a plain list of widgets inside two `Bar`s. Exactly one item per bar should have `Layout.fillWidth: true` to take up the remaining space.
+  - Widgets with changing text (percentages etc.) reserve room for their widest value (`BarButton.toggleTextWidest`) so they don't resize on every update.
+  - Use `Separator` between bar widgets and between menu rows instead of borders.
+  - Shared sizes and colours live in `AppConstants` (e.g. `barHeight`, `loadBarAlpha`); don't hard-code them.
+
+5. Shared building blocks
+  - `Bar`: a top or bottom panel; children are laid out left to right.
+  - `BarButton`: clickable bar widget with an optional icon and text, sized to fit them.
+  - `DropdownMenu`: a `BarButton` that opens a `PopupWindow` anchored to it (`opensUpward: true` on the bottom bar). Menu rows go in `menuContent`.
+  - Menu rows: `DropdownMenuItem` (base row with hover, click `action` and separator), `IconMenuItem` (centred icons and/or label), `UsageMenuItem` (label, value and a usage bar), `DropdownMenuHeader` (section header).
+  - Singletons: `AppConstants` (theme), `Dropdowns` (only one dropdown/launcher open at a time), `WindowActions` (Hyprland window move/float/close/focus).
+  - `ProgramPicker` uses its own keyboard-focusable `PanelWindow` instead of a popup, because popups can't reliably get keyboard focus.
+
+6. Known pitfalls
+  - Hover inside dropdown menus: a `MouseArea` with `hoverEnabled: true` (or a hover-enabled Control such as a `ScrollBar`) accepts hover events, and Qt then stops delivering hover to its ancestors. This breaks the menu-level `HoverHandler` that closes menus when the mouse leaves. Inside menus, track hover with `HoverHandler` and use `MouseArea` only for clicks.
+  - Do not use `HyprlandFocusGrab` for the dropdown popups: with a grab active the popup got no pointer input at all (no hover; clicks inside counted as outside), even when the grab was started only after the popup's window was shown. As a result, dropdowns don't close on clicks outside of them.
+  - Repeaters whose model is a JS array recreate every delegate whenever the array is reassigned. For data that updates periodically, use a fixed-count model (e.g. `model: 5`) with delegates that read `someArray[index]`, or only reassign the array when the data actually changed. Otherwise rows flicker and lose hover.
 
