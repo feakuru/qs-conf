@@ -17,7 +17,6 @@ DropdownMenu {
     readonly property int topProcessCount: 5
 
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/display.svg")
-    toggleIconColor: AppConstants.styledTextColor
 
     toggleTextFont.pixelSize: 18
     toggleText: `${gpuIndicator.loadPercent}%`

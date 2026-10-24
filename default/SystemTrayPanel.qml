@@ -11,43 +11,57 @@ Item {
     implicitWidth: trayRow.implicitWidth
     Layout.fillHeight: true
 
-    Row {
+    RowLayout {
         id: trayRow
         height: parent.height
+        spacing: 0
 
         Repeater {
             model: SystemTray.items
-            delegate: Rectangle {
-                implicitWidth: 40
-                height: trayRow.height
-                color: iconMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
+            delegate: RowLayout {
+                id: trayItem
+                required property var modelData
+                required property int index
 
-                IconImage {
-                    anchors.centerIn: parent
-                    width: 24
-                    height: 24
-                    source: modelData.icon
-                    mipmap: true
+                Layout.fillHeight: true
+                spacing: 0
+
+                Separator {
+                    visible: trayItem.index > 0
                 }
 
-                MouseArea {
-                    id: iconMouseArea
-                    acceptedButtons: Qt.AllButtons
-                    hoverEnabled: true
-                    anchors.fill: parent
-                    onClicked: clickEvent => {
-                        if (!modelData.hasMenu) {
-                            modelData.activate();
-                            return;
+                Rectangle {
+                    implicitWidth: 40
+                    Layout.fillHeight: true
+                    color: iconMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
+
+                    IconImage {
+                        anchors.centerIn: parent
+                        width: 24
+                        height: 24
+                        source: trayItem.modelData.icon
+                        mipmap: true
+                    }
+
+                    MouseArea {
+                        id: iconMouseArea
+                        acceptedButtons: Qt.AllButtons
+                        hoverEnabled: true
+                        anchors.fill: parent
+                        onClicked: clickEvent => {
+                            if (!trayItem.modelData.hasMenu) {
+                                trayItem.modelData.activate();
+                                return;
+                            }
+                            // Menus are positioned relative to the bar window.
+                            let windowPosition = iconMouseArea.mapToItem(null, clickEvent.x, clickEvent.y);
+                            trayItem.modelData.display(trayPanel.QsWindow.window, windowPosition.x, windowPosition.y);
                         }
-                        // Menus are positioned relative to the bar window.
-                        let windowPosition = iconMouseArea.mapToItem(null, clickEvent.x, clickEvent.y);
-                        modelData.display(trayPanel.QsWindow.window, windowPosition.x, windowPosition.y);
+                        onDoubleClicked: clickEvent => {
+                            trayItem.modelData.secondaryActivate();
+                        }
+                        onWheel: wheelEvent => trayItem.modelData.scroll(wheelEvent.angleDelta.y, wheelEvent.angleDelta.x)
                     }
-                    onDoubleClicked: clickEvent => {
-                        modelData.secondaryActivate();
-                    }
-                    onWheel: wheelEvent => modelData.scroll(wheelEvent.angleDelta.y, wheelEvent.angleDelta.x)
                 }
             }
         }

@@ -19,7 +19,6 @@ DropdownMenu {
     readonly property int fullPercent: 90
 
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/hard-drive.svg")
-    toggleIconColor: AppConstants.styledTextColor
 
     // How busy the busiest disk is.
     Rectangle {
@@ -34,6 +33,7 @@ DropdownMenu {
     }
 
     menuWidth: 450
+    opensUpward: true
     menuContent: [
         DropdownMenuItem {
             visible: !diskIndicator.detailsLoaded

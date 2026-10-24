@@ -63,7 +63,6 @@ DropdownMenu {
         }
     }
 
-    toggleIconColor: AppConstants.styledTextColor
     toggleIconSource: {
         let iconName = "off";
         if (isMuted) {
@@ -83,6 +82,7 @@ DropdownMenu {
 
     toggleTextFont.pixelSize: 18
     toggleTextWidest: "100%"
+    balanceReservedWidth: true
     toggleText: {
         if (!sink || isMuted) {
             return '';

@@ -14,7 +14,6 @@ DropdownMenu {
     property bool memoryModulesLoaded: false
 
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/memory.svg")
-    toggleIconColor: AppConstants.styledTextColor
 
     toggleTextFont.pixelSize: 18
     toggleTextWidest: "100%"

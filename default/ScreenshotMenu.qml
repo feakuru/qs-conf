@@ -5,7 +5,6 @@ DropdownMenu {
     id: screenshotMenu
 
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/camera.svg")
-    toggleIconColor: AppConstants.styledTextColor
 
     menuWidth: 220
     menuContent: [

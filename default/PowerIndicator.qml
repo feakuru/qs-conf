@@ -8,7 +8,7 @@ DropdownMenu {
     id: powerIndicator
     toggleIconColor: {
         if (!UPower.displayDevice.isLaptopBattery) {
-            return AppConstants.styledTextColor;
+            return AppConstants.iconColor;
         }
         let percentage = UPower.displayDevice.percentage;
         if (percentage <= 0.1) {
@@ -16,7 +16,7 @@ DropdownMenu {
         } else if (percentage <= 0.3) {
             return Qt.rgba(0.9, 0.9, 0.2, 0.9);
         } else {
-            return AppConstants.styledTextColor;
+            return AppConstants.iconColor;
         }
     }
     toggleIconSource: {

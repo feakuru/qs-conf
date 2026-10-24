@@ -145,23 +145,28 @@ DropdownMenu {
     }
 
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/earth.svg")
-    toggleIconColor: AppConstants.styledTextColor
-    // Speeds left of the icon, like VpnIndicator, so the room reserved for
-    // wider values is at the outer edge.
+    // Speeds left of the icon, like VpnIndicator.
     toggleLeadingText: `${formatSpeed(txSpeed)} 🢁\n${formatSpeed(rxSpeed)} 🡻`
     toggleLeadingTextWidest: "999.99 kB/s 🢁"
+    balanceReservedWidth: true
     // Small enough that the two lines don't take up the bar's full height.
     toggleLeadingTextFont.pixelSize: 12
-    // Active connections by type, each only when there are any.
+    // Active connections by type, each only when there are any. Nerd Font
+    // glyphs (md-ethernet, md-wifi, md-wifi-off), so they're monochrome like
+    // the text. The Propo variant gives them their actual width; the regular
+    // one lets them overflow to the right, which unbalances the padding.
+    toggleTextFont.family: "FiraCode Nerd Font Propo"
+    // The glyphs' right side bearing plus the full padding looks too loose.
+    rightPadding: horizontalPadding - 3
     toggleText: {
         let parts = [];
         if (wiredConnectionCount > 0) {
-            parts.push(`${wiredConnectionCount}🔌`);
+            parts.push("\u{F0200}");
         }
         if (wifiConnectionCount > 0) {
-            parts.push(`${wifiConnectionCount}ᯤ`);
+            parts.push("\u{F05A9}");
         }
-        return parts.length > 0 ? parts.join(" ") : "0";
+        return parts.length > 0 ? parts.join(" ") : "\u{F05AA}";
     }
 
     readonly property int wiredConnectionCount: [...Networking.devices.values].filter(device => device.type === DeviceType.Wired && device.connected).length

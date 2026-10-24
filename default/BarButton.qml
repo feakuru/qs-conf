@@ -22,24 +22,34 @@ Rectangle {
     // Widest text the label is expected to show (e.g. "100%"); its width is
     // reserved so the widget doesn't resize as the value changes.
     property string toggleTextWidest: ""
+    // By default the unused part of the reserved width sits next to the
+    // shorter text. If set, it's split evenly on both sides of the centred
+    // content instead, which keeps the padding balanced, but the content
+    // shifts slightly when the text's width changes.
+    property bool balanceReservedWidth: false
     property alias toggleIconSource: toggleIcon.source
     property alias toggleIconColor: toggleIcon.iconColor
     property alias toggleIconOutlineColor: toggleIcon.outlineColor
-    property real toggleIconSize: 32
+    property real toggleIconSize: 28
     readonly property alias toggleMouseAreaContainsMouse: toggleMouseArea.containsMouse
     property real horizontalPadding: 10
+    // Per-side overrides, e.g. to make up for glyphs with uneven side bearings.
+    property real leftPadding: horizontalPadding
+    property real rightPadding: horizontalPadding
     // Gap between the leading text, icon and text.
     property alias contentSpacing: toggleContent.spacing
     // Width needed by the icon and text, for widgets that override implicitWidth.
-    readonly property real contentImplicitWidth: toggleContent.implicitWidth + 2 * horizontalPadding
+    readonly property real contentImplicitWidth: toggleContent.implicitWidth + leftPadding + rightPadding
+    readonly property real unusedReservedWidth: (leadingLabel.visible ? Math.max(0, widestLeadingTextMetrics.advanceWidth - leadingLabel.implicitWidth) : 0) + (toggleLabel.visible ? Math.max(0, widestToggleTextMetrics.advanceWidth - toggleLabel.implicitWidth) : 0)
 
-    implicitWidth: contentImplicitWidth
+    implicitWidth: contentImplicitWidth + (balanceReservedWidth ? unusedReservedWidth : 0)
     Layout.fillHeight: true
     color: toggleMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
 
     RowLayout {
         id: toggleContent
         anchors.centerIn: parent
+        anchors.horizontalCenterOffset: (barButton.leftPadding - barButton.rightPadding) / 2
         spacing: 5
 
         StyledText {
@@ -47,12 +57,13 @@ Rectangle {
             anchors.centerIn: undefined
             visible: text.length > 0
             horizontalAlignment: Text.AlignRight
-            Layout.minimumWidth: widestLeadingTextMetrics.advanceWidth
+            Layout.minimumWidth: barButton.balanceReservedWidth ? 0 : widestLeadingTextMetrics.advanceWidth
         }
 
         RecoloredIcon {
             id: toggleIcon
             visible: source.toString() !== ""
+            iconColor: AppConstants.iconColor
             iconWidth: barButton.toggleIconSize
             iconHeight: barButton.toggleIconSize
         }
@@ -61,7 +72,7 @@ Rectangle {
             id: toggleLabel
             anchors.centerIn: undefined
             visible: text.length > 0
-            Layout.minimumWidth: widestToggleTextMetrics.advanceWidth
+            Layout.minimumWidth: barButton.balanceReservedWidth ? 0 : widestToggleTextMetrics.advanceWidth
         }
     }
 

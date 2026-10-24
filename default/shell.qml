@@ -49,6 +49,10 @@ Scope {
 
                 Separator {}
 
+                ScreenshotMenu {}
+
+                Separator {}
+
                 OnScreenKeyboard {
                     layoutName: kbLayoutIndicator.currentLayoutName
                 }
@@ -58,14 +62,6 @@ Scope {
                 KbLayoutIndicator {
                     id: kbLayoutIndicator
                 }
-
-                Separator {}
-
-                DiskIndicator {}
-
-                Separator {}
-
-                ScreenshotMenu {}
 
                 Separator {}
 
@@ -82,11 +78,11 @@ Scope {
                     Layout.fillWidth: true
                 }
 
-                NetworkIndicator {}
+                VpnIndicator {}
 
                 Separator {}
 
-                VpnIndicator {}
+                NetworkIndicator {}
 
                 Separator {}
 
@@ -99,6 +95,10 @@ Scope {
                 Separator {}
 
                 GpuIndicator {}
+
+                Separator {}
+
+                DiskIndicator {}
 
                 Separator {}
 

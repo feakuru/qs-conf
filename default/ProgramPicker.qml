@@ -11,7 +11,6 @@ import Quickshell.Widgets
 // again, after launching a program, or when a dropdown is opened.
 BarButton {
     id: programPicker
-    toggleIconColor: "darkgray"
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/book.svg")
     toggleTextFont.pixelSize: 16
 

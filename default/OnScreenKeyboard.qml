@@ -5,9 +5,7 @@ import QtQuick.Layouts
 
 BarButton {
     id: oskContainer
-    toggleIconSize: 26
     toggleIconSource: Qt.resolvedUrl(`assets/icons/fontawesome/solid/keyboard.svg`)
-    toggleIconColor: AppConstants.iconColor
     property bool isShiftDown: oskLeftBody.isShiftDown || oskRightBody.isShiftDown
 
     onIsShiftDownChanged: () => {
