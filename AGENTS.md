@@ -59,7 +59,7 @@ Debugging: when behaviour can't be worked out from the code, add temporary `cons
   - `Bar`: a top or bottom panel; children are laid out left to right.
   - `BarButton`: clickable bar widget with an optional icon and text, sized to fit them.
   - `DropdownMenu`: a `BarButton` that opens a `PopupWindow` anchored to it (`opensUpward: true` on the bottom bar). Menu rows go in `menuContent`.
-  - Menu rows: `DropdownMenuItem` (base row with hover, click `action` and separator), `IconMenuItem` (centred icons and/or label), `UsageMenuItem` (label, value and a usage bar), `DropdownMenuHeader` (section header).
+  - Menu rows: `DropdownMenuItem` (base row with hover, click `action` and separator), `IconMenuItem` (centred icons and/or label), `UsageMenuItem` (label, value and a usage bar, plus an optional smaller second line via `detailLabel`/`detailValueText`), `DropdownMenuHeader` (section header).
   - `ScrollingMenuList`: shows at most `maxVisibleRows` of the rows inside it and scrolls the rest (Wi-Fi networks, Bluetooth devices).
   - Singletons: `AppConstants` (theme), `Dropdowns` (only one dropdown/launcher open at a time), `WindowActions` (Hyprland window move/float/close/focus).
   - `ProgramPicker`, `WifiPasswordPrompt` and `SessionActionDialog` use their own keyboard-focusable `PanelWindow` instead of a popup, because popups can't reliably get keyboard focus.

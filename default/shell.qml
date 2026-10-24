@@ -61,6 +61,10 @@ Scope {
 
                 Separator {}
 
+                DiskIndicator {}
+
+                Separator {}
+
                 PowerIndicator {}
             }
 
