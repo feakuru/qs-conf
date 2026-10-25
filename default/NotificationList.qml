@@ -102,7 +102,7 @@ ColumnLayout {
         Layout.bottomMargin: 12
         font.pixelSize: 14
         color: AppConstants.mutedIconColor
-        text: NotificationCenter.doNotDisturb ? "No notifications · do not disturb is on" : "No notifications"
+        text: NotificationCenter.doNotDisturb ? "no notifications · do not disturb on" : "no notifications"
     }
 
     Flickable {

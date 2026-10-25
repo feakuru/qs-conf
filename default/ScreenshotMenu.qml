@@ -9,11 +9,12 @@ DropdownMenu {
     menuWidth: 220
     menuContent: [
         DropdownMenuHeader {
-            text: "Screenshot"
+            text: "screenshot"
         },
         IconMenuItem {
             iconNames: ["desktop"]
             text: "Whole screen"
+            textPixelSize: 17
             action: () => {
                 screenshotMenu.closeMenu();
                 Screenshots.captureScreen(AppConstants.primaryScreen);
@@ -22,6 +23,7 @@ DropdownMenu {
         IconMenuItem {
             iconNames: ["crop-simple"]
             text: "Region"
+            textPixelSize: 17
             action: () => {
                 screenshotMenu.closeMenu();
                 Screenshots.captureRegion();

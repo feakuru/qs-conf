@@ -153,7 +153,8 @@ DropdownMenu {
 
             IconMenuItem {
                 iconNames: ["lock"]
-                text: "Lock"
+                text: "lock"
+                textPixelSize: 15
                 action: () => {
                     powerIndicator.closeMenu();
                     lockProcess.running = true;
@@ -161,17 +162,20 @@ DropdownMenu {
             }
             IconMenuItem {
                 iconNames: ["right-from-bracket"]
-                text: "Log out"
+                text: "log out"
+                textPixelSize: 15
                 action: () => powerIndicator.askSessionAction(powerIndicator.logoutAction)
             }
             IconMenuItem {
                 iconNames: ["arrows-rotate"]
-                text: "Restart"
+                text: "restart"
+                textPixelSize: 15
                 action: () => powerIndicator.askSessionAction(powerIndicator.restartAction)
             }
             IconMenuItem {
                 iconNames: ["power-off"]
-                text: "Power off"
+                text: "shutdown"
+                textPixelSize: 15
                 action: () => powerIndicator.askSessionAction(powerIndicator.powerOffAction)
             }
         },
@@ -193,7 +197,8 @@ DropdownMenu {
                 enabled: !ThemeMode.busy
                 opacity: ThemeMode.busy ? 0.5 : 1
                 iconNames: [ThemeMode.isDark ? "moon" : "sun"]
-                text: ThemeMode.isDark ? "Dark" : "Light"
+                text: ThemeMode.isDark ? "dark" : "light"
+                textPixelSize: 15
                 action: () => {
                     ThemeMode.toggle();
                 }
@@ -204,12 +209,14 @@ DropdownMenu {
                 thickness: 1
             }
 
-            // Lit while on; when off, the screen keeps its orientation.
+            // When off, the screen keeps its orientation and the icon gets a
+            // lock badge.
             IconMenuItem {
                 visible: AutoRotate.available
                 iconNames: ["rotate"]
-                iconColor: AutoRotate.enabled ? AppConstants.indicatorOnColor : AppConstants.indicatorOffColor
-                text: "Auto-rotate"
+                badgeIconName: AutoRotate.enabled ? "" : "lock"
+                text: AutoRotate.enabled ? "autorotate on" : "autorotate off"
+                textPixelSize: 15
                 action: () => {
                     AutoRotate.toggle();
                 }
