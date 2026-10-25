@@ -44,7 +44,7 @@ Singleton {
     readonly property real iconShadowOffset: isDark ? 2 : 1
     readonly property real iconShadowRadius: isDark ? 8 : 3
     // Contour for coloured (non-text-coloured) icons that would otherwise blend into a light background.
-    readonly property color iconOutlineColor: isDark ? "transparent" : styledTextColor
+    readonly property color iconOutlineColor: isDark ? "transparent" : "#3C4043"
 
     property string defaultFont: "FiraCode Nerd Font"
 

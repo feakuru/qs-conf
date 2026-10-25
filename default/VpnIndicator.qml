@@ -13,7 +13,6 @@ DropdownMenu {
     property string totalReceived: ""
 
     toggleIconColor: activeVpnConnections.length > 0 ? AppConstants.indicatorOnColor : AppConstants.indicatorOffColor
-    toggleIconOutlineColor: AppConstants.iconOutlineColor
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/shield-halved.svg")
 
     toggleTextFont.pixelSize: 16

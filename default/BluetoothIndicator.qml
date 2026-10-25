@@ -115,7 +115,7 @@ DropdownMenu {
     }
 
     toggleIconColor: adapterEnabled ? AppConstants.bluetoothColor : AppConstants.indicatorOffColor
-    toggleIconOutlineColor: AppConstants.iconOutlineColor
+    toggleIconOutlineColor: ThemeMode.isDark ? undefined : AppConstants.iconOutlineColor
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/brands/bluetooth.svg")
 
     toggleTextFont.pixelSize: 16
