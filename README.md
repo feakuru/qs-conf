@@ -15,6 +15,8 @@ This list might not be exhaustive. I am running this over Arch with Gnome instal
 - `sensors`
 - `uv` with a Python 3.12 or greater available
 - `hyprshot`
+- `notify-send` (libnotify) and `dbus-send`, for screenshot notifications
+- a file manager implementing `org.freedesktop.FileManager1` (e.g. Nautilus), to show a screenshot in its folder (otherwise the folder is opened with `xdg-open`)
 - `xdg-terminal-exec` (available on Arch only as a separate AUR at the time of writing)
 - need to fill in values in `qs-osk.service` and add it to systemd services (enable and start)
 

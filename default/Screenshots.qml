@@ -4,7 +4,8 @@ import Quickshell
 
 // Screenshots via hyprshot (run by scripts/screenshot.py), which saves them to
 // $HYPRSHOT_DIR (or the Pictures folder) and copies them to the clipboard. The
-// script reports the outcome with a Hyprland notification.
+// script reports the outcome with a notification (see NotificationCenter);
+// clicking a saved screenshot's notification shows it in the file manager.
 Singleton {
     id: screenshots
 

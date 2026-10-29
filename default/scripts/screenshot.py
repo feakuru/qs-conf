@@ -1,4 +1,11 @@
-"""Take a screenshot with hyprshot and report the outcome with `hyprctl notify`.
+"""Take a screenshot with hyprshot and report the outcome with a notification.
+
+Notifications are sent with `notify-send`, over D-Bus, to the shell's own
+notification server (NotificationCenter.qml). A saved screenshot's
+notification shows the image, and its default action (clicking it in the
+notification area) shows the file in the file manager. Waiting for that click
+happens in a detached background process, so that Screenshots.qml can take the
+next screenshot meanwhile.
 
 Used by Screenshots.qml. hyprshot's own result reporting can't be relied on:
 
@@ -13,6 +20,7 @@ Used by Screenshots.qml. hyprshot's own result reporting can't be relied on:
 """
 
 import argparse
+import html
 import os
 import signal
 import subprocess
@@ -37,13 +45,15 @@ LINGERING_PROCESSES = {"wl-copy"}
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 PNG_END = b"IEND\xaeB`\x82"
 
-# `hyprctl notify` icons and how long each kind of notification stays.
-ICON_WARNING = 0
-ICON_INFO = 1
-ICON_ERROR = 3
-ICON_OK = 5
+# How long each kind of notification stays as a toast. Saved screenshots'
+# notifications get none, see notify_saved.
 NOTIFY_TIMEOUT_MS = 5000
 NOTIFY_ERROR_TIMEOUT_MS = 10000
+NOTIFY_APP_NAME = "Screenshot"
+NOTIFY_APP_ICON = "applets-screenshooter"
+SHOW_IN_FOLDER_ACTION = "default"
+# Starting the file manager may take a while.
+SHOW_IN_FOLDER_TIMEOUT = 30.0
 
 MODE_TITLES = {"window": "Window", "screen": "Screen", "region": "Region"}
 MAX_TITLE_LENGTH = 60
@@ -53,17 +63,114 @@ def warn(message: str) -> None:
     print(f"screenshot: {message}", file=sys.stderr)
 
 
-def notify(icon: int, timeout_ms: int, message: str) -> None:
-    # Color 0 uses the icon's default colour.
+def notify_command(
+    summary: str,
+    body: str,
+    timeout_ms: int | None,
+    *,
+    urgency: str = "normal",
+    transient: bool = False,
+    image: Path | None = None,
+) -> list[str]:
+    """A notify-send command; without a timeout, the server picks one."""
+    command = [
+        "notify-send",
+        f"--app-name={NOTIFY_APP_NAME}",
+        f"--app-icon={NOTIFY_APP_ICON}",
+        f"--urgency={urgency}",
+    ]
+    if timeout_ms is not None:
+        command.append(f"--expire-time={timeout_ms}")
+    if transient:
+        command.append("--transient")
+    if image is not None:
+        command.append(f"--hint=string:image-path:{image.as_uri()}")
+    # The body may contain markup, so paths and error messages are escaped.
+    return [*command, summary, html.escape(body, quote=False)]
+
+
+def notify(
+    summary: str,
+    body: str,
+    timeout_ms: int | None,
+    *,
+    urgency: str = "normal",
+    transient: bool = False,
+    image: Path | None = None,
+) -> None:
+    command = notify_command(summary, body, timeout_ms, urgency=urgency, transient=transient, image=image)
+    try:
+        subprocess.run(command, check=True, capture_output=True, text=True)
+    except (OSError, subprocess.CalledProcessError) as exc:
+        warn(f"notify-send failed: {exc}")
+
+
+def notify_saved(summary: str, body: str, path: Path) -> None:
+    """Notifies about a saved screenshot; clicking the notification shows it in its folder.
+
+    notify-send keeps running until the notification is clicked or dismissed,
+    which may be much later, so this happens in a detached process.
+
+    The notification has no timeout of its own: notify-send stops waiting for
+    the click once that runs out, but the notification stays in the
+    notification area after its toast is gone. Without one, it waits (for
+    about 49 days, as libnotify's -1 ends up as an unsigned timeout).
+    """
+    command = [
+        *notify_command(summary, body, None, image=path),
+        f"--action={SHOW_IN_FOLDER_ACTION}=Show in folder",
+    ]
+    sys.stdout.flush()
+    sys.stderr.flush()
+    try:
+        pid = os.fork()
+    except OSError as exc:
+        warn(f"could not fork to wait for the notification: {exc}")
+        notify(summary, body, None, image=path)
+        return
+    if pid != 0:
+        return
+
+    # The child: out of Screenshots.qml's process group, and not holding its
+    # output pipes open.
+    try:
+        os.setsid()
+        devnull = os.open(os.devnull, os.O_RDWR)
+        for fd in (0, 1, 2):
+            os.dup2(devnull, fd)
+        result = subprocess.run(command, capture_output=True, text=True)
+        if result.stdout.strip() == SHOW_IN_FOLDER_ACTION:
+            show_in_folder(path)
+    finally:
+        os._exit(0)
+
+
+def show_in_folder(path: Path) -> None:
+    """Opens the file manager with the file selected, or at least its folder."""
     try:
         subprocess.run(
-            ["hyprctl", "notify", str(icon), str(timeout_ms), "0", message],
+            [
+                "dbus-send",
+                "--session",
+                "--print-reply",
+                "--dest=org.freedesktop.FileManager1",
+                "/org/freedesktop/FileManager1",
+                "org.freedesktop.FileManager1.ShowItems",
+                f"array:string:{path.as_uri()}",
+                "string:",
+            ],
             check=True,
             capture_output=True,
-            text=True,
+            timeout=SHOW_IN_FOLDER_TIMEOUT,
         )
-    except (OSError, subprocess.CalledProcessError) as exc:
-        warn(f"hyprctl notify failed: {exc}")
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        subprocess.Popen(
+            ["xdg-open", str(path.parent)],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
 
 
 def pictures_dir() -> Path:
@@ -184,7 +291,11 @@ def main() -> int:
             )
         except OSError as exc:
             warn(f"could not start hyprshot: {exc}")
-            notify(ICON_ERROR, NOTIFY_ERROR_TIMEOUT_MS, f"{mode_title} screenshot failed: could not start hyprshot ({exc.strerror})")
+            notify(
+                f"{mode_title} screenshot failed",
+                f"Could not start hyprshot ({exc.strerror})",
+                NOTIFY_ERROR_TIMEOUT_MS,
+            )
             return 1
 
         timed_out = False
@@ -207,17 +318,18 @@ def main() -> int:
 
     size = png_size(path)
     if size is not None:
-        message = f"Screenshot of {target} saved: {display_path(path)} ({size[0]}×{size[1]}), copied to the clipboard"
+        summary = f"Screenshot of {target} saved"
+        body = f"{display_path(path)} ({size[0]}×{size[1]}), copied to the clipboard"
         if error_lines or exit_code not in NORMAL_EXIT_CODES:
             # Saved, but something (most likely the clipboard copy) complained.
             details = error_lines[-1] if error_lines else f"hyprshot exit code {exit_code}"
-            notify(ICON_WARNING, NOTIFY_ERROR_TIMEOUT_MS, f"{message}. Warning: {details}")
+            notify_saved(summary, f"{body}. Warning: {details}", path)
         else:
-            notify(ICON_OK, NOTIFY_TIMEOUT_MS, message)
+            notify_saved(summary, body, path)
         return 0
 
     if any("selection cancelled" in line for line in error_lines):
-        notify(ICON_INFO, NOTIFY_TIMEOUT_MS, f"{mode_title} screenshot cancelled")
+        notify(f"{mode_title} screenshot cancelled", "", NOTIFY_TIMEOUT_MS, urgency="low", transient=True)
         return 0
 
     if timed_out:
@@ -229,7 +341,7 @@ def main() -> int:
     if exit_code not in NORMAL_EXIT_CODES:
         reason = f"{reason} (hyprshot exit code {exit_code})"
     path.unlink(missing_ok=True)
-    notify(ICON_ERROR, NOTIFY_ERROR_TIMEOUT_MS, f"Screenshot of {target} failed: {reason}")
+    notify(f"Screenshot of {target} failed", reason, NOTIFY_ERROR_TIMEOUT_MS)
     return 1
 
 
