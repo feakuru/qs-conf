@@ -49,6 +49,9 @@ PNG_END = b"IEND\xaeB`\x82"
 # notifications get none, see notify_saved.
 NOTIFY_TIMEOUT_MS = 5000
 NOTIFY_ERROR_TIMEOUT_MS = 10000
+# How long the notifications stay in the notification area (a hint of
+# NotificationCenter.qml's own).
+NOTIFY_LIFETIME_MS = 30 * 60 * 1000
 NOTIFY_APP_NAME = "Screenshot"
 NOTIFY_APP_ICON = "applets-screenshooter"
 SHOW_IN_FOLDER_ACTION = "default"
@@ -78,6 +81,7 @@ def notify_command(
         f"--app-name={NOTIFY_APP_NAME}",
         f"--app-icon={NOTIFY_APP_ICON}",
         f"--urgency={urgency}",
+        f"--hint=int:x-quickshell-lifetime:{NOTIFY_LIFETIME_MS}",
     ]
     if timeout_ms is not None:
         command.append(f"--expire-time={timeout_ms}")
@@ -113,8 +117,9 @@ def notify_saved(summary: str, body: str, path: Path) -> None:
 
     The notification has no timeout of its own: notify-send stops waiting for
     the click once that runs out, but the notification stays in the
-    notification area after its toast is gone. Without one, it waits (for
-    about 49 days, as libnotify's -1 ends up as an unsigned timeout).
+    notification area after its toast is gone. Without one, it waits until
+    the notification is closed, at the latest when its lifetime
+    (NOTIFY_LIFETIME_MS) is over.
     """
     command = [
         *notify_command(summary, body, None, image=path),
