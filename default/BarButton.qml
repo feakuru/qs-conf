@@ -7,6 +7,11 @@ Rectangle {
     id: barButton
 
     signal clicked(var mouse)
+    // Only emitted if handlesPressAndHold is set; otherwise a long press still
+    // ends in a normal click.
+    signal pressAndHold(var mouse)
+
+    property bool handlesPressAndHold: false
 
     property alias toggleText: toggleLabel.text
     // Optional text left of the icon. It is right-aligned, so that it stays
@@ -94,5 +99,12 @@ Rectangle {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         hoverEnabled: true
         onClicked: mouse => barButton.clicked(mouse)
+        // An accepted press-and-hold suppresses the click on release.
+        onPressAndHold: mouse => {
+            mouse.accepted = barButton.handlesPressAndHold;
+            if (barButton.handlesPressAndHold) {
+                barButton.pressAndHold(mouse);
+            }
+        }
     }
 }

@@ -5,8 +5,11 @@ import Quickshell
 
 // A bar button that opens a popup menu attached to it.
 //
+// Clicking the button toggles the menu, unless toggleOnClick is unset, in
+// which case the user opens and closes it via openMenu/closeMenu/toggleMenu.
+//
 // The menu closes when:
-// - the button is clicked again,
+// - the button is clicked again (with toggleOnClick),
 // - the mouse leaves the menu (after a short grace period, and only if it was
 //   inside the menu at some point, so a menu that was opened but never visited
 //   stays open; never once the button or menu has been touched while open,
@@ -26,6 +29,9 @@ BarButton {
     property alias menuContent: dropdownMenuBody.data
     readonly property alias menuVisible: dropdownPopup.visible
     property int closeOnLeaveDelay: 600
+    property bool toggleOnClick: true
+    // Whether DropdownHints gives this menu a key label.
+    property bool showsHint: true
 
     function openMenu() {
         dropdown.pointerVisitedMenu = false;
@@ -50,7 +56,11 @@ BarButton {
         }
     }
 
-    onClicked: toggleMenu()
+    onClicked: {
+        if (dropdown.toggleOnClick) {
+            dropdown.toggleMenu();
+        }
+    }
 
     // Index of this menu's key in Dropdowns.hintKeys, or -1 if no key label is
     // shown.
@@ -58,6 +68,10 @@ BarButton {
 
     Component.onCompleted: Dropdowns.menus = Dropdowns.menus.concat([dropdown])
     Component.onDestruction: {
+        // E.g. a window's menu, when the window closes while it's open.
+        if (Dropdowns.current === dropdown) {
+            Dropdowns.current = null;
+        }
         Dropdowns.menus = Dropdowns.menus.filter(menu => menu !== dropdown);
         Dropdowns.hintedMenus = Dropdowns.hintedMenus.filter(menu => menu !== dropdown);
     }

@@ -5,7 +5,8 @@ import Quickshell.Wayland
 
 // Keyboard access to the dropdown menus, meant to be bound to a compositor
 // shortcut (`qs ipc call dropdownHints toggle`). While active, every visible
-// DropdownMenu shows a key label (top bar first, each bar left to right), and
+// DropdownMenu with showsHint (all but the window menus) shows a key label
+// (top bar first, each bar left to right), and
 // pressing that key toggles the menu and ends hint mode. Escape ends hint mode
 // and closes the open dropdown; calling `toggle` again only ends hint mode.
 //
@@ -32,7 +33,7 @@ PanelWindow {
         if (Dropdowns.current && !Dropdowns.menus.includes(Dropdowns.current)) {
             Dropdowns.current = null;
         }
-        Dropdowns.hintedMenus = Dropdowns.menus.filter(menu => menu.visible).map(menu => ({
+        Dropdowns.hintedMenus = Dropdowns.menus.filter(menu => menu.visible && menu.showsHint).map(menu => ({
                     menu: menu,
                     x: menu.mapToItem(null, 0, 0).x
                 })).sort((lhs, rhs) => (lhs.menu.opensUpward - rhs.menu.opensUpward) || (lhs.x - rhs.x)).map(entry => entry.menu).slice(0, Dropdowns.hintKeys.length);
