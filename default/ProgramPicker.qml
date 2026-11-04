@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import Quickshell.Widgets
 
 // Application launcher. Unlike the dropdown menus it uses its own layer-shell
@@ -121,7 +122,9 @@ BarButton {
         id: launcherWindow
         screen: AppConstants.primaryScreen
         visible: false
-        focusable: true
+        // Not `focusable: true` (on-demand): since Hyprland 0.57 the window under
+        // the cursor takes the keyboard back as soon as an on-demand layer maps.
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
         color: AppConstants.solidBgColor
 
         anchors {

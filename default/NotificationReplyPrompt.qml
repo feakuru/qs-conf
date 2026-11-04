@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Wayland
 
 // Asks for an inline reply to a notification, centred on the screen. Like
 // WifiPasswordPrompt, it uses its own layer-shell window, because typing needs
@@ -61,7 +62,8 @@ PanelWindow {
 
     screen: AppConstants.primaryScreen
     visible: false
-    focusable: true
+    // Exclusive rather than on-demand: see ProgramPicker.
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
     color: AppConstants.solidBgColor
 
     implicitWidth: 450
