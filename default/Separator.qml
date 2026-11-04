@@ -7,7 +7,7 @@ Rectangle {
     property bool vertical: true
     property real thickness: 2
     // Only used when vertical; horizontal separators are sized by their anchors.
-    property real length: 26
+    property real length: 28
 
     implicitWidth: vertical ? thickness : 0
     implicitHeight: vertical ? length : thickness

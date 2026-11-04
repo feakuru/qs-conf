@@ -74,6 +74,8 @@ Scope {
 
                 ProgramPicker {}
 
+                Separator {}
+
                 Item {
                     Layout.fillWidth: true
                 }
