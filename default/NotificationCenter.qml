@@ -10,6 +10,10 @@ import Quickshell.Services.Notifications
 //
 // Transient notifications don't belong in a notification area: they go away
 // with their toast (or when the area closes, if it was open when they came).
+//
+// A notification may also limit how long it stays in the notification area
+// with an int hint, in ms since it arrived (see lifetime()), e.g.
+// `notify-send --hint=int:x-quickshell-lifetime:1800000 ...`.
 Singleton {
     id: notificationCenter
 
@@ -28,6 +32,8 @@ Singleton {
 
     // Only critical notifications pop up as toasts.
     property alias doNotDisturb: persisted.doNotDisturb
+    // Notification id -> when it arrived (ms since the epoch).
+    readonly property var receivedAt: JSON.parse(persisted.receivedAtJson)
 
     // Whether the notification area (DateClock's menu) is open. No toasts are
     // shown meanwhile: new notifications appear at the top of the area.
@@ -66,9 +72,49 @@ Singleton {
         return notification.expireTimeout > 0 ? notification.expireTimeout : notificationCenter.defaultToastTimeout;
     }
 
+    // How long the notification stays at all, in ms since it arrived; 0 means
+    // until it is dismissed. Unlike expireTimeout (the toast's), this comes
+    // from a hint of our own, so other apps' notifications aren't affected.
+    function lifetime(notification) {
+        let hints = notification.hints;
+        let value = hints ? Number(hints["x-quickshell-lifetime"]) : NaN;
+        return value > 0 ? value : 0;
+    }
+
+    // Expires the notifications whose lifetime is over and schedules the next
+    // check. Wall-clock based, so that it also holds across suspend and
+    // config reloads (unlike a Timer's interval).
+    function expireOverdue() {
+        let now = Date.now();
+        let next = Infinity;
+        let overdue = [];
+        for (let notification of notificationCenter.notifications) {
+            let lifetime = notificationCenter.lifetime(notification);
+            let receivedAt = notificationCenter.receivedAt[notification.id];
+            if (lifetime === 0 || receivedAt === undefined) {
+                continue;
+            }
+            let expiresAt = receivedAt + lifetime;
+            if (expiresAt <= now) {
+                overdue.push(notification);
+            } else {
+                next = Math.min(next, expiresAt);
+            }
+        }
+        if (next < Infinity) {
+            lifetimeTimer.interval = next - now;
+            lifetimeTimer.restart();
+        } else {
+            lifetimeTimer.stop();
+        }
+        for (let notification of overdue) {
+            notification.expire();
+        }
+    }
+
     // E.g. "now", "5 min ago", "14:03" (today) or "23 Oct 14:03".
     function ageText(notification) {
-        let receivedAt = persisted.receivedAt[notification.id];
+        let receivedAt = notificationCenter.receivedAt[notification.id];
         let received = new Date(receivedAt === undefined ? Date.now() : receivedAt);
         let now = clock.date;
         let minutes = Math.floor((now - received) / 60000);
@@ -157,13 +203,21 @@ Singleton {
         reloadableId: "notificationCenter"
 
         property bool doNotDisturb: false
-        // Notification id -> when it arrived (ms since the epoch).
-        property var receivedAt: ({})
+        // receivedAt, as JSON: a JS object doesn't survive reloads ("JSValue
+        // can't be reassigned to another engine").
+        property string receivedAtJson: "{}"
     }
 
     SystemClock {
         id: clock
         precision: SystemClock.Minutes
+        // Catches up after a suspend, during which lifetimeTimer doesn't run.
+        onDateChanged: notificationCenter.expireOverdue()
+    }
+
+    Timer {
+        id: lifetimeTimer
+        onTriggered: notificationCenter.expireOverdue()
     }
 
     NotificationServer {
@@ -187,13 +241,13 @@ Singleton {
                 }
                 let receivedAt = {};
                 for (let tracked of notificationCenter.notifications) {
-                    let time = persisted.receivedAt[tracked.id];
+                    let time = notificationCenter.receivedAt[tracked.id];
                     if (time !== undefined) {
                         receivedAt[tracked.id] = time;
                     }
                 }
                 receivedAt[notification.id] = Date.now();
-                persisted.receivedAt = receivedAt;
+                persisted.receivedAtJson = JSON.stringify(receivedAt);
             }
             notification.tracked = true;
         }
@@ -205,6 +259,9 @@ Singleton {
         if (notificationCenter.toastIds.some(id => !ids.includes(id))) {
             notificationCenter.toastIds = notificationCenter.toastIds.filter(id => ids.includes(id));
         }
+        // Later: expiring changes the list, and this may run while a new
+        // notification is being added.
+        Qt.callLater(notificationCenter.expireOverdue);
     }
 
     // A toast timer for each notification.
