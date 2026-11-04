@@ -63,35 +63,35 @@ Item {
 
                     leftPadding: 8
                     // Room for the close button on the right.
-                    rightPadding: windowPillCloseRow.implicitWidth + windowPillCloseRow.anchors.rightMargin + 6
+                    rightPadding: windowPillCloseSeparator.width + windowPillCloseButton.width + windowPillCloseButton.anchors.rightMargin + 6
                     toggleText: windowControls.shortenTitle(windowPill.windowTitle)
                     toggleTextFont.pixelSize: 16
 
                     // The separator shows touch users where the window's own
                     // pressable area ends and the close button begins.
-                    Row {
-                        id: windowPillCloseRow
-                        anchors.right: parent.right
-                        anchors.rightMargin: 4
+                    Separator {
+                        id: windowPillCloseSeparator
+                        anchors.right: windowPillCloseButton.left
                         anchors.verticalCenter: parent.verticalCenter
-                        spacing: 4
+                        thickness: 1
+                        length: 20
+                    }
 
-                        Separator {
-                            anchors.verticalCenter: parent.verticalCenter
-                            thickness: 1
-                            length: 20
-                        }
-
-                        WindowActionButton {
-                            anchors.verticalCenter: parent.verticalCenter
-                            implicitWidth: 24
-                            implicitHeight: 24
-                            iconName: "xmark"
-                            activeIconColor: AppConstants.dangerColor
-                            action: () => {
-                                windowPill.closeMenu();
-                                WindowActions.closeWindow(windowPill.modelData);
-                            }
+                    // All of the pill right of the separator (inside its
+                    // border) closes the window.
+                    WindowActionButton {
+                        id: windowPillCloseButton
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        anchors.margins: windowPill.border.width
+                        implicitWidth: 30
+                        radius: windowPill.radius - windowPill.border.width
+                        iconName: "xmark"
+                        activeIconColor: AppConstants.dangerColor
+                        action: () => {
+                            windowPill.closeMenu();
+                            WindowActions.closeWindow(windowPill.modelData);
                         }
                     }
 
