@@ -47,7 +47,7 @@ DropdownMenu {
             detailLabel: {
                 switch (Daemon.connectionState) {
                 case "incompatible":
-                    return `The daemon speaks protocol ${Daemon.daemonProtocol}, the shell ${Daemon.protocol}`;
+                    return Daemon.daemonProtocol > 0 ? `The daemon speaks protocol ${Daemon.daemonProtocol}, the shell ${Daemon.protocol}` : "The daemon's hello has no protocol version";
                 case "disconnected":
                     return "Retrying. Check: systemctl --user status qs-conf-daemon";
                 }

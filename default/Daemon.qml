@@ -55,7 +55,7 @@ Singleton {
     function call(method: string, params, callback): bool {
         if (!daemon.connected) {
             if (callback) {
-                callback(undefined, "not connected to qs-conf-daemon");
+                callback(undefined, daemon.connectionState === "incompatible" ? `qs-conf-daemon speaks protocol ${daemon.daemonProtocol}, the shell ${daemon.protocol}` : "not connected to qs-conf-daemon");
             }
             return false;
         }
@@ -162,13 +162,18 @@ Singleton {
     }
 
     function handleHello(hello): void {
-        daemon.daemonVersion = hello.version;
-        daemon.daemonProtocol = hello.protocol;
-        if (hello.protocol !== daemon.protocol) {
-            console.warn(`Daemon: qs-conf-daemon ${hello.version} speaks protocol ${hello.protocol}, the shell ${daemon.protocol}`);
+        // A hello without a protocol number counts as incompatible (-1).
+        let protocol = Number.isInteger(hello?.protocol) ? hello.protocol : -1;
+        let compatible = protocol === daemon.protocol;
+        // Before the protocol: otherwise connectionState reads
+        // "incompatible" for a moment on every connect.
+        daemon.helloReceived = compatible;
+        daemon.daemonVersion = String(hello?.version ?? "");
+        daemon.daemonProtocol = protocol;
+        if (!compatible) {
+            console.warn(`Daemon: qs-conf-daemon ${daemon.daemonVersion} speaks protocol ${protocol}, the shell ${daemon.protocol}`);
             return;
         }
-        daemon.helloReceived = true;
         for (let topic in daemon.listeners) {
             daemon.send({
                 op: "subscribe",
