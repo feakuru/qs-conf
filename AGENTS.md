@@ -27,6 +27,10 @@ Use your best judgement and keep in mind that:
   - Python helpers are run from QML via `ScriptProcess` (`default/ScriptProcess.qml`):
     - one-shot scripts print a single result (usually JSON) and are re-run by a `Timer`;
     - helpers that need state between samples (e.g. per-process CPU usage) stream one JSON line per sample using `default/scripts/json_stream.py`, read with a `SplitParser`, and only run while needed (e.g. `running: someIndicator.menuVisible`).
+  - Daemon: the Python helpers are being replaced, one consumer at a time, by `qs-conf-daemon` (a separate Rust project; its README lists the topics, methods and payloads). QML talks to it through two building blocks:
+    - `Daemon` (singleton): the socket connection. `Daemon.call(method, params, callback)` calls a method (`callback(result, error)`; without a callback it's fire-and-forget), `Daemon.connected` says whether the daemon is reachable (`connectionState` has the details). It reconnects and re-subscribes by itself. `DaemonIndicator` (rightmost on the bottom bar) shows the connection state; from a terminal, `qs ipc call daemon status` and `qs ipc call daemon ping` (result in `qs log`) check it.
+    - `DaemonTopic { topic: "cpu.details"; active: menuVisible; onData: payload => … }`: a subscription held while `active` (the daemon only samples subscribed topics); `latest` holds the last payload. This replaces `ScriptProcess` + parser + `Timer`.
+    - Once a consumer uses the daemon, its script is no longer used by it; don't add new uses of a script that has a daemon replacement.
 
 3. Safety
   - Do not `git commit` anything ever. In this repo, that is the human's job.

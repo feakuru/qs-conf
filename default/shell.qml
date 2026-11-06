@@ -105,6 +105,10 @@ Scope {
                 Separator {}
 
                 DateClock {}
+
+                Separator {}
+
+                DaemonIndicator {}
             }
 
             NotificationToasts {
