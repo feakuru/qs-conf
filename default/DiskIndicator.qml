@@ -1,18 +1,18 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Io
 
 DropdownMenu {
     id: diskIndicator
-    property int busyPercent: 0
-    // From disk_details.py: `disks` is the layout of the menu and only
+    // The daemon's `disk` topic: {busy}; 0 while it's unreachable.
+    readonly property int busyPercent: Daemon.connected && diskTopic.latest ? diskTopic.latest.busy : 0
+    // From the daemon's `disk.details` topic: `disks` is the layout of the menu and only
     // reassigned when it changes, so its rows are kept while `diskStats`
     // updates their values.
     property var disks: []
     property string disksJson: ""
     property var diskStats: ({})
-    property bool detailsLoaded: false
+    readonly property bool detailsLoaded: Daemon.connected && diskDetailsTopic.latest !== null
     property var topProcesses: []
     readonly property int topProcessesShown: 3
     // Filesystems at least this full get a red bar.
@@ -116,46 +116,24 @@ DropdownMenu {
         }
     ]
 
-    ScriptProcess {
-        id: diskIoProcess
-        scriptName: "disk_io"
-        running: true
-
-        stdout: SplitParser {
-            onRead: data => {
-                let usage;
-                try {
-                    usage = JSON.parse(data);
-                } catch (e) {
-                    return;
-                }
-                diskIndicator.busyPercent = usage.busy || 0;
-            }
-        }
+    DaemonTopic {
+        id: diskTopic
+        topic: "disk"
     }
 
-    ScriptProcess {
-        id: diskDetailsProcess
-        scriptName: "disk_details"
-        running: diskIndicator.menuVisible
+    DaemonTopic {
+        id: diskDetailsTopic
+        topic: "disk.details"
+        active: diskIndicator.menuVisible
 
-        stdout: SplitParser {
-            onRead: data => {
-                let details;
-                try {
-                    details = JSON.parse(data);
-                } catch (e) {
-                    return;
-                }
-                let disksJson = JSON.stringify(details.disks || []);
-                if (disksJson !== diskIndicator.disksJson) {
-                    diskIndicator.disksJson = disksJson;
-                    diskIndicator.disks = details.disks || [];
-                }
-                diskIndicator.diskStats = details.stats || {};
-                diskIndicator.topProcesses = details.processes || [];
-                diskIndicator.detailsLoaded = true;
+        onData: details => {
+            let disksJson = JSON.stringify(details.disks || []);
+            if (disksJson !== diskIndicator.disksJson) {
+                diskIndicator.disksJson = disksJson;
+                diskIndicator.disks = details.disks || [];
             }
+            diskIndicator.diskStats = details.stats || {};
+            diskIndicator.topProcesses = details.processes || [];
         }
     }
 }

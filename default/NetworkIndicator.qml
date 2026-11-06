@@ -9,12 +9,19 @@ DropdownMenu {
     toggleTextFont.pixelSize: 16
     menuWidth: 450
     opensUpward: true
-    property var txSpeed: 0.0
-    property var rxSpeed: 0.0
-    property string defaultDevice: "enp"
-    property var topProcesses: []
-    property string processesError: ""
-    property bool processesLoaded: false
+    // The daemon's `net` topic: {device, rx, tx, rx_text, tx_text} of the
+    // first active ethernet or Wi-Fi device; null while it's unreachable.
+    readonly property var netSpeed: Daemon.connected ? netTopic.latest : null
+    readonly property string txText: netSpeed ? netSpeed.tx_text : "…"
+    readonly property string rxText: netSpeed ? netSpeed.rx_text : "…"
+    // Empty while there's no connection.
+    readonly property string defaultDevice: netSpeed ? netSpeed.device : ""
+    // The daemon's `net.details` topic (nethogs), running while the menu is
+    // open: {processes, error}.
+    readonly property var netDetails: Daemon.connected ? netDetailsTopic.latest : null
+    readonly property var topProcesses: netDetails ? netDetails.processes : []
+    readonly property string processesError: netDetails ? netDetails.error : ""
+    readonly property bool processesLoaded: netDetails !== null
     readonly property int topProcessCount: 5
 
     // Null on machines without Wi-Fi, or until NetworkManager reports it.
@@ -45,14 +52,6 @@ DropdownMenu {
     property string wifiError: ""
     property bool wifiRescanning: false
     readonly property int wifiNetworksShown: 3
-
-    // `speed` is in kB/s, as reported by sar.
-    function formatSpeed(speed) {
-        if (speed > 1000) {
-            return `${(speed / 1000).toFixed(2)} MB/s`;
-        }
-        return `${speed.toFixed(2)} kB/s`;
-    }
 
     function usesPassword(network) {
         return network.security === WifiSecurityType.WpaPsk || network.security === WifiSecurityType.Wpa2Psk || network.security === WifiSecurityType.Sae;
@@ -146,8 +145,8 @@ DropdownMenu {
 
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/earth.svg")
     // Speeds left of the icon, like VpnIndicator.
-    toggleLeadingText: `${formatSpeed(txSpeed)} 🢁\n${formatSpeed(rxSpeed)} 🡻`
-    toggleLeadingTextWidest: "999.99 kB/s 🢁"
+    toggleLeadingText: `${txText} 🢁\n${rxText} 🡻`
+    toggleLeadingTextWidest: "999.99 MiB/s 🢁"
     balanceReservedWidth: true
     // Small enough that the two lines don't take up the bar's full height.
     toggleLeadingTextFont.pixelSize: 12
@@ -172,74 +171,15 @@ DropdownMenu {
     readonly property int wiredConnectionCount: [...Networking.devices.values].filter(device => device.type === DeviceType.Wired && device.connected).length
     readonly property int wifiConnectionCount: [...Networking.devices.values].filter(device => device.type === DeviceType.Wifi && device.connected).length
 
-    Process {
-        id: defaultDeviceProc
-        command: ["nmcli", "-t", "connection", "show", "--active"]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                for (let line of this.text.trim().split("\n")) {
-                    let [name, uuid, devType, device] = line.split(':');
-                    if (devType.endsWith("ethernet") || devType.endsWith("wireless")) {
-                        netIndicator.defaultDevice = device;
-                        break;
-                    }
-                }
-            }
-        }
+    DaemonTopic {
+        id: netTopic
+        topic: "net"
     }
 
-    Process {
-        id: netSpeedProc
-        command: ["bash", "-c", `sar -n DEV 1 1 | grep ${netIndicator.defaultDevice} | awk '{print $5 " " $6}' | tail -n1`]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let [rxSpeed, txSpeed] = this.text.trim().split(" ");
-                netIndicator.rxSpeed = parseFloat(rxSpeed);
-                netIndicator.txSpeed = parseFloat(txSpeed);
-            }
-        }
-    }
-
-    ScriptProcess {
-        id: netDetailsProcess
-        scriptName: "net_details"
-        running: netIndicator.menuVisible
-
-        stdout: SplitParser {
-            onRead: data => {
-                let details;
-                try {
-                    details = JSON.parse(data);
-                } catch (e) {
-                    return;
-                }
-                netIndicator.processesLoaded = true;
-                netIndicator.topProcesses = details.processes || [];
-                netIndicator.processesError = details.error || "";
-            }
-        }
-    }
-
-    Timer {
-        interval: 1200
-        running: true
-        repeat: true
-        onTriggered: function () {
-            netSpeedProc.running = true;
-        }
-    }
-
-    Timer {
-        interval: 2000
-        running: true
-        repeat: true
-        onTriggered: function () {
-            defaultDeviceProc.running = true;
-        }
+    DaemonTopic {
+        id: netDetailsTopic
+        topic: "net.details"
+        active: netIndicator.menuVisible
     }
 
     menuContent: [
@@ -261,7 +201,12 @@ DropdownMenu {
                     width: parent.width
                     font.pixelSize: 18
                     elide: Text.ElideRight
-                    text: netIndicator.defaultDevice
+                    text: {
+                        if (!netIndicator.netSpeed) {
+                            return "…";
+                        }
+                        return netIndicator.defaultDevice !== "" ? netIndicator.defaultDevice : "Not connected";
+                    }
                 }
 
                 StyledText {
@@ -269,7 +214,7 @@ DropdownMenu {
                     width: parent.width
                     font.pixelSize: 16
                     elide: Text.ElideRight
-                    text: `↑ ${netIndicator.formatSpeed(netIndicator.txSpeed)} · ↓ ${netIndicator.formatSpeed(netIndicator.rxSpeed)}`
+                    text: `↑ ${netIndicator.txText} · ↓ ${netIndicator.rxText}`
                 }
             }
         },

@@ -1,16 +1,22 @@
 import QtQuick
 import Quickshell
-import Quickshell.Io
 
 DropdownMenu {
     id: vpnIndicator
+    // The daemon's `vpn` topic: {connections, traffic, sent, received};
+    // null while it's unreachable.
+    readonly property var vpnStatus: Daemon.connected ? vpnTopic.latest : null
+    // [{uuid, type, active, state, name}], active first. Only reassigned
+    // when it changes, so rows are kept while their traffic updates.
     property var vpnConnections: []
-    property string lastConnectionsOutput: ""
+    property string vpnConnectionsJson: ""
     readonly property var activeVpnConnections: vpnConnections.filter(c => c.active)
-    // Per-connection traffic by UUID, and the totals, from vpn_usage.py.
-    property var vpnTraffic: ({})
-    property string totalSent: ""
-    property string totalReceived: ""
+    // Per-connection traffic by UUID, and the totals ("" while no VPN is up).
+    readonly property var vpnTraffic: vpnStatus ? vpnStatus.traffic : ({})
+    readonly property string totalSent: vpnStatus ? vpnStatus.sent : ""
+    readonly property string totalReceived: vpnStatus ? vpnStatus.received : ""
+    // A vpn.up/vpn.down call is pending.
+    property bool toggling: false
 
     toggleIconColor: activeVpnConnections.length > 0 ? AppConstants.indicatorOnColor : AppConstants.indicatorOffColor
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/shield-halved.svg")
@@ -19,7 +25,7 @@ DropdownMenu {
     // Speeds left of the shield, in the same format as NetworkIndicator, so
     // the room reserved for wider values is at the outer edge.
     toggleLeadingText: activeVpnConnections.length > 0 && totalSent !== "" ? `${totalSent} ⬆️\n${totalReceived} ⬇️` : ""
-    toggleLeadingTextWidest: activeVpnConnections.length > 0 ? "999.99 kB/s ⬆️" : ""
+    toggleLeadingTextWidest: activeVpnConnections.length > 0 ? "999.99 MiB/s ⬆️" : ""
     // Small enough that the two lines don't take up the bar's full height.
     toggleLeadingTextFont.pixelSize: 12
     toggleText: activeVpnConnections.length > 0 ? `[${activeVpnConnections.length}]` : ""
@@ -28,101 +34,41 @@ DropdownMenu {
     opensUpward: true
 
     function toggleConnection(connection) {
-        if (vpnToggleProc.running) {
+        if (vpnIndicator.toggling) {
             return;
         }
-        vpnToggleProc.command = ["nmcli", "connection", connection.active ? "down" : "up", "uuid", connection.uuid];
-        vpnToggleProc.running = true;
+        let method = connection.active ? "vpn.down" : "vpn.up";
+        vpnIndicator.toggling = Daemon.call(method, {
+            uuid: connection.uuid
+        }, (result, error) => {
+            vpnIndicator.toggling = false;
+            if (error !== undefined) {
+                console.warn(`VpnIndicator: ${method} ${connection.name} failed:`, error);
+            }
+        });
     }
 
-    Process {
-        id: vpnListProc
-        // NAME goes last so that colons inside it don't break the split below.
-        command: ["nmcli", "-t", "-e", "no", "-f", "UUID,TYPE,ACTIVE,STATE,NAME", "connection", "show"]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                if (this.text === vpnIndicator.lastConnectionsOutput) {
-                    return;
-                }
-                vpnIndicator.lastConnectionsOutput = this.text;
-                let connections = [];
-                for (let line of this.text.trim().split("\n")) {
-                    let parts = line.split(":");
-                    if (parts.length < 5) {
-                        continue;
-                    }
-                    let [uuid, connType, active, connState] = parts;
-                    if (connType !== "vpn" && connType !== "wireguard") {
-                        continue;
-                    }
-                    connections.push({
-                        uuid: uuid,
-                        type: connType,
-                        active: active === "yes",
-                        state: connState,
-                        name: parts.slice(4).join(":")
-                    });
-                }
-                connections.sort((lhs, rhs) => {
-                    if (lhs.active !== rhs.active) {
-                        return lhs.active ? -1 : 1;
-                    }
-                    return lhs.name.localeCompare(rhs.name);
-                });
-                vpnIndicator.vpnConnections = connections;
-            }
+    function setConnections(connections) {
+        let json = JSON.stringify(connections);
+        if (json !== vpnIndicator.vpnConnectionsJson) {
+            vpnIndicator.vpnConnectionsJson = json;
+            vpnIndicator.vpnConnections = connections;
         }
     }
 
-    Process {
-        id: vpnToggleProc
-        onExited: vpnListProc.running = true
-
-        stderr: StdioCollector {
-            onStreamFinished: {
-                if (this.text.trim().length > 0) {
-                    console.log("Error toggling VPN connection\n", this.text);
-                }
-            }
-        }
+    DaemonTopic {
+        id: vpnTopic
+        topic: "vpn"
+        onData: status => vpnIndicator.setConnections(status.connections || [])
     }
 
-    ScriptProcess {
-        id: vpnUsageProcess
-        scriptName: "vpn_usage"
-        running: vpnIndicator.activeVpnConnections.length > 0
+    Connections {
+        target: Daemon
 
-        onRunningChanged: {
-            if (!running) {
-                vpnIndicator.vpnTraffic = {};
-                vpnIndicator.totalSent = "";
-                vpnIndicator.totalReceived = "";
+        function onConnectedChanged() {
+            if (!Daemon.connected) {
+                vpnIndicator.setConnections([]);
             }
-        }
-
-        stdout: SplitParser {
-            onRead: data => {
-                let usage;
-                try {
-                    usage = JSON.parse(data);
-                } catch (e) {
-                    return;
-                }
-                vpnIndicator.vpnTraffic = usage.connections || {};
-                vpnIndicator.totalSent = usage.sent || "";
-                vpnIndicator.totalReceived = usage.received || "";
-            }
-        }
-    }
-
-    Timer {
-        interval: 2000
-        running: true
-        repeat: true
-        onTriggered: function () {
-            vpnListProc.running = true;
         }
     }
 
@@ -131,12 +77,10 @@ DropdownMenu {
             visible: vpnIndicator.vpnConnections.length === 0
             StyledText {
                 font.pixelSize: 18
-                text: "No VPN connections configured"
+                text: vpnIndicator.vpnStatus ? "No VPN connections configured" : "…"
             }
         },
         Repeater {
-            // Only reassigned when nmcli's output changes, so rows are kept
-            // while their traffic updates.
             model: vpnIndicator.vpnConnections
             delegate: UsageMenuItem {
                 // The bar is this connection's share of all VPN traffic.

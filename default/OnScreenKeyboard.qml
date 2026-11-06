@@ -8,11 +8,55 @@ BarButton {
     toggleIconSource: Qt.resolvedUrl(`assets/icons/fontawesome/solid/keyboard.svg`)
     property bool isShiftDown: oskLeftBody.isShiftDown || oskRightBody.isShiftDown
 
-    onIsShiftDownChanged: () => {
-        oskConfigProcess.running = true;
+    onIsShiftDownChanged: oskContainer.requestLayout()
+
+    // The active xkb layout, e.g. "us" (from KbLayoutIndicator).
+    required property string layoutName
+
+    onLayoutNameChanged: oskContainer.requestLayout()
+
+    // Numbers the osk.layout requests: replies arrive in the order they're
+    // ready, and only the latest request's counts.
+    property int layoutRequest: 0
+
+    // Asks the daemon for the keys of the current layer, labelled for the
+    // active layout and Shift. While it's unreachable, this waits for the
+    // connection (see the Connections below).
+    function requestLayout(): void {
+        if (!Daemon.connected) {
+            return;
+        }
+        let request = ++oskContainer.layoutRequest;
+        Daemon.call("osk.layout", {
+            layer: oskWindow.layerName,
+            layout: oskContainer.layoutName,
+            shift: oskContainer.isShiftDown
+        }, (layout, error) => {
+            if (request !== oskContainer.layoutRequest) {
+                return;
+            }
+            if (error !== undefined) {
+                console.warn("OnScreenKeyboard: osk.layout failed:", error);
+                return;
+            }
+            if (layout.left && layout.left.length > 0) {
+                oskContainer.oskLeftModel = layout.left;
+            }
+            if (layout.right && layout.right.length > 0) {
+                oskContainer.oskRightModel = layout.right;
+            }
+        });
     }
 
-    required property string layoutName
+    Connections {
+        target: Daemon
+
+        function onConnectedChanged() {
+            if (Daemon.connected) {
+                oskContainer.requestLayout();
+            }
+        }
+    }
 
     onClicked: {
         oskWindow.visible = !oskWindow.visible;
@@ -29,12 +73,7 @@ BarButton {
     property var oskLeftModel: []
     property var oskRightModel: []
 
-    Component.onCompleted: {
-        if (typeof oskConfigProcess !== 'undefined')
-            oskConfigProcess.running = true;
-        if (typeof oskInputProcess !== 'undefined')
-            oskInputProcess.running = true;
-    }
+    Component.onCompleted: oskContainer.requestLayout()
 
     PanelWindow {
         id: oskWindow
@@ -77,7 +116,7 @@ BarButton {
                     soundVolume: oskWindow.soundVolume
                     onLayerSwitched: layerName => {
                         oskWindow.layerName = layerName;
-                        oskConfigProcess.running = true;
+                        oskContainer.requestLayout();
                     }
                 }
             }
@@ -181,46 +220,8 @@ BarButton {
                     soundVolume: oskWindow.soundVolume
                     onLayerSwitched: layerName => {
                         oskWindow.layerName = layerName;
-                        oskConfigProcess.running = true;
+                        oskContainer.requestLayout();
                     }
-                }
-            }
-        }
-
-        ScriptProcess {
-            id: oskConfigProcess
-            scriptName: "osk_layout"
-            scriptArgs: [oskWindow.layerName, oskContainer.layoutName, oskContainer.isShiftDown ? "on" : "off"]
-            running: false
-
-            stdout: StdioCollector {
-                onStreamFinished: {
-                    var out = this.text.trim();
-                    if (out.length === 0)
-                        return;
-                    try {
-                        var parsed = JSON.parse(out);
-                        if (parsed.left && parsed.left instanceof Array && parsed.left.length > 0) {
-                            oskContainer.oskLeftModel = parsed.left;
-                        }
-                        if (parsed.right && parsed.right instanceof Array && parsed.right.length > 0) {
-                            oskContainer.oskRightModel = parsed.right;
-                        }
-                    } catch (e) {
-                        console.log("Failed to parse osk_layout output:", e);
-                    }
-                }
-            }
-        }
-
-        Timer {
-            id: oskReloadTimer
-            interval: 500
-            running: true
-            repeat: true
-            onTriggered: function () {
-                if (oskWindow.visible) {
-                    oskConfigProcess.running = true;
                 }
             }
         }

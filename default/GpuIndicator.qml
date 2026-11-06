@@ -1,25 +1,30 @@
 import QtQuick
 import Quickshell
-import Quickshell.Io
 
 DropdownMenu {
     id: gpuIndicator
-    property string gpuName: ""
-    property int loadPercent: 0
-    property int memoryUsed: 0
-    property int memoryTotal: 0
+    // The daemon's `gpu` topic: {name, load, memory_used, memory_total} (MiB);
+    // null while it's unreachable.
+    readonly property var gpuUsage: Daemon.connected ? gpuTopic.latest : null
+    readonly property string gpuName: gpuUsage ? gpuUsage.name : ""
+    readonly property int loadPercent: gpuUsage ? gpuUsage.load : 0
+    readonly property int memoryUsed: gpuUsage ? gpuUsage.memory_used : 0
+    readonly property int memoryTotal: gpuUsage ? gpuUsage.memory_total : 0
     // Integrated GPUs share system RAM and report no dedicated memory.
     property bool hasDedicatedMemory: memoryTotal > 0
     property int memoryPercent: hasDedicatedMemory ? Math.round(memoryUsed / memoryTotal * 100) : 0
-    property var topProcesses: []
-    property string processesError: ""
-    property bool processesLoaded: false
+    // The daemon's `gpu.details` topic, sampled while the menu is open:
+    // {processes, error}.
+    readonly property var gpuDetails: Daemon.connected ? gpuDetailsTopic.latest : null
+    readonly property var topProcesses: gpuDetails ? gpuDetails.processes : []
+    readonly property string processesError: gpuDetails ? gpuDetails.error : ""
+    readonly property bool processesLoaded: gpuDetails !== null
     readonly property int topProcessCount: 5
 
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/display.svg")
 
     toggleTextFont.pixelSize: 18
-    toggleText: `${gpuIndicator.loadPercent}%`
+    toggleText: gpuIndicator.gpuUsage ? `${gpuIndicator.loadPercent}%` : "…"
 
     toggleTextWidest: "100%"
 
@@ -63,13 +68,18 @@ DropdownMenu {
         },
         UsageMenuItem {
             label: "Load"
-            valueText: `${gpuIndicator.loadPercent}%`
+            valueText: gpuIndicator.gpuUsage ? `${gpuIndicator.loadPercent}%` : "…"
             percent: gpuIndicator.loadPercent
         },
         UsageMenuItem {
             barColor: AppConstants.memoryBarColor
             label: "Memory"
-            valueText: gpuIndicator.hasDedicatedMemory ? `${gpuIndicator.memoryUsed} / ${gpuIndicator.memoryTotal} MiB · ${gpuIndicator.memoryPercent}%` : "shared with system RAM"
+            valueText: {
+                if (!gpuIndicator.gpuUsage) {
+                    return "…";
+                }
+                return gpuIndicator.hasDedicatedMemory ? `${gpuIndicator.memoryUsed} / ${gpuIndicator.memoryTotal} MiB · ${gpuIndicator.memoryPercent}%` : "shared with system RAM";
+            }
             percent: gpuIndicator.memoryPercent
         },
         DropdownMenuHeader {
@@ -96,53 +106,14 @@ DropdownMenu {
         }
     ]
 
-    ScriptProcess {
-        id: gpuDetailsProcess
-        scriptName: "gpu_details"
-        running: gpuIndicator.menuVisible
-
-        stdout: SplitParser {
-            onRead: data => {
-                let details;
-                try {
-                    details = JSON.parse(data);
-                } catch (e) {
-                    return;
-                }
-                gpuIndicator.processesLoaded = true;
-                gpuIndicator.topProcesses = details.processes || [];
-                gpuIndicator.processesError = details.error || "";
-            }
-        }
+    DaemonTopic {
+        id: gpuDetailsTopic
+        topic: "gpu.details"
+        active: gpuIndicator.menuVisible
     }
 
-    ScriptProcess {
-        id: gpuProcess
-        scriptName: "gpu_usage"
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let info;
-                try {
-                    info = JSON.parse(this.text);
-                } catch (e) {
-                    return;
-                }
-                gpuIndicator.loadPercent = info.load || 0;
-                gpuIndicator.memoryUsed = info.memory_used || 0;
-                gpuIndicator.memoryTotal = info.memory_total || 0;
-                gpuIndicator.gpuName = info.name || "";
-            }
-        }
-    }
-
-    Timer {
-        interval: 1000
-        running: true
-        repeat: true
-        onTriggered: function () {
-            gpuProcess.running = true;
-        }
+    DaemonTopic {
+        id: gpuTopic
+        topic: "gpu"
     }
 }

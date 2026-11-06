@@ -116,22 +116,19 @@ DropdownMenu {
         sessionActionDialog.ask(sessionAction);
     }
 
-    menuWidth: 450
-
-    onMenuVisibleChanged: () => {
-        if (menuVisible) {
-            // Pick up changes made outside the shell (CLI, autostart, ...).
-            ThemeMode.refresh();
-        }
+    function lockSession() {
+        powerIndicator.closeMenu();
+        Daemon.call("session.lock", undefined, (result, error) => {
+            if (error !== undefined) {
+                console.warn("PowerIndicator: session.lock failed:", error);
+            }
+        });
     }
+
+    menuWidth: 450
 
     SessionActionDialog {
         id: sessionActionDialog
-    }
-
-    ScriptProcess {
-        id: lockProcess
-        scriptName: "lock_session"
     }
 
     menuContent: [
@@ -155,10 +152,7 @@ DropdownMenu {
                 iconNames: ["lock"]
                 text: "lock"
                 textPixelSize: 15
-                action: () => {
-                    powerIndicator.closeMenu();
-                    lockProcess.running = true;
-                }
+                action: () => powerIndicator.lockSession()
             }
             IconMenuItem {
                 iconNames: ["right-from-bracket"]

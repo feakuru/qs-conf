@@ -1,5 +1,4 @@
 import Quickshell
-import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 
@@ -8,13 +7,19 @@ DropdownMenu {
     property real barWidth: cpuIndicator.cpuData.length > 16 ? 4 : 10
     implicitWidth: Math.max(contentImplicitWidth, cpuIndicator.cpuData.length * barWidth + 2 * AppConstants.loadBarInset)
 
-    property var cpuData: []
-    property var temperature: null
-    property var topProcesses: []
+    // The daemon's `cpu` topic: {total, cores}; null while it's unreachable.
+    readonly property var cpuLoad: Daemon.connected ? cpuTopic.latest : null
+    readonly property var cpuData: cpuLoad ? cpuLoad.cores : []
+    // The daemon's `cpu.details` topic, sampled while the menu is open:
+    // {temperature: {text, hot} | null, processes}.
+    readonly property var cpuDetails: Daemon.connected ? cpuDetailsTopic.latest : null
+    readonly property var temperature: cpuDetails ? cpuDetails.temperature : null
+    readonly property var topProcesses: cpuDetails ? cpuDetails.processes : []
     readonly property int topProcessCount: 5
 
     toggleTextFont.pixelSize: 18
     toggleTextWidest: "100%"
+    toggleText: cpuLoad ? `${cpuLoad.total}%` : "…"
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/microchip.svg")
 
     Item {
@@ -45,7 +50,12 @@ DropdownMenu {
             StyledText {
                 font.pixelSize: 18
                 color: cpuIndicator.temperature && cpuIndicator.temperature.hot ? AppConstants.dangerColor : AppConstants.styledTextColor
-                text: cpuIndicator.temperature ? cpuIndicator.temperature.text : "Temperature: n/a"
+                text: {
+                    if (!cpuIndicator.cpuDetails) {
+                        return "…";
+                    }
+                    return cpuIndicator.temperature ? cpuIndicator.temperature.text : "Temperature: n/a";
+                }
             }
         },
         DropdownMenuHeader {
@@ -64,56 +74,14 @@ DropdownMenu {
         }
     ]
 
-    ScriptProcess {
-        id: cpuDetailsProcess
-        scriptName: "cpu_details"
-        running: cpuIndicator.menuVisible
-
-        stdout: SplitParser {
-            onRead: data => {
-                let details;
-                try {
-                    details = JSON.parse(data);
-                } catch (e) {
-                    return;
-                }
-                cpuIndicator.temperature = details.temperature;
-                cpuIndicator.topProcesses = details.processes || [];
-            }
-        }
+    DaemonTopic {
+        id: cpuDetailsTopic
+        topic: "cpu.details"
+        active: cpuIndicator.menuVisible
     }
 
-    ScriptProcess {
-        id: cpuProcess
-        scriptName: "cpu_per_core_load"
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                cpuIndicator.cpuData = this.text.split(" ").map(x => parseInt(x));
-            }
-        }
-    }
-
-    ScriptProcess {
-        id: cpuPercentProcess
-        scriptName: "cpu_load"
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                cpuIndicator.toggleText = `${this.text.trim()}%`;
-            }
-        }
-    }
-
-    Timer {
-        interval: 1000
-        running: true
-        repeat: true
-        onTriggered: function () {
-            cpuProcess.running = true;
-            cpuPercentProcess.running = true;
-        }
+    DaemonTopic {
+        id: cpuTopic
+        topic: "cpu"
     }
 }

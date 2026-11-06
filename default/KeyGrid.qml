@@ -26,6 +26,15 @@ RowLayout {
 
     signal layerSwitched(layerName: string)
 
+    // Sends a key event to qs-conf-daemon, which types it through ydotoold.
+    // Fire-and-forget: the daemon types events in the order they arrive.
+    function sendKeys(event: string, codes): void {
+        Daemon.call("osk.key", {
+            event: event,
+            codes: Array.from(codes)
+        });
+    }
+
     // SoundEffect {
     //     id: shortPressSound
     //     source: Qt.resolvedUrl("assets/sounds/osk_short_press.wav")
@@ -177,10 +186,7 @@ RowLayout {
                                     if (cell.keys_held.includes("LEFTSHIFT") || cell.keys_held.includes("RIGHTSHIFT")) {
                                         keyGrid.isShiftDown = true;
                                     }
-                                    Quickshell.execDetached({
-                                        command: ["sh", "-c", "uv run python " + Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "") + " --event long_start --codes " + btnTouchArea.currentlyHeldKeycodes.join(",")],
-                                        workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
-                                    });
+                                    keyGrid.sendKeys("long_start", btnTouchArea.currentlyHeldKeycodes);
                                     // longStartSound.play();
                                 }
                             }
@@ -225,10 +231,7 @@ RowLayout {
                                     if (cell.keys_held.includes("LEFTSHIFT") || cell.keys_held.includes("RIGHTSHIFT")) {
                                         keyGrid.isShiftDown = false;
                                     }
-                                    Quickshell.execDetached({
-                                        command: ["sh", "-c", "uv run python " + Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "") + " --event long_end --codes " + btnTouchArea.currentlyHeldKeycodes.join(",")],
-                                        workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
-                                    });
+                                    keyGrid.sendKeys("long_end", btnTouchArea.currentlyHeldKeycodes);
                                     // longEndSound.play();
                                 } else if (btnTouchArea.layerSwitch) {
                                     keyGrid.layerSwitched("main");
@@ -239,18 +242,23 @@ RowLayout {
                             } else {
                                 var codes = btnTouchArea.keycodesPressed;
                                 if (codes) {
-                                    Quickshell.execDetached({
-                                        command: ["sh", "-c", "uv run python " + Qt.resolvedUrl("scripts/osk_zmq_client.py").toString().replace(/^file:\/{2}/, "") + " --event short_press --codes " + codes.join(",")],
-                                        workingDirectory: Qt.resolvedUrl(".").toString().replace(/^file:\/{2}/, "")
-                                    });
+                                    keyGrid.sendKeys("short_press", codes);
                                     // shortPressSound.play();
                                 }
                             }
                             btnTouchArea.activePointId = -1;
                         }
 
+                        // The touch was taken away (e.g. by a gesture): a hold
+                        // is let go as on release, but a tap that hadn't
+                        // become a hold yet types nothing.
                         onCanceled: function (points) {
-                            onReleased(points);
+                            if (btnTouchArea.longHeld) {
+                                onReleased(points);
+                                return;
+                            }
+                            holdTimer.stop();
+                            btnTouchArea.activePointId = -1;
                         }
                     }
                 }

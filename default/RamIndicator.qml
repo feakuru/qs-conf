@@ -1,23 +1,30 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Io
 
 DropdownMenu {
     id: ramMenu
-    property string memoryText: ""
-    property string swapText: ""
-    property var topProcesses: []
+    // The daemon's `ram.details` topic, sampled while the menu is open:
+    // {memory, swap, processes}.
+    readonly property var ramDetails: Daemon.connected ? ramDetailsTopic.latest : null
+    readonly property string memoryText: ramDetails ? ramDetails.memory : ""
+    readonly property string swapText: ramDetails ? ramDetails.swap : ""
+    readonly property var topProcesses: ramDetails ? ramDetails.processes : []
     readonly property int topProcessCount: 5
-    property var memoryModules: []
-    property int memorySlotsTotal: 0
-    property bool memoryModulesLoaded: false
+    // The daemon's `ram.modules` topic: {slots_total, modules}, read once.
+    // Kept while disconnected: the modules don't change.
+    readonly property var memoryModuleInfo: ramModulesTopic.latest
+    readonly property var memoryModules: memoryModuleInfo ? memoryModuleInfo.modules : []
+    readonly property int memorySlotsTotal: memoryModuleInfo ? memoryModuleInfo.slots_total || 0 : 0
+    readonly property bool memoryModulesLoaded: memoryModuleInfo !== null
+    // The daemon's `ram` topic: {percent}; null while it's unreachable.
+    readonly property var ramUsage: Daemon.connected ? ramTopic.latest : null
 
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/solid/memory.svg")
 
     toggleTextFont.pixelSize: 18
     toggleTextWidest: "100%"
-    toggleText: `${ramIndicator.percentValue}%`
+    toggleText: ramMenu.ramUsage ? `${ramIndicator.percentValue}%` : "…"
 
     Rectangle {
         id: ramIndicator
@@ -28,7 +35,7 @@ DropdownMenu {
         anchors.right: parent.right
         anchors.rightMargin: AppConstants.loadBarInset
         color: AppConstants.memoryBarColor
-        property var percentValue: 0
+        readonly property int percentValue: ramMenu.ramUsage ? ramMenu.ramUsage.percent : 0
         height: (percentValue / 100) * parent.height
     }
 
@@ -114,64 +121,19 @@ DropdownMenu {
         }
     ]
 
-    ScriptProcess {
-        id: ramDetailsProcess
-        scriptName: "ram_details"
-        running: ramMenu.menuVisible
-
-        stdout: SplitParser {
-            onRead: data => {
-                let details;
-                try {
-                    details = JSON.parse(data);
-                } catch (e) {
-                    return;
-                }
-                ramMenu.memoryText = details.memory || "";
-                ramMenu.swapText = details.swap || "";
-                ramMenu.topProcesses = details.processes || [];
-            }
-        }
+    DaemonTopic {
+        id: ramDetailsTopic
+        topic: "ram.details"
+        active: ramMenu.menuVisible
     }
 
-    ScriptProcess {
-        id: ramModulesProcess
-        scriptName: "ram_modules"
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                ramMenu.memoryModulesLoaded = true;
-                let info;
-                try {
-                    info = JSON.parse(this.text);
-                } catch (e) {
-                    return;
-                }
-                ramMenu.memorySlotsTotal = info.slots_total || 0;
-                ramMenu.memoryModules = info.modules || [];
-            }
-        }
+    DaemonTopic {
+        id: ramModulesTopic
+        topic: "ram.modules"
     }
 
-    ScriptProcess {
-        id: ramProcess
-        scriptName: "ram_usage"
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                ramIndicator.percentValue = parseInt(this.text);
-            }
-        }
-    }
-
-    Timer {
-        interval: 1000
-        running: true
-        repeat: true
-        onTriggered: function () {
-            ramProcess.running = true;
-        }
+    DaemonTopic {
+        id: ramTopic
+        topic: "ram"
     }
 }
