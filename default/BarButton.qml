@@ -12,6 +12,7 @@ Rectangle {
     signal pressAndHold(var mouse)
 
     property bool handlesPressAndHold: false
+    property alias pressAndHoldInterval: toggleMouseArea.pressAndHoldInterval
 
     property alias toggleText: toggleLabel.text
     // Optional text left of the icon. It is right-aligned, so that it stays

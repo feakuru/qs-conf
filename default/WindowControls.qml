@@ -97,6 +97,7 @@ Item {
 
                     toggleOnClick: false
                     handlesPressAndHold: true
+                    pressAndHoldInterval: 300
                     // Their number changes with the windows, which would shift
                     // the keys of all the menus to their right.
                     showsHint: false
