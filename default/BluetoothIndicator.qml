@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Bluetooth
-import Quickshell.Io
 
 DropdownMenu {
     id: bluetoothIndicator
@@ -42,10 +41,14 @@ DropdownMenu {
     // BlueZ reports soft (software, e.g. airplane mode) and hard (hardware
     // switch) rfkill blocks alike; only a hard block can't be lifted here.
     readonly property bool adapterBlocked: adapter ? adapter.state === BluetoothAdapterState.Blocked : false
-    property bool hardBlocked: false
+    // The daemon's `bluetooth` topic (rfkill): {available, soft, hard}.
+    readonly property var rfkill: Daemon.connected ? bluetoothTopic.latest : null
+    readonly property bool hardBlocked: rfkill ? rfkill.hard : false
     // Set when turning on a soft-blocked adapter: it's unblocked first, and
     // powered on once BlueZ reports it as no longer blocked.
     property bool enableAfterUnblock: false
+    // A bluetooth.unblock call is pending.
+    property bool unblocking: false
 
     function toggleAdapter() {
         let adapter = bluetoothIndicator.adapter;
@@ -53,9 +56,15 @@ DropdownMenu {
             return;
         }
         if (bluetoothIndicator.adapterBlocked) {
-            if (!bluetoothIndicator.hardBlocked && !rfkillUnblockProcess.running) {
+            if (!bluetoothIndicator.hardBlocked && !bluetoothIndicator.unblocking) {
                 bluetoothIndicator.enableAfterUnblock = true;
-                rfkillUnblockProcess.running = true;
+                bluetoothIndicator.unblocking = Daemon.call("bluetooth.unblock", {}, (result, error) => {
+                    bluetoothIndicator.unblocking = false;
+                    if (error !== undefined) {
+                        console.warn("BluetoothIndicator: bluetooth.unblock failed:", error);
+                        bluetoothIndicator.enableAfterUnblock = false;
+                    }
+                });
             }
             return;
         }
@@ -63,9 +72,7 @@ DropdownMenu {
     }
 
     onAdapterBlockedChanged: {
-        if (adapterBlocked) {
-            rfkillHardBlockProcess.running = true;
-        } else if (enableAfterUnblock) {
+        if (!adapterBlocked && enableAfterUnblock) {
             enableAfterUnblock = false;
             if (adapter) {
                 adapter.enabled = true;
@@ -73,27 +80,9 @@ DropdownMenu {
         }
     }
 
-    Process {
-        id: rfkillUnblockProcess
-        command: ["rfkill", "unblock", "bluetooth"]
-        onExited: exitCode => {
-            if (exitCode !== 0) {
-                bluetoothIndicator.enableAfterUnblock = false;
-            }
-        }
-    }
-
-    Process {
-        id: rfkillHardBlockProcess
-        // One "blocked"/"unblocked" line per Bluetooth rfkill device.
-        command: ["rfkill", "--noheadings", "--output", "HARD", "list", "bluetooth"]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                bluetoothIndicator.hardBlocked = this.text.split("\n").some(line => line.trim() === "blocked");
-            }
-        }
+    DaemonTopic {
+        id: bluetoothTopic
+        topic: "bluetooth"
     }
 
     function toggleDiscovery() {

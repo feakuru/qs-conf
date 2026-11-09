@@ -6,35 +6,26 @@ This document is intended to orient automated/agentic contributors to build this
 - Quickshell config (used with latest release of quickshell): manages the UI
   - Check the installed version (`qs --version`) and use the matching docs, e.g. https://quickshell.org/docs/v0.3.2/types/ - APIs change between releases.
   - The config hot-reloads when files are saved, so the human sees changes immediately.
-- Python runtime: used as a backend for various features, requires Python >= 3.12 (see `pyproject.toml`), uses `uv`.
-- Primary languages/artifacts: Python (`*.py`) and QML (`*.qml`).
-- Dependency groups: `dev` group contains `mypy` (see `pyproject.toml`).
+- Backend: `qs-conf-daemon` (a separate Rust project, `~/projects/personal/qs-conf-daemon`, running as a systemd user service) provides the system data and actions. Its README lists the topics, methods and payloads.
+- Primary languages/artifacts: QML (`*.qml`).
 
 ## General code guidance
 
 1. Codestyle
 Use your best judgement and keep in mind that:
   - qmlls will be used for formatting by the human after you work on any QML code
-  - ruff will be used for formatting by the human after you work on any Python code
-  - you must not run any of those unless the user explicitly requests it
+  - you must not run it unless the user explicitly requests it
 
 2. Project structure
-  - Keep Python helpers in `default/scripts/` (current pattern).
-  - The project is built using `uv`, so always use
-    - `uv run` if you need to execute anything in the Python virtual environment
-    - `uv sync` and `uv add {dependency_name}` for dependencies
   - Store icons/assets under `default/assets/` and reference via `Qt.resolvedUrl` or relative paths.
-  - Python helpers are run from QML via `ScriptProcess` (`default/ScriptProcess.qml`):
-    - one-shot scripts print a single result (usually JSON) and are re-run by a `Timer`;
-    - helpers that need state between samples (e.g. per-process CPU usage) stream one JSON line per sample using `default/scripts/json_stream.py`, read with a `SplitParser`, and only run while needed (e.g. `running: someIndicator.menuVisible`).
-  - Daemon: the Python helpers are being replaced, one consumer at a time, by `qs-conf-daemon` (a separate Rust project; its README lists the topics, methods and payloads). QML talks to it through two building blocks:
+  - Daemon: system data and actions come from `qs-conf-daemon`. QML talks to it through two building blocks:
     - `Daemon` (singleton): the socket connection. `Daemon.call(method, params, callback)` calls a method (`callback(result, error)`; without a callback it's fire-and-forget), `Daemon.connected` says whether the daemon is reachable (`connectionState` has the details). It reconnects and re-subscribes by itself. `DaemonIndicator` (rightmost on the bottom bar) shows the connection state; from a terminal, `qs ipc call daemon status` and `qs ipc call daemon ping` (result in `qs log`) check it.
-    - `DaemonTopic { topic: "cpu.details"; active: menuVisible; onData: payload => … }`: a subscription held while `active` (the daemon only samples subscribed topics); `latest` holds the last payload. This replaces `ScriptProcess` + parser + `Timer`. Bar widgets bind to it as `readonly property var x: Daemon.connected ? someTopic.latest : null` and show "…" while that is null, so stale values aren't shown while the daemon is down.
-    - Once a consumer uses the daemon, its script is no longer used by it; don't add new uses of a script that has a daemon replacement.
+    - `DaemonTopic { topic: "cpu.details"; active: menuVisible; onData: payload => … }`: a subscription held while `active` (the daemon only samples subscribed topics); `latest` holds the last payload. Bar widgets bind to it as `readonly property var x: Daemon.connected ? someTopic.latest : null` and show "…" while that is null, so stale values aren't shown while the daemon is down.
+    - New system data or actions are added to qs-conf-daemon (a topic or method, see its `AGENTS.md`), with a `DaemonTopic`/`Daemon.call` consumer here. Don't add polling `Process`es, scripts or shell pipelines to QML for them. A few commands are still run from QML and stay: `nmcli` (Wi-Fi rescan), `hyprctl eval` (`AutoRotate.qml`), `systemctl reboot/poweroff` and the program picker's launches.
 
 3. Safety
   - Do not `git commit` anything ever. In this repo, that is the human's job.
-  - Only run any scripts or Python or Bash commands if a user explicitly requested or approved them.
+  - Only run any scripts or Bash commands if a user explicitly requested or approved them.
 
 ## Guidance for UI code
 
@@ -50,7 +41,7 @@ Debugging: when behaviour can't be worked out from the code, add temporary `cons
 
 3. Codestyle
   - Prefer reusable components and small property sets per component.
-  - Heavy logic belongs in Python helper modules, not in QML handlers.
+  - Heavy logic belongs in the daemon, not in QML handlers.
 
 4. Layout and sizing
   - Components report their natural size via `implicitWidth`/`implicitHeight`; layouts pick that up automatically. Do not add `preferredWidth`-style properties or compute sizes from `childrenRect`.

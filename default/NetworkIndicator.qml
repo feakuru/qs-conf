@@ -14,14 +14,20 @@ DropdownMenu {
     readonly property var netSpeed: Daemon.connected ? netTopic.latest : null
     readonly property string txText: netSpeed ? netSpeed.tx_text : "…"
     readonly property string rxText: netSpeed ? netSpeed.rx_text : "…"
-    // Empty while there's no connection.
-    readonly property string defaultDevice: netSpeed ? netSpeed.device : ""
-    // The daemon's `net.details` topic (nethogs), running while the menu is
-    // open: {processes, error}.
+    // The daemon says there's no active ethernet or Wi-Fi device (false while
+    // it's unreachable or hasn't sent anything yet).
+    readonly property bool notConnected: netSpeed !== null && netSpeed.device === ""
+    // The daemon's `net.details` topic, running while the menu is open:
+    // {processes (nethogs), interfaces, error}. `processes` and `interfaces`
+    // are null until their first readings, which take a moment.
     readonly property var netDetails: Daemon.connected ? netDetailsTopic.latest : null
-    readonly property var topProcesses: netDetails ? netDetails.processes : []
+    readonly property bool processesLoaded: netDetails !== null && netDetails.processes !== null
+    readonly property var topProcesses: processesLoaded ? netDetails.processes : []
+    // The active device (the bar's) first, always, then the other physical
+    // interfaces and VPN tunnels with traffic, by name.
+    readonly property bool interfacesLoaded: netDetails !== null && netDetails.interfaces !== null
+    readonly property var interfaces: interfacesLoaded ? netDetails.interfaces : []
     readonly property string processesError: netDetails ? netDetails.error : ""
-    readonly property bool processesLoaded: netDetails !== null
     readonly property int topProcessCount: 5
 
     // Null on machines without Wi-Fi, or until NetworkManager reports it.
@@ -183,39 +189,35 @@ DropdownMenu {
     }
 
     menuContent: [
+        DropdownMenuHeader {
+            visible: !netIndicator.interfacesLoaded || netIndicator.interfaces.length > 0 || netIndicator.notConnected
+            text: "Interfaces"
+        },
+        UsageMenuItem {
+            // A placeholder for the active interface's row while the first
+            // rates are being measured.
+            visible: !netIndicator.interfacesLoaded && !netIndicator.notConnected
+            label: "…"
+        },
         DropdownMenuItem {
-            // Two lines, as interface names can be long (e.g. USB adapters).
-            Layout.preferredHeight: summaryColumn.implicitHeight + 16
-
-            Column {
-                id: summaryColumn
-                anchors.left: parent.left
-                anchors.leftMargin: 12
-                anchors.right: parent.right
-                anchors.rightMargin: 12
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: 2
-
-                StyledText {
-                    anchors.centerIn: undefined
-                    width: parent.width
-                    font.pixelSize: 18
-                    elide: Text.ElideRight
-                    text: {
-                        if (!netIndicator.netSpeed) {
-                            return "…";
-                        }
-                        return netIndicator.defaultDevice !== "" ? netIndicator.defaultDevice : "Not connected";
-                    }
-                }
-
-                StyledText {
-                    anchors.centerIn: undefined
-                    width: parent.width
-                    font.pixelSize: 16
-                    elide: Text.ElideRight
-                    text: `↑ ${netIndicator.txText} · ↓ ${netIndicator.rxText}`
-                }
+            visible: netIndicator.notConnected
+            StyledText {
+                font.pixelSize: 16
+                color: AppConstants.mutedIconColor
+                text: "Not connected"
+            }
+        },
+        Repeater {
+            // A count, not the array: rows are only recreated when an
+            // interface starts or stops having traffic, not every second.
+            model: netIndicator.interfaces.length
+            delegate: UsageMenuItem {
+                readonly property var interfaceInfo: netIndicator.interfaces[index] || null
+                // Interface names can be long, and their end tells them apart.
+                labelElide: Text.ElideMiddle
+                label: interfaceInfo ? interfaceInfo.name : ""
+                labelSuffix: interfaceInfo && interfaceInfo.active ? "[active]" : ""
+                valueText: interfaceInfo ? interfaceInfo.value : ""
             }
         },
         DropdownMenuHeader {

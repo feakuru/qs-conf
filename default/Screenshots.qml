@@ -44,9 +44,12 @@ Singleton {
         });
     }
 
+    // Frozen while selecting, like the SHIFT + PRINT keybind, so what's
+    // selected is what gets saved.
     function captureRegion() {
         screenshots.capture({
-            mode: "region"
+            mode: "region",
+            freeze: true
         });
     }
 
