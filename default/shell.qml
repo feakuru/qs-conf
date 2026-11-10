@@ -90,6 +90,10 @@ Scope {
 
                 Separator {}
 
+                CustomActionsMenu {}
+
+                Separator {}
+
                 CpuIndicator {}
 
                 Separator {}

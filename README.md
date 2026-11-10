@@ -6,7 +6,7 @@ This is my personal config for Quickshell. It includes a top bar and a bottom ba
 
 This list might not be exhaustive. I am running this over Arch with Gnome installed, so a lot of deps are already available by default.
 
-- [`qs-conf-daemon`](https://github.com/feakuru/qs-conf-daemon), installed and enabled as a systemd user service (see its README). It provides the system data (CPU, RAM, GPU, disk, network, VPN, keyboard state, brightness, Bluetooth rfkill) and the actions (theme, lock, screenshots, on-screen keyboard); its README also lists what it needs at runtime
+- [`qs-conf-daemon`](https://github.com/feakuru/qs-conf-daemon), installed and enabled as a systemd user service (see its README). It provides the system data (CPU, RAM, GPU, disk, network, VPN, keyboard state, brightness, Bluetooth rfkill) and the actions (theme, lock, screenshots, on-screen keyboard, running custom actions and their file chooser); its README also lists what it needs at runtime
 - `ydotoold` running, for the on-screen keyboard (started by the Hyprland config)
 - `nmcli`
 - `nethogs`, for per-process network usage in the network dropdown (see below)

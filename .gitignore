@@ -1,1 +1,3 @@
 */.qmlls.ini
+# Machine-local custom actions, see default/CustomActions.qml.
+/actions.json
