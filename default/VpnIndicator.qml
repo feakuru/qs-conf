@@ -31,7 +31,6 @@ DropdownMenu {
     toggleText: activeVpnConnections.length > 0 ? `[${activeVpnConnections.length}]` : ""
 
     menuWidth: 450
-    opensUpward: true
 
     function toggleConnection(connection) {
         if (vpnIndicator.toggling) {

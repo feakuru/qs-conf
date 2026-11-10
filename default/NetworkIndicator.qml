@@ -8,7 +8,6 @@ DropdownMenu {
     id: netIndicator
     toggleTextFont.pixelSize: 16
     menuWidth: 450
-    opensUpward: true
     // The daemon's `net` topic: {device, rx, tx, rx_text, tx_text} of the
     // first active ethernet or Wi-Fi device; null while it's unreachable.
     readonly property var netSpeed: Daemon.connected ? netTopic.latest : null
