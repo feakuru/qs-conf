@@ -3,8 +3,9 @@ import QtQuick.Layouts
 import Quickshell
 
 // New notifications in the bottom-right corner of the screen, above the
-// bottom bar, newest at the bottom. Clicking one opens the notification area
-// on it. NotificationCenter decides which ones are shown and for how long.
+// bottom bar, newest at the bottom. Clicking one runs its default action (or
+// opens the notification area on it, if it has none). NotificationCenter
+// decides which ones are shown and for how long.
 PanelWindow {
     id: notificationToasts
 
@@ -63,7 +64,7 @@ PanelWindow {
                     notification: toast.modelData
                     compact: true
                     backgroundColor: AppConstants.solidBgColor
-                    action: () => NotificationCenter.showInArea(toast.modelData)
+                    action: () => NotificationCenter.activateToast(toast.modelData)
 
                     NumberAnimation on x {
                         from: notificationToasts.implicitWidth

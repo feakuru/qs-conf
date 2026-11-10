@@ -6,7 +6,8 @@ import Quickshell.Services.Notifications
 // The session's notification server. Notifications stay in the notification
 // area above the calendar (NotificationList, in DateClock's menu) until they
 // are dismissed; new ones also pop up as toasts (NotificationToasts) for a
-// while. Clicking a toast opens the area scrolled to that notification.
+// while. Clicking a toast runs the notification's default action, like
+// clicking it in the area; without one, it opens the area scrolled to it.
 //
 // Transient notifications don't belong in a notification area: they go away
 // with their toast (or when the area closes, if it was open when they came).
@@ -169,7 +170,24 @@ Singleton {
         }
     }
 
-    // Opens the notification area on the notification (a clicked toast).
+    // For a clicked toast: runs the notification's default action, as
+    // clicking it in the area does, or opens the area on it if it has none.
+    function activateToast(notification) {
+        let defaultAction = notification.actions.find(a => a.identifier === "default");
+        if (!defaultAction) {
+            notificationCenter.showInArea(notification);
+            return;
+        }
+        let id = notification.id;
+        // Later: hiding the toast removes the card that is being clicked.
+        Qt.callLater(() => {
+            defaultAction.invoke();
+            // Invoking dismisses non-resident notifications, toast and all.
+            notificationCenter.hideToast(id);
+        });
+    }
+
+    // Opens the notification area on the notification.
     function showInArea(notification) {
         notificationCenter.focusedId = notification.id;
         // Later: opening the area removes the toast that is being clicked.
