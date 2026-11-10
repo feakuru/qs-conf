@@ -85,6 +85,25 @@ DropdownMenu {
         topic: "bluetooth"
     }
 
+    // The daemon's `controllers` topic, for the batteries BlueZ doesn't know
+    // (game controllers): {percent, status} by Bluetooth address, for the
+    // ones whose level is known.
+    DaemonTopic {
+        id: controllersTopic
+        topic: "controllers"
+        active: bluetoothIndicator.menuVisible
+    }
+    readonly property var controllerBatteries: {
+        let payload = Daemon.connected ? controllersTopic.latest : null;
+        let batteries = {};
+        for (let controller of payload ? payload.controllers : []) {
+            if (controller.address !== "" && controller.battery && controller.battery.percent !== null) {
+                batteries[controller.address] = controller.battery;
+            }
+        }
+        return batteries;
+    }
+
     function toggleDiscovery() {
         if (!bluetoothIndicator.adapter) {
             return;
@@ -195,6 +214,7 @@ DropdownMenu {
                     // still follows the rows above it.
                     showSeparator: true
                     device: modelData
+                    controllerBattery: bluetoothIndicator.controllerBatteries[modelData.address] ?? null
                     action: () => {
                         if (modelData.connected) {
                             modelData.disconnect();

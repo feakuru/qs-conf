@@ -8,9 +8,20 @@ UsageMenuItem {
     id: bluetoothDeviceItem
     property var device: null
     property var forgetAction: () => {}
+    // The battery BlueZ doesn't know for game controllers, from the daemon's
+    // `controllers` topic: {percent, status}, or null.
+    property var controllerBattery: null
 
-    readonly property bool hasBattery: device ? device.connected && device.batteryAvailable : false
-    readonly property int batteryPercent: hasBattery ? Math.round(device.battery * 100) : 0
+    readonly property bool connected: device ? device.connected : false
+    readonly property bool hasBlueZBattery: connected && device.batteryAvailable
+    readonly property bool hasBattery: hasBlueZBattery || (connected && controllerBattery !== null)
+    readonly property int batteryPercent: {
+        if (hasBlueZBattery) {
+            return Math.round(device.battery * 100);
+        }
+        return hasBattery ? controllerBattery.percent : 0;
+    }
+    readonly property bool charging: !hasBlueZBattery && hasBattery && controllerBattery.status === "charging"
 
     label: device ? device.name : ""
     labelColor: device && device.connected ? AppConstants.indicatorOnColor : AppConstants.styledTextColor
@@ -38,6 +49,9 @@ UsageMenuItem {
         }
         if (hasBattery) {
             parts.push(`battery ${batteryPercent}%`);
+        }
+        if (charging) {
+            parts.push("charging");
         }
         return parts.join(" · ");
     }
