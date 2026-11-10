@@ -31,11 +31,14 @@ Item {
                 }
 
                 Rectangle {
-                    implicitWidth: 40
+                    // Tray icons fill their box more than the bar's own icons
+                    // do, so they get more padding to look as spaced out.
+                    implicitWidth: trayIcon.width + 24
                     Layout.fillHeight: true
                     color: iconMouseArea.containsMouse ? AppConstants.focusedBgColor : "transparent"
 
                     IconImage {
+                        id: trayIcon
                         anchors.centerIn: parent
                         width: 24
                         height: 24

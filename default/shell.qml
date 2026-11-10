@@ -41,6 +41,14 @@ Scope {
                     visible: systemTrayPanel.hasItems
                 }
 
+                VpnIndicator {}
+
+                Separator {}
+
+                NetworkIndicator {}
+
+                Separator {}
+
                 BluetoothIndicator {}
 
                 Separator {}
@@ -79,12 +87,6 @@ Scope {
                 Item {
                     Layout.fillWidth: true
                 }
-
-                VpnIndicator {}
-
-                Separator {}
-
-                NetworkIndicator {}
 
                 Separator {}
 

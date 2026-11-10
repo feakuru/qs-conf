@@ -9,6 +9,7 @@ Item {
     property alias iconHeight: originalIcon.height
     property alias iconColor: recoloredIcon.color
     property color outlineColor: "transparent"
+    property real outlineWidth: 2
     // Optional small icon over the bottom-left corner, in the same colour.
     // Its outline should match the background, so that it cuts the badge out
     // of the icon underneath and the two shapes don't merge.
@@ -44,8 +45,8 @@ Item {
             source: recoloredIcon
             visible: outlineColor.a > 0
             transparentBorder: true
-            radius: 2
-            samples: 5
+            radius: outlineWidth
+            samples: 1 + 2 * Math.ceil(outlineWidth)
             spread: 0.8
             color: outlineColor
         }

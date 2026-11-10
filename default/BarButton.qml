@@ -36,6 +36,7 @@ Rectangle {
     property alias toggleIconSource: toggleIcon.source
     property alias toggleIconColor: toggleIcon.iconColor
     property alias toggleIconOutlineColor: toggleIcon.outlineColor
+    property alias toggleIconOutlineWidth: toggleIcon.outlineWidth
     property real toggleIconSize: 28
     readonly property alias toggleMouseAreaContainsMouse: toggleMouseArea.containsMouse
     property real horizontalPadding: 10

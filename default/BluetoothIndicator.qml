@@ -123,7 +123,10 @@ DropdownMenu {
     }
 
     toggleIconColor: adapterEnabled ? AppConstants.bluetoothColor : AppConstants.indicatorOffColor
-    toggleIconOutlineColor: ThemeMode.isDark ? undefined : AppConstants.iconOutlineColor
+    toggleIconOutlineColor: adapterEnabled ? AppConstants.iconOutlineColor : "transparent"
+    toggleIconOutlineWidth: AppConstants.iconOutlineWidth
+    // The glyph is a narrow oval, so it looks smaller than the other icons at the same size.
+    toggleIconSize: 32
     toggleIconSource: Qt.resolvedUrl("assets/icons/fontawesome/brands/bluetooth.svg")
 
     toggleTextFont.pixelSize: 16

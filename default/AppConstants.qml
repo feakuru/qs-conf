@@ -27,7 +27,7 @@ Singleton {
     readonly property int loadBarInset: 4
     readonly property color indicatorOnColor: isDark ? "lightblue" : "steelblue"
     readonly property color indicatorOffColor: isDark ? "gray" : Qt.rgba(0.45, 0.45, 0.45, 1)
-    readonly property color bluetoothColor: "#0082FC"
+    readonly property color bluetoothColor: isDark ? "#669DF6" : "#1A73E8"
     readonly property color dangerColor: isDark ? "#FF6B6B" : "#C62828"
     // Bars of things that are off, e.g. a muted volume.
     readonly property color mutedBarColor: Qt.rgba(indicatorOffColor.r, indicatorOffColor.g, indicatorOffColor.b, loadBarAlpha)
@@ -43,8 +43,9 @@ Singleton {
     readonly property color iconShadowColor: isDark ? Qt.rgba(0.1, 0.1, 0.1, 1) : Qt.rgba(0, 0, 0, 0.18)
     readonly property real iconShadowOffset: isDark ? 2 : 1
     readonly property real iconShadowRadius: isDark ? 8 : 3
-    // Contour for coloured (non-text-coloured) icons that would otherwise blend into a light background.
-    readonly property color iconOutlineColor: isDark ? "transparent" : "#3C4043"
+    // Thin contour for coloured (non-text-coloured) icons on the light background.
+    readonly property color iconOutlineColor: isDark ? "transparent" : "lightgray"
+    readonly property real iconOutlineWidth: 1
 
     property string defaultFont: "FiraCode Nerd Font"
 

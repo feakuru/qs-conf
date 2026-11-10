@@ -161,8 +161,6 @@ DropdownMenu {
     // the text. The Propo variant gives them their actual width; the regular
     // one lets them overflow to the right, which unbalances the padding.
     toggleTextFont.family: "FiraCode Nerd Font Propo"
-    // The glyphs' right side bearing plus the full padding looks too loose.
-    rightPadding: horizontalPadding - 3
     toggleText: {
         let parts = [];
         if (wiredConnectionCount > 0) {
