@@ -162,37 +162,49 @@ DropdownMenu {
 
     menuWidth: 450
     menuContent: [
-        DropdownMenuItem {
-            action: () => bluetoothIndicator.toggleAdapter()
-            StyledText {
-                font.pixelSize: 18
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 0
+
+            IconMenuItem {
+                iconNames: ["power-off"]
+                iconColor: bluetoothIndicator.adapterEnabled ? AppConstants.bluetoothColor : AppConstants.mutedIconColor
+                textPixelSize: 15
+                action: () => bluetoothIndicator.toggleAdapter()
                 text: {
                     let adapter = bluetoothIndicator.adapter;
                     if (!adapter) {
-                        return "No Bluetooth adapter";
+                        return "no adapter";
                     }
                     if (bluetoothIndicator.enableAfterUnblock) {
-                        return "Turning on…";
+                        return "turning on…";
                     }
                     switch (adapter.state) {
                     case BluetoothAdapterState.Blocked:
                         // A soft block is just "off" as far as the user is concerned.
-                        return bluetoothIndicator.hardBlocked ? "Blocked by hardware switch" : "Off · click to turn on";
+                        return bluetoothIndicator.hardBlocked ? "hardware blocked" : "bluetooth off";
                     case BluetoothAdapterState.Enabling:
-                        return "Turning on…";
+                        return "turning on…";
                     case BluetoothAdapterState.Disabling:
-                        return "Turning off…";
+                        return "turning off…";
                     }
-                    return adapter.enabled ? "On · click to turn off" : "Off · click to turn on";
+                    return adapter.enabled ? "bluetooth on" : "bluetooth off";
                 }
             }
-            WindowActionButton {
-                visible: bluetoothIndicator.adapterEnabled
-                anchors.right: parent.right
-                anchors.rightMargin: 6
-                anchors.verticalCenter: parent.verticalCenter
-                iconName: "magnifying-glass"
-                highlighted: bluetoothIndicator.adapterDiscovering
+
+            Separator {
+                thickness: 1
+            }
+
+            // Stays in place (dimmed) while the adapter is off, so the row
+            // doesn't change its layout.
+            IconMenuItem {
+                enabled: bluetoothIndicator.adapterEnabled
+                opacity: enabled ? 1 : 0.5
+                iconNames: ["magnifying-glass"]
+                iconColor: bluetoothIndicator.adapterDiscovering ? AppConstants.bluetoothColor : AppConstants.iconColor
+                text: bluetoothIndicator.adapterDiscovering ? "searching…" : "find devices"
+                textPixelSize: 15
                 action: () => bluetoothIndicator.toggleDiscovery()
             }
         },
