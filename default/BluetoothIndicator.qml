@@ -38,6 +38,9 @@ DropdownMenu {
     property bool startedDiscovery: false
     // The device last being paired from this menu, connected once paired.
     property var pairingDevice: null
+    // The adapter was made pairable for pairingDevice, and is made
+    // unpairable again once that's done.
+    property bool restorePairable: false
     // BlueZ reports soft (software, e.g. airplane mode) and hard (hardware
     // switch) rfkill blocks alike; only a hard block can't be lifted here.
     readonly property bool adapterBlocked: adapter ? adapter.state === BluetoothAdapterState.Blocked : false
@@ -118,8 +121,31 @@ DropdownMenu {
             device.cancelPair();
             return;
         }
+        // Without a registered BlueZ agent (nothing registers one here), the
+        // adapter isn't pairable, and pairing then doesn't store a link key:
+        // BlueZ rejects HID devices that aren't bonded (e.g. a DualSense)
+        // when they connect. So the adapter is pairable while pairing.
+        let adapter = bluetoothIndicator.adapter;
+        if (adapter && !adapter.pairable) {
+            adapter.pairable = true;
+            bluetoothIndicator.restorePairable = true;
+        }
+        // Trusted before pairing, as without an agent BlueZ rejects the
+        // connections an untrusted device opens (controllers connect
+        // themselves right after pairing).
+        device.trusted = true;
         bluetoothIndicator.pairingDevice = device;
         device.pair();
+    }
+
+    function finishPairing() {
+        if (bluetoothIndicator.restorePairable) {
+            if (bluetoothIndicator.adapter) {
+                bluetoothIndicator.adapter.pairable = false;
+            }
+            bluetoothIndicator.restorePairable = false;
+        }
+        bluetoothIndicator.pairingDevice = null;
     }
 
     toggleIconColor: adapterEnabled ? AppConstants.bluetoothColor : AppConstants.indicatorOffColor
@@ -152,10 +178,21 @@ DropdownMenu {
         function onPairedChanged() {
             let device = bluetoothIndicator.pairingDevice;
             if (device && device.paired) {
-                // Lets it reconnect by itself later, as in other desktops.
-                device.trusted = true;
-                device.connect();
-                bluetoothIndicator.pairingDevice = null;
+                // Some devices (e.g. controllers) connect by themselves.
+                if (!device.connected) {
+                    device.connect();
+                }
+                bluetoothIndicator.finishPairing();
+            }
+        }
+
+        // BlueZ reports `paired` before the pairing call returns, so a
+        // device that's still unpaired here failed to pair or was cancelled.
+        function onPairingChanged() {
+            let device = bluetoothIndicator.pairingDevice;
+            if (device && !device.pairing && !device.paired) {
+                device.trusted = false;
+                bluetoothIndicator.finishPairing();
             }
         }
     }
