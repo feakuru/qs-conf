@@ -221,7 +221,16 @@ DropdownMenu {
             text: "Top processes"
         },
         DropdownMenuItem {
-            visible: netIndicator.processesError !== ""
+            // nethogs has nothing to monitor then, and fails with a long message.
+            visible: netIndicator.notConnected
+            StyledText {
+                font.pixelSize: 16
+                color: AppConstants.mutedIconColor
+                text: "No active interface to monitor"
+            }
+        },
+        DropdownMenuItem {
+            visible: netIndicator.processesError !== "" && !netIndicator.notConnected
             Layout.preferredHeight: processesErrorText.implicitHeight + 16
 
             StyledText {
@@ -241,7 +250,7 @@ DropdownMenu {
         Repeater {
             // A fixed number of rows that only have their values swapped, so
             // hovering and the menu size stay stable between samples.
-            model: netIndicator.processesError === "" ? netIndicator.topProcessCount : 0
+            model: netIndicator.processesError === "" && !netIndicator.notConnected ? netIndicator.topProcessCount : 0
             delegate: UsageMenuItem {
                 readonly property var processInfo: netIndicator.topProcesses[index] || null
                 // Often only a few processes are using the network.

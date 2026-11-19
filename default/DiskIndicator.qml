@@ -15,6 +15,7 @@ DropdownMenu {
     readonly property bool detailsLoaded: Daemon.connected && diskDetailsTopic.latest !== null
     property var topProcesses: []
     readonly property int topProcessesShown: 3
+    readonly property int topProcessesMax: 10
     // Filesystems at least this full get a red bar.
     readonly property int fullPercent: 90
 
@@ -85,30 +86,26 @@ DropdownMenu {
             // Other users' processes, including root's, can't be inspected.
             text: "Top processes (yours)"
         },
-        DropdownMenuItem {
-            visible: diskIndicator.detailsLoaded && diskIndicator.topProcesses.length === 0
-            StyledText {
-                font.pixelSize: 16
-                color: AppConstants.mutedIconColor
-                text: "No disk I/O"
-            }
-        },
         ScrollingMenuList {
             rowCount: processesRepeater.count
             maxVisibleRows: diskIndicator.topProcessesShown
 
             Repeater {
                 id: processesRepeater
-                // Keyed on the number of processes only, so rows are only
-                // recreated when it changes; their values are swapped in place.
-                model: diskIndicator.topProcesses.length
+                // At least `topProcessesShown` rows, so the menu keeps its size
+                // while few processes do I/O. Keyed on the number of rows only,
+                // so rows are only recreated when it changes; their values are
+                // swapped in place.
+                model: Math.max(diskIndicator.topProcessesShown, Math.min(diskIndicator.topProcesses.length, diskIndicator.topProcessesMax))
                 delegate: UsageMenuItem {
                     required property int index
                     readonly property var processInfo: diskIndicator.topProcesses[index] || null
+                    readonly property bool showsEmptyHint: index === 0 && diskIndicator.detailsLoaded && diskIndicator.topProcesses.length === 0
                     // The first row is at the top of the scroll area, but
                     // still follows the rows above it.
                     showSeparator: true
-                    label: processInfo ? processInfo.name : ""
+                    label: processInfo ? processInfo.name : showsEmptyHint ? "No disk I/O" : diskIndicator.detailsLoaded ? "" : "…"
+                    labelColor: showsEmptyHint ? AppConstants.mutedIconColor : AppConstants.styledTextColor
                     valueText: processInfo ? processInfo.value : ""
                     percent: processInfo ? processInfo.percent : 0
                 }
