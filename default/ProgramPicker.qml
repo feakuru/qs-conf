@@ -4,7 +4,6 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Widgets
 
 // Application launcher. Unlike the dropdown menus it uses its own layer-shell
 // window, because typing into the search field needs keyboard focus, which
@@ -213,14 +212,16 @@ BarButton {
                                 Item {
                                     Layout.fillHeight: true
                                     Layout.preferredWidth: 48
-                                    visible: Boolean(modelData.icon) && modelData.icon.length > 0 && (programIcon.status == Image.Ready)
+                                    visible: typeof modelData != "string"
 
-                                    IconImage {
-                                        id: programIcon
-                                        width: 32
-                                        height: 32
+                                    // Programs without a usable icon get a terminal or a
+                                    // muted question mark, so all names line up.
+                                    AppIcon {
                                         anchors.centerIn: parent
-                                        source: Quickshell.iconPath(modelData.icon, true)
+                                        size: 32
+                                        iconName: modelData.icon ?? ""
+                                        fallbackIconName: modelData.runInTerminal ? "terminal" : "circle-question"
+                                        fallbackColor: modelData.runInTerminal ? AppConstants.iconColor : AppConstants.mutedIconColor
                                     }
                                 }
 
