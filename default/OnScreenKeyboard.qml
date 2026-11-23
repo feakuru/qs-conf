@@ -1,5 +1,6 @@
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
 
@@ -80,9 +81,17 @@ BarButton {
         color: "transparent"
         visible: false
         screen: Quickshell.screens[0]
-        aboveWindows: true
+        // The overlay layer is drawn above fullscreen windows too (the
+        // default, top layer, is covered by them).
+        WlrLayershell.layer: WlrLayer.Overlay
+        // Spans the screen's width, so the compositor resizes it when the
+        // screen rotates. Pinned, it reserves its height at the bottom of
+        // the screen so that windows aren't covered by it.
+        property bool pinned: false
+        exclusionMode: pinned ? ExclusionMode.Auto : ExclusionMode.Normal
         anchors {
             left: true
+            right: true
             bottom: true
         }
         margins {
@@ -95,11 +104,20 @@ BarButton {
         property real soundVolume: 0.1
         property bool soundMuted: false
 
-        implicitWidth: Quickshell.screens[0].width
-        implicitHeight: Math.max(leftRegion.height, rightRegion.height)
+        // Shrinks the keyboard to fit screens narrower than it (e.g. the
+        // tablet in portrait).
+        readonly property real contentScale: width > 0 && oskLayout.implicitWidth > width ? width / oskLayout.implicitWidth : 1
+
+        // Rounded up: windows have whole-pixel sizes.
+        implicitHeight: Math.max(1, Math.ceil(oskLayout.implicitHeight * contentScale))
 
         RowLayout {
-            anchors.fill: parent
+            id: oskLayout
+            width: oskWindow.width / oskWindow.contentScale
+            height: implicitHeight
+            scale: oskWindow.contentScale
+            transformOrigin: Item.TopLeft
+
             Item {
                 id: leftRegion
                 implicitWidth: oskLeftBody.rotatedWidth
@@ -123,10 +141,15 @@ BarButton {
 
             Item {
                 id: oskControlGap
+                // Reserves room for the controls, so that the keyboard halves
+                // don't cover them when the keyboard is shrunk.
+                implicitWidth: oskControls.implicitWidth
+                implicitHeight: oskControls.implicitHeight
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
                 GridLayout {
+                    id: oskControls
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     columns: 3
@@ -137,7 +160,7 @@ BarButton {
                         ListElement {
                             text: "pin"
                             onPressed: points => {
-                                oskWindow.anchors.right = !oskWindow.anchors.right;
+                                oskWindow.pinned = !oskWindow.pinned;
                             }
                         }
                         ListElement {

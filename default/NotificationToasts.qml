@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Wayland
 
 // New notifications in the bottom-right corner of the screen, above the
 // bottom bar, newest at the bottom. Clicking one runs its default action (or
@@ -8,6 +9,10 @@ import Quickshell
 // decides which ones are shown and for how long.
 PanelWindow {
     id: notificationToasts
+
+    // The overlay layer is drawn above fullscreen windows too (the default,
+    // top layer, is covered by them).
+    WlrLayershell.layer: WlrLayer.Overlay
 
     anchors {
         bottom: true
