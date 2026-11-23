@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import QtMultimedia
 
 RowLayout {
     id: keyGrid
@@ -13,8 +12,6 @@ RowLayout {
     property real rotationAngle: 10
     property bool isRightHalf: false
     property bool isShiftDown: false
-    property bool soundMuted: false
-    property real soundVolume: 1.0
 
     transform: Rotation {
         angle: rotationAngle
@@ -34,34 +31,6 @@ RowLayout {
             codes: Array.from(codes)
         });
     }
-
-    // SoundEffect {
-    //     id: shortPressSound
-    //     source: Qt.resolvedUrl("assets/sounds/osk_short_press.wav")
-    //     muted: keyGrid.soundMuted
-    //     volume: keyGrid.soundVolume
-    // }
-    //
-    // SoundEffect {
-    //     id: longStartSound
-    //     source: Qt.resolvedUrl("assets/sounds/osk_long_start.wav")
-    //     muted: keyGrid.soundMuted
-    //     volume: keyGrid.soundVolume
-    // }
-    //
-    // SoundEffect {
-    //     id: longEndSound
-    //     source: Qt.resolvedUrl("assets/sounds/osk_long_end.wav")
-    //     muted: keyGrid.soundMuted
-    //     volume: keyGrid.soundVolume
-    // }
-    //
-    // SoundEffect {
-    //     id: layerSwitchStartSound
-    //     source: Qt.resolvedUrl("assets/sounds/osk_layer_switch.wav")
-    //     muted: keyGrid.soundMuted
-    //     volume: keyGrid.soundVolume
-    // }
 
     Repeater {
         model: keyGrid.expectedCols
@@ -180,14 +149,14 @@ RowLayout {
                                 var codesHeld = btnTouchArea.keycodesHeld;
                                 if (btnTouchArea.layerSwitch) {
                                     keyGrid.layerSwitched(btnTouchArea.layerSwitch);
-                                    // layerSwitchStartSound.play();
+                                    OskSounds.play("layerSwitch");
                                 } else if (codesHeld) {
                                     btnTouchArea.currentlyHeldKeycodes = codesHeld;
                                     if (cell.keys_held.includes("LEFTSHIFT") || cell.keys_held.includes("RIGHTSHIFT")) {
                                         keyGrid.isShiftDown = true;
                                     }
                                     keyGrid.sendKeys("long_start", btnTouchArea.currentlyHeldKeycodes);
-                                    // longStartSound.play();
+                                    OskSounds.play("longStart");
                                 }
                             }
                         }
@@ -232,10 +201,10 @@ RowLayout {
                                         keyGrid.isShiftDown = false;
                                     }
                                     keyGrid.sendKeys("long_end", btnTouchArea.currentlyHeldKeycodes);
-                                    // longEndSound.play();
+                                    OskSounds.play("longEnd");
                                 } else if (btnTouchArea.layerSwitch) {
                                     keyGrid.layerSwitched("main");
-                                    // layerSwitchStartSound.play();
+                                    OskSounds.play("layerSwitch");
                                 }
                                 btnTouchArea.longHeld = false;
                                 btnTouchArea.currentlyHeldKeycodes = null;
@@ -243,7 +212,7 @@ RowLayout {
                                 var codes = btnTouchArea.keycodesPressed;
                                 if (codes) {
                                     keyGrid.sendKeys("short_press", codes);
-                                    // shortPressSound.play();
+                                    OskSounds.play("shortPress");
                                 }
                             }
                             btnTouchArea.activePointId = -1;

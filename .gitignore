@@ -1,3 +1,5 @@
 */.qmlls.ini
 # Machine-local custom actions, see default/CustomActions.qml.
 /actions.json
+# Machine-local on-screen keyboard options, see default/OskConfig.qml.
+/osk.json
