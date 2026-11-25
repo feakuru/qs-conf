@@ -4,12 +4,11 @@ import Quickshell
 
 /// The on-screen keyboard's key sounds, at OskState's volume.
 ///
-/// They are played by `pw-play`, outside of the shell: Qt Multimedia's
-/// SoundEffect has crashed (QTBUG-142694, Qt < 6.10.2) and can freeze the
-/// whole shell when several of them play at once (QTBUG-143167, Qt 6.12.0).
-/// Each sound costs a short-lived process and a few tens of milliseconds of
-/// latency; this is meant to become a call to a qs-conf-daemon method that
-/// plays them through a persistent stream, which only changes play().
+/// They are played by qs-conf-daemon (`sound.play`), outside of the shell:
+/// Qt Multimedia's SoundEffect has crashed (QTBUG-142694, Qt < 6.10.2) and
+/// can freeze the whole shell when several of them play at once
+/// (QTBUG-143167, Qt 6.12.0). The daemon mixes them into one persistent
+/// PipeWire stream.
 Singleton {
     id: oskSounds
 
@@ -31,6 +30,10 @@ Singleton {
             console.warn("OskSounds: unknown sound:", name);
             return;
         }
-        Quickshell.execDetached(["pw-play", "--latency", "20ms", "--volume", volume.toFixed(4), Quickshell.shellPath(`assets/sounds/${file}`)]);
+        // Fire-and-forget: the daemon logs failures itself.
+        Daemon.call("sound.play", {
+            path: Quickshell.shellPath(`assets/sounds/${file}`),
+            volume: volume
+        });
     }
 }
