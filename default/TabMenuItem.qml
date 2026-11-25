@@ -1,7 +1,7 @@
 import QtQuick
 
-// One of a row of tabs (e.g. in a RowLayout): a Font Awesome icon and a
-// label, underlined while `selected`.
+// One of a row of tabs (e.g. in a RowLayout): a Font Awesome icon and an
+// optional label, underlined while `selected`.
 DropdownMenuItem {
     id: tabMenuItem
 
@@ -26,6 +26,7 @@ DropdownMenuItem {
         StyledText {
             anchors.centerIn: undefined
             anchors.verticalCenter: parent.verticalCenter
+            visible: text.length > 0
             font.pixelSize: 16
             color: tabMenuItem.selected ? AppConstants.styledTextColor : AppConstants.mutedIconColor
             text: tabMenuItem.text

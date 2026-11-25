@@ -84,6 +84,15 @@ Scope {
 
                 Separator {}
 
+                // Only on machines with lights.
+                LightsMenu {
+                    id: lightsMenu
+                }
+
+                Separator {
+                    visible: lightsMenu.visible
+                }
+
                 Item {
                     Layout.fillWidth: true
                 }
